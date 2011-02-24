@@ -9,4 +9,7 @@
 
 interface Mapper_Interface {
 
+	public function find();
+
+	public function find_all();
 }
