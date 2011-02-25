@@ -7,9 +7,13 @@
  * To change this template use File | Settings | File Templates.
  */
 
-interface Mapper_Interface {
+namespace Gacela\Mapper;
 
-	public function find();
+use Gacela as G;
 
-	public function find_all();
+interface iMapper {
+
+	public function find($id);
+
+	public function find_all(G\Criteria $criteria);
 }

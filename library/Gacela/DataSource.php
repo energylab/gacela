@@ -8,9 +8,9 @@
 
 namespace Gacela;
 
-use Gacela\DataSource;
+use Gacela\DataSource\Adapter AS A;
 
-class DataSource {
+class DataSource implements A\iAdapter {
 
 	/*
 	 * @var
@@ -24,10 +24,13 @@ class DataSource {
 
 	protected $_adapter;
 
+	/**
+	 * @return \Gacela\DataSource\Adapter\Adapter
+	 */
 	protected function _adapter()
 	{
 		if(is_null($this->_adapter)) {
-			$adapter = '\Gacela\DataSource\Adapter\\'.ucfirst($this->_type);
+			$adapter = "\\Gacela\\DataSource\\Adapter\\".ucfirst($this->_type);
 
 			$this->_adapter = new $adapter($this->_config);
 		}
@@ -40,7 +43,38 @@ class DataSource {
 		$this->_type = $config['type'];
 
 		$this->_config = $config;
+	}
 
-		exit(\Util::debug($this->_adapter()));
+	public function query()
+	{
+
+	}
+
+	public function insert()
+	{
+
+	}
+
+	public function update()
+	{
+
+	}
+
+	public function delete()
+	{
+
+	}
+
+	public function select()
+	{
+
+	}
+
+	/**
+	 * @return \Gacela\DataSource\Adapter\Query
+	 */
+	public function getQuery()
+	{
+		return $this->_adapter()->getQuery();
 	}
 }

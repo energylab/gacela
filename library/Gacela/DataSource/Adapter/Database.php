@@ -8,14 +8,37 @@
 
 namespace Gacela\DataSource\Adapter;
 
-class Database extends \Gacela\DataSource\Adapter_Abstract {
+class Database extends Adapter {
 
 	protected $_db;
 
 	public function __construct(array $config)
 	{
-		$dsn = $config['type'].':dbname='.$config['database'].';host='.$config['host'];
+		$dsn = $config['dbtype'].':dbname='.$config['database'].';host='.$config['host'];
+		
+		$this->_db = new \PDO($dsn, $config['user'], $config['password']);
+	}
 
-		$this->_db = new PDO($dsn, $config['username'], $config['password']);
+	public function query()
+	{
+		
+	}
+
+	public function insert() {}
+
+	public function update() {}
+
+	public function delete() {}
+
+	public function select() {}
+
+	public function getQuery()
+	{
+		return new Query\Database();
+	}
+
+	public function quote()
+	{
+
 	}
 }
