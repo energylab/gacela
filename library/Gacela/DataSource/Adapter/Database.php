@@ -6,12 +6,16 @@
  * 
 */
 
-namespace Gacela\DataSource;
+namespace Gacela\DataSource\Adapter;
 
-class Adapter_Database extends Adapter_Abstract {
+class Database extends \Gacela\DataSource\Adapter_Abstract {
+
+	protected $_db;
 
 	public function __construct(array $config)
 	{
-		
+		$dsn = $config['type'].':dbname='.$config['database'].';host='.$config['host'];
+
+		$this->_db = new PDO($dsn, $config['username'], $config['password']);
 	}
 }

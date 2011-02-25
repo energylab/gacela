@@ -6,7 +6,9 @@
  * 
 */
 
-namespace Gacela\DataSource;
+namespace Gacela;
+
+use Gacela\DataSource;
 
 class DataSource {
 
@@ -24,9 +26,13 @@ class DataSource {
 
 	protected function _adapter()
 	{
-		$adapter = '\Adapter\\'.ucfirst($this->_type);
+		if(is_null($this->_adapter)) {
+			$adapter = '\Gacela\DataSource\Adapter\\'.ucfirst($this->_type);
 
-		$this->_adapter = new $adapter($this->_config);
+			$this->_adapter = new $adapter($this->_config);
+		}
+
+		return $this->_adapter;
 	}
 
 	public function __construct(array $config)
@@ -35,6 +41,6 @@ class DataSource {
 
 		$this->_config = $config;
 
-		
+		exit(\Util::debug($this->_adapter()));
 	}
 }
