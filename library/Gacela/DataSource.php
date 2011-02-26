@@ -77,4 +77,9 @@ class DataSource implements A\iAdapter {
 	{
 		return $this->_adapter()->getQuery();
 	}
+
+	public function getResource($name)
+	{
+		return $this->_adapter()->getResource($name);
+	}
 }

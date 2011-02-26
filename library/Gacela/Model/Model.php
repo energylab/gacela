@@ -6,6 +6,9 @@
  * 
 */
 
-abstract class Model_Abstract implements Model_Interface {
+namespace \Gacela\Model;
 
+abstract class Model implements iModel {
+
+	
 }

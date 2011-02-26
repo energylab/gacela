@@ -9,11 +9,11 @@
 
 namespace Gacela\Mapper;
 
-use Gacela as G;
-
 interface iMapper {
 
+	public function init();
+	
 	public function find($id);
 
-	public function find_all(G\Criteria $criteria);
+	public function find_all(Gacela\Criteria $criteria);
 }

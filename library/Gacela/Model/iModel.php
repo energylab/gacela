@@ -6,6 +6,9 @@
  * 
 */
 
+namespace \Gacela\Model;
+
 interface Model_Interface {
 
+	public function save();
 }
