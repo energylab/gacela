@@ -6,23 +6,23 @@
  * 
 */
 
-namespace Gacela\DataSource\Adapter;
+namespace Gacela\DataSource;
 
-class Database extends Adapter {
+class Database extends DataSource {
 
 	protected $_db;
 
-	protected $_dbtype;
+	protected $_config = array();
 
 	protected $_resources = array();
 	
 	public function __construct(array $config)
 	{
-		$this->_dbtype = $config['dbtype'];
+		$this->_config = (object) $config;
 		
-		$dsn = $this->_dbtype.':dbname='.$config['database'].';host='.$config['host'];
+		$dsn = $this->_config->dbtype.':dbname='.$this->_config->database.';host='.$this->_config->host;
 		
-		$this->_db = new \PDO($dsn, $config['user'], $config['password']);
+		$this->_db = new \PDO($dsn, $this->_config->user, $this->_config->password);
 	}
 
 	public function query()
@@ -48,10 +48,12 @@ class Database extends Adapter {
 		if(!isset($this->_resources[$name]))  {
 			$this->_resources[$name] = new Resource\Database(array(
 				'name' => $name,
-				'dbtype' => $this->_dbtype,
+				'config' => $this->_config,
 				'db' => $this->_db
 			));
 		}
+
+		return $this->_resources[$name];
 	}
 
 	public function quote()

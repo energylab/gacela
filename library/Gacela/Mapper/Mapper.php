@@ -10,9 +10,9 @@ namespace Gacela\Mapper;
 
 abstract class Mapper implements iMapper {
 
-	protected $_expressions = array('primaryKey' => "{className}Id", 'resource' => "{className}");
+	protected $_expressions = array('primaryKey' => "{className}Id", 'resource' => "{className}s");
 	
-	protected $_sources = array('db');
+	protected $_sources = array('db' => array());
 
 	protected $_resources = array();
 
@@ -25,14 +25,21 @@ abstract class Mapper implements iMapper {
 
 	protected function _loadResources()
 	{
-		// Resources have to be tied to their data source -- for tomorrow
-		if(empty($this->_resources)) {
-			$classes = explode('\\', get_class($this));
+		foreach($this->_sources as $source => $resources) {
+			if(!is_array($resources) OR empty($resources)) {
+				$classes = explode('\\', get_class($this));
 
-			$resource = str_replace("{className}", end($classes), $this->_expressions['resource']);
-			$resource[0] = strtolower($resource[0]);
+				$resource = str_replace("{className}", end($classes), $this->_expressions['resource']);
+				$resource[0] = strtolower($resource[0]);
 
-			$this->_resources[$resource] = null;
+				$resources = array($resource);
+			}
+
+			$this->_sources[$source] = \Gacela::instance()->getDataSource($source);
+
+			foreach($resources as $resource) {
+				$this->_resources[$source][$resource] = $this->_sources[$source]->getResource($resource);
+			}
 		}
 
 		return $this;
@@ -50,17 +57,6 @@ abstract class Mapper implements iMapper {
 		return $this;
 	}
 
-	protected function _loadDataSources()
-	{
-		foreach($this->_sources as $i => $source) {
-			$this->_sources[$source] = \Gacela::instance()->getDataSource($source);
-
-			unset($this->_sources[$i]);
-		}
-
-		return $this;	
-	}
-
 	public function __construct()
 	{
 		$this->init();
@@ -68,8 +64,7 @@ abstract class Mapper implements iMapper {
 
 	public function init()
 	{
-		$this->_loadDataSources()
-			->_loadPrimaryKey()
+		$this->_loadPrimaryKey()
 			->_loadResources();
 	}
 

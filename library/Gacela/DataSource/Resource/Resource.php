@@ -6,9 +6,9 @@
  * 
 */
 
-namespace \Gacela\DataSource\Adapter\Resource;
+namespace Gacela\DataSource\Resource;
 
-class Resource {
+abstract class Resource {
 
 	protected $_meta = array();
 	
