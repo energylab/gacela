@@ -17,8 +17,6 @@ class Gacela
 
 	protected $_mappers = array();
 
-	protected $_models = array();
-
 	protected $_resources = array();
 
 	protected function __construct() {}
@@ -65,10 +63,5 @@ class Gacela
 		}
 
 		return $this->_mappers[$name];
-	}
-
-	public function loadModel($name, $id)
-	{
-
 	}
 }

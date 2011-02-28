@@ -10,9 +10,13 @@ namespace Gacela\DataSource\Query;
 
 class Database {
 
+	protected $_config;
+
 	protected $_select = array();
 
 	protected $_from = array();
+
+	protected $_where = array();
 
 	protected $_join = array();
 
@@ -22,35 +26,38 @@ class Database {
 
 	protected $_having = array();
 
-	/*
-	 *
-	 * */
-	public function select()
+	public function __construct(array $config)
 	{
-		
+		$this->_config = (object) $config;
 	}
 
-	public function from()
+	public function from($tableName, array $columns = array(), $schema = null)
 	{
-	
+		if(is_array($tableName)) {
+			$name = $tableName[0];
+		} else {
+			$name = $tableName;
+		}
+
+		$this->_from[$name] = array($tableName, $columns, $schema);
 	}
 
-	public function where()
+	public function where($stmt, $value)
 	{
-
+		$this->_where[] = array($stmt, $value);
 	}
 
 	public function join()
 	{
-
+		
 	}
 
-	public function groupBy()
+	public function groupBy($column)
 	{
 
 	}
 
-	public function orderBy()
+	public function orderBy($column, $direction)
 	{
 
 	}
@@ -63,5 +70,12 @@ class Database {
 	public function expr()
 	{
 
+	}
+
+	public function assemble()
+	{
+		if(empty($this->_from)) {
+			$this->_from[$this->_config->name] = array($this->_config->name, '*', $this->_config->dbname);
+		}
 	}
 }

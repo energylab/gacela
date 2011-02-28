@@ -10,5 +10,7 @@ namespace \Gacela\Model;
 
 interface Model_Interface {
 
+	public function validate();
+	
 	public function save();
 }
