@@ -27,7 +27,10 @@ class Database extends DataSource {
 
 	public function query($query)
 	{
-		$query = $query->assemble();
+		$stmt = $query->assemble();
+		$stmt->execute();
+
+		return $stmt->fetchAll(\PDO::FETCH_OBJ);
 	}
 
 	public function insert() {}
@@ -38,7 +41,7 @@ class Database extends DataSource {
 
 	public function getQuery()
 	{
-		return new Query\Database(array_merge((array) $this->_config, array('name' => $name, 'db' => $this->_db)));
+		return new Query\Database(array_merge((array) $this->_config, array('db' => $this->_db)));
 	}
 
 	public function getResource($name)

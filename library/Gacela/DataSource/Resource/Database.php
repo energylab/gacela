@@ -106,6 +106,11 @@ class Database extends Resource {
 		 */
 	}
 
+	public function getName()
+	{
+		return $this->_config->name;
+	}
+
 	public function getFields()
 	{
 		return $this->_meta['columns'];

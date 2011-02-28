@@ -12,9 +12,9 @@ abstract class Mapper implements iMapper {
 
 	protected $_models = array();
 
-	protected $_expressions = array('primaryKey' => "{className}Id", 'resource' => "{className}s");
+	protected $_expressions = array('resource' => "{className}s");
 	
-	protected $_sources = array('db' => array());
+	protected $_source = 'db';
 
 	protected $_resources = array();
 
@@ -29,21 +29,19 @@ abstract class Mapper implements iMapper {
 
 	protected function _loadResources()
 	{
-		foreach($this->_sources as $source => $resources) {
-			if(!is_array($resources) OR empty($resources)) {
-				$classes = explode('\\', get_class($this));
+		if(empty($resources)) {
+			$classes = explode('\\', get_class($this));
 
-				$resource = str_replace("{className}", end($classes), $this->_expressions['resource']);
-				$resource[0] = strtolower($resource[0]);
+			$resource = str_replace("{className}", end($classes), $this->_expressions['resource']);
+			$resource[0] = strtolower($resource[0]);
 
-				$resources = array($resource);
-			}
+			$resources = array($resource);
+		}
 
-			$this->_sources[$source] = \Gacela::instance()->getDataSource($source);
+		$this->_source = \Gacela::instance()->getDataSource($this->_source);
 
-			foreach($resources as $resource) {
-				$this->_resources[$source][$resource] = $this->_sources[$source]->getResource($resource);
-			}
+		foreach($resources as $resource) {
+			$this->_resources[$resource] = $this->_source->getResource($resource);
 		}
 
 		return $this;
@@ -64,8 +62,16 @@ abstract class Mapper implements iMapper {
 		return $this->_load($id);
 	}
 
-	public function find_all(Gacela\Criteria $criteria = null)
+	public function findAll(Gacela\Criteria $criteria = null)
 	{
+		$query = $this->_source->getQuery();
 		
+		foreach($this->_resources as $resource) {
+			$query->from($resource->getName());
+		}
+
+		$records = $this->_source->query($query);
+
+		exit(\Util::debug($records));
 	}
 }

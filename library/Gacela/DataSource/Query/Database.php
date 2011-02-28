@@ -38,6 +38,10 @@ class Database {
 		} else {
 			$name = $tableName;
 		}
+		
+		if(is_null($schema)) $schema = $this->_config->database;
+
+		if(empty($columns)) $columns = array('*');
 
 		$this->_from[$name] = array($tableName, $columns, $schema);
 	}
@@ -74,8 +78,30 @@ class Database {
 
 	public function assemble()
 	{
-		if(empty($this->_from)) {
-			$this->_from[$this->_config->name] = array($this->_config->name, '*', $this->_config->dbname);
+		$_from = array();
+		$_select = array();
+
+		foreach($this->_from as $from) {
+			if(is_array($from[0])) {
+				$_from[] = "{$from[0][1]} AS {$from[0][0]}";
+			} else {
+				$_from[] = "{$from[0]}";
+			}
+
+			if(is_array($from[1])) {
+				$_select = array_merge($from[1]);
+			} else {
+				$_select[] = $from[1];
+			}
 		}
+
+		$_select = join(',', $_select);
+		$_from = join(', ', $_from);
+
+		$sql = "SELECT {$_select} FROM {$_from}";
+		
+		$statement = $this->_config->db->prepare($sql);
+
+		return $statement;
 	}
 }
