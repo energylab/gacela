@@ -46,9 +46,9 @@ class Database {
 		$this->_from[$name] = array($tableName, $columns, $schema);
 	}
 
-	public function where($stmt, $value)
+	public function where($stmt, $value, $or = false)
 	{
-		$this->_where[] = array($stmt, $value);
+		$this->_where[] = array($stmt, $value, $or);
 	}
 
 	public function join()
@@ -94,6 +94,12 @@ class Database {
 				$_select[] = $from[1];
 			}
 		}
+
+		$_where = array();
+		foreach($this->_where as $where) {
+			$_where[] = $where[0];
+		}
+
 
 		$_select = join(',', $_select);
 		$_from = join(', ', $_from);
