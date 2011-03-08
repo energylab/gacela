@@ -10,21 +10,43 @@ namespace Gacela\Mapper;
 
 abstract class Mapper implements iMapper {
 
+	protected $_expressions = array('resource' => "{className}s");
+
 	protected $_models = array();
 
-	protected $_expressions = array('resource' => "{className}s");
+	protected $_modelName;
+
+	protected $_primaryKey = array();
 	
-	protected $_source = 'db';
+	protected $_relations = array();
 
 	protected $_resources = array();
 
-	protected $_relations = array();
-
-	protected $_primaryKey = array();
+	protected $_source = 'db';
 
 	protected function _load(object $data)
 	{
-		
+		$primary = array();
+		foreach($this->_primaryKey as $k) {
+			$primary[] = $data[$k];
+		}
+
+		$primary = join("_", $primary);
+
+		exit(\Util::debug($primary));
+	}
+
+	protected function _loadModelName()
+	{
+		$classes = explode('\\', get_class($this));
+
+		$pos = array_search('Mapper', $classes);
+
+		$classes[$pos] = 'Model';
+
+		$this->_modelName = "\\".join("\\", $classes);
+
+		return $this;
 	}
 
 	protected function _loadResources()
@@ -79,7 +101,8 @@ abstract class Mapper implements iMapper {
 
 	public function init()
 	{
-		$this->_loadResources();
+		$this->_loadResources()
+			->_loadModelName();
 	}
 
 	public function load(object $array)
