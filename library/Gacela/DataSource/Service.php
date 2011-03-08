@@ -6,6 +6,9 @@
  * 
 */
 
-class Adapter_Service extends Adapter_Abstract {
+use \Gacela\DataSource;
+
+class Service extends DataSource
+{
 
 }

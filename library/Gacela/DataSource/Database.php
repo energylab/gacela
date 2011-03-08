@@ -33,11 +33,11 @@ class Database extends DataSource {
 		return $stmt->fetchAll(\PDO::FETCH_OBJ);
 	}
 
-	public function insert() {}
+	public function insert($name, $data) {}
 
-	public function update() {}
+	public function update($name, $data) {}
 
-	public function delete() {}
+	public function delete($name, $id) {}
 
 	public function getQuery()
 	{
@@ -51,10 +51,5 @@ class Database extends DataSource {
 		}
 
 		return $this->_resources[$name];
-	}
-
-	public function quote()
-	{
-
 	}
 }

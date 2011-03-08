@@ -20,11 +20,11 @@ abstract class Mapper implements iMapper {
 
 	protected $_relations = array();
 
-	protected $_primaryKey;
+	protected $_primaryKey = array();
 
-	protected function _load()
+	protected function _load(object $data)
 	{
-		$primary = func_get_args();
+		
 	}
 
 	protected function _loadResources()
@@ -42,6 +42,8 @@ abstract class Mapper implements iMapper {
 
 		foreach($resources as $resource) {
 			$this->_resources[$resource] = $this->_source->getResource($resource);
+
+			$this->_primaryKey = array_merge($this->_resources[$resource]->getPrimaryKey(), $this->_primaryKey);
 		}
 
 		return $this;
@@ -52,14 +54,9 @@ abstract class Mapper implements iMapper {
 		$this->init();
 	}
 
-	public function init()
-	{
-		$this->_loadResources();
-	}
-
 	public function find($id)
 	{
-		return $this->_load($id);
+		
 	}
 
 	public function findAll(Gacela\Criteria $criteria = null)
@@ -72,6 +69,24 @@ abstract class Mapper implements iMapper {
 
 		$records = $this->_source->query($query);
 
-		exit(\Util::debug($records));
+		return new \Gacela\Collection($this, $records);
 	}
+
+	public function getPrimaryKey()
+	{
+		return $this->_primaryKey;
+	}
+
+	public function init()
+	{
+		$this->_loadResources();
+	}
+
+	public function load(object $array)
+	{
+		
+	}
+
+
 }
+

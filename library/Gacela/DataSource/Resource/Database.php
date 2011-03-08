@@ -51,7 +51,15 @@ class Database extends Resource {
 		$columns = $stmt->fetchAll(\PDO::FETCH_OBJ);
 
 		foreach($columns as $column) {
+			$meta = array('length' => null, 'unsigned' => false, 'sequenced' => false);
+			
 			preg_match('/(?P<type>\w+)($|\((?P<length>(\d+|(.*)))\))/', $column->Type, $meta);
+
+			$meta = array_merge(array('length' => null, 'unsigned' => false, 'sequenced' => false), $meta);
+
+			if(stripos($column->Type, 'unsigned') !== false) {
+				$meta['unsigned'] = true;
+			}
 
 			$this->_meta['columns'][$column->Field] = array(
 				'type' => $meta['type'],
@@ -60,12 +68,12 @@ class Database extends Resource {
 				'null' => stristr($column->Null, 'no') ? false : true,
 				'default' => $column->Default
 			);
-
+			
 			if($this->_meta['columns'][$column->Field]['primary'] === true) {
 				$this->_meta['primary'][] = $column->Field;
 			}
 		}
-
+		
 		unset($stmt);
 
 		/*

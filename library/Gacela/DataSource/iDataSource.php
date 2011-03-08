@@ -8,15 +8,16 @@
 
 namespace Gacela\DataSource;
 
-interface iDataSource {
+interface iDataSource
+{
 
 	public function query($query);
 
-	public function insert();
+	public function insert($name, $data);
 
-	public function update();
+	public function update($name, $data);
 
-	public function delete();
+	public function delete($name, $id);
 
 	public function getQuery();
 
