@@ -6,7 +6,7 @@
  * 
 */
 
-namespace \Gacela\Model;
+namespace Gacela\Model;
 
 abstract class Model implements iModel {
 
@@ -40,5 +40,15 @@ abstract class Model implements iModel {
 	public function __set($key, $val)
 	{
 		$this->_originalData[$key] = $this->_data->$key;
+	}
+
+	public function save()
+	{
+
+	}
+
+	public function validate()
+	{
+
 	}
 }

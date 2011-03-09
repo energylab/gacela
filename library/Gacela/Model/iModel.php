@@ -6,9 +6,9 @@
  * 
 */
 
-namespace \Gacela\Model;
+namespace Gacela\Model;
 
-interface Model_Interface {
+interface iModel {
 
 	public function validate();
 	

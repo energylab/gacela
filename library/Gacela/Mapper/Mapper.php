@@ -24,16 +24,20 @@ abstract class Mapper implements iMapper {
 
 	protected $_source = 'db';
 
-	protected function _load(object $data)
+	protected function _load(\stdClass $data)
 	{
 		$primary = array();
 		foreach($this->_primaryKey as $k) {
-			$primary[] = $data[$k];
+			$primary[] = $data->$k;
 		}
 
 		$primary = join("_", $primary);
+		
+		if(!isset($this->_models[$primary])) {
+			$this->_models[$primary] = new $this->_modelName($data);
+		}
 
-		exit(\Util::debug($primary));
+		return $this->_models[$primary];
 	}
 
 	protected function _loadModelName()
@@ -105,9 +109,9 @@ abstract class Mapper implements iMapper {
 			->_loadModelName();
 	}
 
-	public function load(object $array)
+	public function load(\stdClass $array)
 	{
-		
+		return $this->_load($array);
 	}
 
 

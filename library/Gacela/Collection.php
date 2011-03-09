@@ -43,7 +43,7 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess
 	{
 		$data = $this->_data[$this->_pointer];
 
-		if(is_array($data)) {
+		if(is_object($data)) {
 			return $this->_mapper->load($data);
 		} elseif(is_integer($data)) {
 			return $this->_mapper->find($data);
