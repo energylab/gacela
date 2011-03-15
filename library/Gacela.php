@@ -9,8 +9,7 @@
 
 use Gacela as G;
 
-class Gacela
-{
+class Gacela {
 	protected static $_instance;
 
 	protected $_sources = array();

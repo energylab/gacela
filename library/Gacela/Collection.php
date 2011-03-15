@@ -8,8 +8,7 @@
 
 namespace Gacela;
 
-class Collection implements \SeekableIterator, \Countable, \ArrayAccess
-{
+class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 	protected $_mapper;
 
 	protected $_data;
@@ -118,11 +117,29 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess
         return $this;
 	}
 
-	public function search($value, $key = null)
+	public function search($value)
 	{
-		if(is_null($key)) {
-
+		if(!is_array($value)) {
+			$value = array(current($this->_mapper->getPrimaryKey()) => $value);
 		}
+
+		foreach($this->_data as $index => $row) {
+			$rs = true;
+
+			foreach($value as $key => $val) {
+				if($row[$key] != $val) {
+					$rs = false;
+					break;
+				}
+			}
+
+			if($rs === true) {
+				$this->seek($index);
+				return $this->current();
+			}
+		}
+
+		return false;
 	}
 
     /**

@@ -8,8 +8,7 @@
 
 namespace Gacela\DataSource;
 
-abstract class DataSource implements iDataSource
-{
+abstract class DataSource implements iDataSource {
 
 }
 

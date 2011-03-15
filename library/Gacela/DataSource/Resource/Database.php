@@ -55,18 +55,46 @@ class Database extends Resource {
 			
 			preg_match('/(?P<type>\w+)($|\((?P<length>(\d+|(.*)))\))/', $column->Type, $meta);
 
-			$meta = array_merge(array('length' => null, 'unsigned' => false, 'sequenced' => false), $meta);
+			$meta = array_merge(
+						array(
+							'length' => null,
+							'unsigned' => false,
+							'sequenced' => false,
+							'values' => array()
+						),
+						$meta
+					);
 
 			if(stripos($column->Type, 'unsigned') !== false) {
 				$meta['unsigned'] = true;
 			}
 
+			if($meta['type'] == 'enum') {
+				$meta['values'] = explode(',', str_replace("'", "", $meta['length']));
+				$meta['length'] = null;
+			}
+
+			switch($meta['type']) {
+				case 'varchar':
+				case 'char':
+					$meta['type'] = 'string';
+					break;
+				case 'tinyint':
+					if($meta['length'] == 1) {
+						$meta['type'] = 'bool';
+					}
+					break;
+			}
+
 			$this->_meta['columns'][$column->Field] = array(
 				'type' => $meta['type'],
+				'unsigned' => $meta['unsigned'],
+				'sequenced' => $meta['sequenced'],
 				'length' => $meta['length'],
 				'primary' => $column->Key == 'PRI' ? true : false,
 				'null' => stristr($column->Null, 'no') ? false : true,
-				'default' => $column->Default
+				'default' => $column->Default,
+				'values' => $meta['values']
 			);
 			
 			if($this->_meta['columns'][$column->Field]['primary'] === true) {

@@ -8,8 +8,7 @@
 
 namespace Gacela\DataSource;
 
-interface iDataSource
-{
+interface iDataSource {
 
 	public function query($query);
 
@@ -21,5 +20,5 @@ interface iDataSource
 
 	public function getQuery();
 
-	public function getResource($name);
+	public function loadResource($name);
 }

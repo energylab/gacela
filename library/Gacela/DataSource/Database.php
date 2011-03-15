@@ -15,7 +15,7 @@ class Database extends DataSource {
 	protected $_config = array();
 
 	protected $_resources = array();
-	
+
 	public function __construct(array $config)
 	{
 		$this->_config = (object) $config;
@@ -27,24 +27,74 @@ class Database extends DataSource {
 
 	public function query($query)
 	{
-		$stmt = $query->assemble();
+		if($query instanceof Query\Database)  {
+			$stmt = $query->assemble();
+		} elseif(is_string($query)) {
+			$stmt = $this->_db->prepare($query);
+		}
+
 		$stmt->execute();
 
 		return $stmt->fetchAll(\PDO::FETCH_OBJ);
 	}
 
-	public function insert($name, $data) {}
+	public function insert($name, $data, $multiple = false)
+	{
+		if(!$multiple) {
+			$data = array($data);
+		}
 
-	public function update($name, $data) {}
+		$keys = current($data);
 
-	public function delete($name, $id) {}
+		if(is_object($keys)) {
+			$keys = (array) $keys;
+		}
+
+		$keys = array_keys($keys);
+
+		$sql = "INSERT INTO `{$name}` (".join(',',$keys).") VALUES\n";
+
+		foreach($data as $index => $row) {
+			$tuple = $keys;
+
+			array_walk($tuple, function(&$key, $k, $index) {  $key = ':'.$key.$index; }, $index);
+
+			$sql .= "(".join(",", $tuple)."),";
+		}
+
+		$sql = substr($sql, 0, strlen($sql) - 1);
+
+		$stmt = $this->_db->prepare($sql);
+		
+		foreach($data as $index => $row) {
+			foreach($row as $key => $field) {
+				$stmt->bindValue($key.$index, $field);
+			}
+		}
+
+		if($stmt->execute()) {
+			return $this->_db->lastInsertId();
+		} else {
+			throw new \Exception('Insert failed with errors: '.\Util::debug($stmt->errorInfo()));
+		}
+	}
+
+	public function update($name, $data)
+	{
+
+	}
+
+	public function delete($name, $id)
+	{
+
+	}
 
 	public function getQuery()
 	{
 		return new Query\Database(array_merge((array) $this->_config, array('db' => $this->_db)));
 	}
 
-	public function getResource($name)
+	public function loadResource($name)
 	{
 		if(!isset($this->_resources[$name]))  {
 			$this->_resources[$name] = new Resource\Database(array_merge((array) $this->_config, array('name' => $name, 'db' => $this->_db)));

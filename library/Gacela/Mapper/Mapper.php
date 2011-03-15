@@ -67,7 +67,7 @@ abstract class Mapper implements iMapper {
 		$this->_source = \Gacela::instance()->getDataSource($this->_source);
 
 		foreach($resources as $resource) {
-			$this->_resources[$resource] = $this->_source->getResource($resource);
+			$this->_resources[$resource] = $this->_source->loadResource($resource);
 
 			$this->_primaryKey = array_merge($this->_resources[$resource]->getPrimaryKey(), $this->_primaryKey);
 		}
@@ -82,7 +82,11 @@ abstract class Mapper implements iMapper {
 
 	public function find($id)
 	{
-		
+		$query = $this->_source->getQuery();
+
+		foreach($this->_resources as $resource) {
+			$query->from($resource->getName());
+		}		
 	}
 
 	public function findAll(Gacela\Criteria $criteria = null)
@@ -96,6 +100,17 @@ abstract class Mapper implements iMapper {
 		$records = $this->_source->query($query);
 
 		return new \Gacela\Collection($this, $records);
+	}
+
+	public function getFields()
+	{
+		$fields = array();
+
+		foreach($this->_resources as $resource) {
+			$fields = array_merge($fields, $resource->getFields());
+		}
+
+		return $fields;
 	}
 
 	public function getPrimaryKey()
@@ -114,6 +129,9 @@ abstract class Mapper implements iMapper {
 		return $this->_load($array);
 	}
 
+	public function save($data)
+	{
 
+	}
 }
 
