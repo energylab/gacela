@@ -73,9 +73,19 @@ abstract class Model implements iModel {
 			$data = (object) $data;
 		}
 
-		$this->_data = $data;
-		
 		$this->_fields = $this->_mapper()->getFields();
+
+		if(!isset($data->{key($this->_fields)})) {
+			$data = new \stdClass;
+
+			foreach($this->_fields as $field => $meta) {
+				$this->_data->$field = null;
+			}
+		} else {
+			$this->_data = $data;
+		}
+
+		$this->init();
 	}
 
 	public function __get($key)
@@ -86,6 +96,11 @@ abstract class Model implements iModel {
 		}
 		
 		return $this->_data->$key;
+	}
+
+	public function __isset($key)
+	{
+		return isset($this->_data->$key);
 	}
 
 	public function __set($key, $val)
@@ -101,6 +116,14 @@ abstract class Model implements iModel {
 			$this->_data->$key = $val;
 		}
 	}
+
+	/**
+	 * Called at the end of __construct.
+	 * Allows developers to add additional stuff to the setup process without
+	 * having to directly override the constructor.
+	 * 
+	 */
+	abstract public function init();
 
 	/**
 	 * @return bool
