@@ -69,6 +69,10 @@ class Database extends Resource {
 				$meta['unsigned'] = true;
 			}
 
+			if(stripos($column->Extra, 'auto_increment') !== false) {
+				$meta['sequenced'] = true;
+			}
+
 			if($meta['type'] == 'enum') {
 				$meta['values'] = explode(',', str_replace("'", "", $meta['length']));
 				$meta['length'] = null;
