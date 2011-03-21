@@ -51,8 +51,6 @@ class Database extends Resource {
 		$columns = $stmt->fetchAll(\PDO::FETCH_OBJ);
 
 		foreach($columns as $column) {
-			$meta = array('length' => null, 'unsigned' => false, 'sequenced' => false);
-			
 			preg_match('/(?P<type>\w+)($|\((?P<length>(\d+|(.*)))\))/', $column->Type, $meta);
 
 			$meta = array_merge(
@@ -60,10 +58,18 @@ class Database extends Resource {
 							'length' => null,
 							'unsigned' => false,
 							'sequenced' => false,
+							'primary' => false,
+							'default' => $column->Default,
 							'values' => array()
 						),
 						$meta
 					);
+			
+			$column->Null == 'No' ? $meta['null'] = true : $meta['null'] = false;
+
+			if($column->Key == 'PRI') {
+				$meta['primary'] = true;
+			}
 
 			if(stripos($column->Type, 'unsigned') !== false) {
 				$meta['unsigned'] = true;
@@ -81,6 +87,8 @@ class Database extends Resource {
 			switch($meta['type']) {
 				case 'varchar':
 				case 'char':
+				case 'text':
+				case 'longtext':
 					$meta['type'] = 'string';
 					break;
 				case 'tinyint':
@@ -90,18 +98,11 @@ class Database extends Resource {
 					break;
 			}
 
-			$this->_meta['columns'][$column->Field] = array(
-				'type' => $meta['type'],
-				'unsigned' => $meta['unsigned'],
-				'sequenced' => $meta['sequenced'],
-				'length' => $meta['length'],
-				'primary' => $column->Key == 'PRI' ? true : false,
-				'null' => stristr($column->Null, 'no') ? false : true,
-				'default' => $column->Default,
-				'values' => $meta['values']
-			);
+			$field = "\\Gacela\\Field\\".ucfirst($meta['type']);
 			
-			if($this->_meta['columns'][$column->Field]['primary'] === true) {
+			$this->_meta['columns'][$column->Field] = new $field($meta);
+			
+			if($this->_meta['columns'][$column->Field]->primary === true) {
 				$this->_meta['primary'][] = $column->Field;
 			}
 		}

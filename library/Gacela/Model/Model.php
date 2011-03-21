@@ -13,12 +13,14 @@ abstract class Model implements iModel {
 	/**
 	 * @var 
 	 */
-	protected $_changedCols = array();
+	protected $_changed = array();
 
 	/**
 	 * @var stdClass
 	 */
 	protected $_data;
+
+	protected $_errors = array();
 
 	/**
 	 * @var array
@@ -76,10 +78,10 @@ abstract class Model implements iModel {
 		$this->_fields = $this->_mapper()->getFields();
 
 		if(!isset($data->{key($this->_fields)})) {
-			$data = new \stdClass;
+			$this->_data = new \stdClass;
 
 			foreach($this->_fields as $field => $meta) {
-				$this->_data->$field = null;
+				$this->_data->$field = $meta->default;
 			}
 		} else {
 			$this->_data = $data;
@@ -106,7 +108,7 @@ abstract class Model implements iModel {
 	public function __set($key, $val)
 	{
 		$this->_originalData[$key] = $this->_data->$key;
-		$this->_changedCols[] = $key;
+		$this->_changed[] = $key;
 		
 		$method = '_set'.ucfirst($key);
 
@@ -130,19 +132,39 @@ abstract class Model implements iModel {
 	 */
 	public function save($data = null)
 	{
-		if(!is_null($data)) {
+		if(!$this->validate($data)) {
+			return false;
+		}
+
+		if($this->_mapper()->save($this->_changed, $this->_data)) {
+			// Do Stuff
 			
+			return true;
 		}
-
-		if(!$this->validate()) {
-
-		}
-
-		return true;
+		
+		return false;
 	}
 
 	public function validate($data = null)
 	{
-		
+		if(!is_null($data)) {
+			foreach($data as $key => $val) {
+				$this->$key = $val;
+			}
+		}
+
+		foreach((array) $this->_data as $key => $val) {
+			$rs = $this->_fields[$key]->validate($val);
+
+			if(!$rs) {
+				$this->_errors[$key] = 'Error Will Robinson!';
+			}
+		}
+
+		if(count($this->_errors)) {
+			return false;
+		}
+
+		return true;
 	}
 }

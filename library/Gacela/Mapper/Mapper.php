@@ -12,6 +12,8 @@ abstract class Mapper implements iMapper {
 
 	protected $_expressions = array('resource' => "{className}s");
 
+	protected $_loadWith = array();
+
 	protected $_models = array();
 
 	protected $_modelName;
@@ -20,19 +22,25 @@ abstract class Mapper implements iMapper {
 	
 	protected $_relations = array();
 
-	protected $_resources = array();
+	/**
+	 * @var Gacela\DataSource\Resource
+	 */
+	protected $_resource = null;
 
 	protected $_source = 'db';
 
+	/**
+	 * @param \stdClass $data
+	 * @return \Gacela\Model\Model
+	 */
 	protected function _load(\stdClass $data)
 	{
-		$primary = array();
-		foreach($this->_primaryKey as $k) {
-			$primary[] = $data->$k;
+		$primary = $this->_primaryKey($data);
+
+		if(is_null($primary)) {
+			return new $this->_modelName($data);
 		}
 
-		$primary = join("_", $primary);
-		
 		if(!isset($this->_models[$primary])) {
 			$this->_models[$primary] = new $this->_modelName($data);
 		}
@@ -40,6 +48,9 @@ abstract class Mapper implements iMapper {
 		return $this->_models[$primary];
 	}
 
+	/**
+	 * @return Mapper
+	 */
 	protected function _loadModelName()
 	{
 		$classes = explode('\\', get_class($this));
@@ -53,26 +64,51 @@ abstract class Mapper implements iMapper {
 		return $this;
 	}
 
-	protected function _loadResources()
+	/**
+	 * @return Mapper
+	 */
+	protected function _loadResource()
 	{
-		if(empty($resources)) {
+		if(is_null($this->_resource)) {
 			$classes = explode('\\', get_class($this));
 
 			$resource = str_replace("{className}", end($classes), $this->_expressions['resource']);
 			$resource[0] = strtolower($resource[0]);
 
-			$resources = array($resource);
+			$this->_resource = $resource;
 		}
 
 		$this->_source = \Gacela::instance()->getDataSource($this->_source);
 
-		foreach($resources as $resource) {
-			$this->_resources[$resource] = $this->_source->loadResource($resource);
+		$this->_resource = $this->_source->loadResource($resource);
 
-			$this->_primaryKey = array_merge($this->_resources[$resource]->getPrimaryKey(), $this->_primaryKey);
-		}
+		$this->_primaryKey = $this->_resource->getPrimaryKey();
 
 		return $this;
+	}
+
+	/**
+	 * @param  $data
+	 * @return null|string
+	 */
+	protected function _primaryKey($data)
+	{
+		$primary = array();
+		foreach($this->_primaryKey as $k) {
+			if(is_null($data->$k)) {
+				continue;
+			}
+			
+			$primary[] = $data->$k;
+		}
+		
+		if(!count($primary) || count($primary) != count($this->_primaryKey)) {
+			$primary = null;
+		} else {
+			$primary = join("_", $primary);
+		}
+		
+		return $primary;
 	}
 
 	public function __construct()
@@ -84,11 +120,13 @@ abstract class Mapper implements iMapper {
 	{
 		$query = $this->_source->getQuery();
 
-		foreach($this->_resources as $resource) {
-			$query->from($resource->getName());
-		}		
+		$query->from($this->_resource->getName());
 	}
 
+	/**
+	 * @param Gacela\Criteria|null $criteria
+	 * @return \Gacela\Collection
+	 */
 	public function findAll(Gacela\Criteria $criteria = null)
 	{
 		$query = $this->_source->getQuery();
@@ -102,17 +140,17 @@ abstract class Mapper implements iMapper {
 		return new \Gacela\Collection($this, $records);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getFields()
 	{
-		$fields = array();
-
-		foreach($this->_resources as $resource) {
-			$fields = array_merge($fields, $resource->getFields());
-		}
-
-		return $fields;
+		return $this->_resource->getFields();
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getPrimaryKey()
 	{
 		return $this->_primaryKey;
@@ -120,18 +158,32 @@ abstract class Mapper implements iMapper {
 
 	public function init()
 	{
-		$this->_loadResources()
+		$this->_loadResource()
 			->_loadModelName();
 	}
 
-	public function load(\stdClass $array)
+	public function load(\stdClass $data)
 	{
-		return $this->_load($array);
+		return $this->_load($data);
 	}
 
-	public function save($data)
+	/**
+	 * @param array $changed
+	 * @param \stdClass $data
+	 * @return bool
+	 */
+	public function save(array $changed, \stdClass $data)
 	{
+		$primary = $this->_primaryKey($data);
 
+		if(!isset($this->_models[$primary])) {
+			$rs = $this->_resource->insert($data);
+
+			// More stuff to do
+		} else {
+			$this->_resource->update($data);
+		}
+
+		return $this->_primaryKey($data);
 	}
 }
-

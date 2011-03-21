@@ -17,5 +17,5 @@ interface iMapper {
 
 	public function findAll(Gacela\Criteria $criteria = null);
 
-	public function save($data);
+	public function save(array $changed, \stdClass $data);
 }
