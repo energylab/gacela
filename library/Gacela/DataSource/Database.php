@@ -38,6 +38,13 @@ class Database extends DataSource {
 		return $stmt->fetchAll(\PDO::FETCH_OBJ);
 	}
 
+	/**
+	 * @throws \Exception
+	 * @param  string $name
+	 * @param  array $data
+	 * @param bool $multiple
+	 * @return int
+	 */
 	public function insert($name, $data, $multiple = false)
 	{
 		if(!$multiple) {
@@ -81,7 +88,7 @@ class Database extends DataSource {
 
 	public function update($name, $data)
 	{
-
+		
 	}
 
 	public function delete($name, $id)
@@ -89,9 +96,9 @@ class Database extends DataSource {
 
 	}
 
-	public function getQuery()
+	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		return new Query\Database(array_merge((array) $this->_config, array('db' => $this->_db)));
+		return new Query\Database(array_merge((array) $this->_config, array('db' => $this->_db, 'criteria' => $criteria)));
 	}
 
 	public function loadResource($name)

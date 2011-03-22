@@ -136,13 +136,19 @@ abstract class Model implements iModel {
 			return false;
 		}
 
-		if($this->_mapper()->save($this->_changed, $this->_data)) {
-			// Do Stuff
-			
-			return true;
+		$data = $this->_mapper()->save($this->_changed, $this->_data);
+
+		if($data === false) {
+			return false;
 		}
+
+		$this->_data = $data;
+		unset($data);
+
+		$this->_changed = array();
+		$this->_originalData = array();
 		
-		return false;
+		return true;
 	}
 
 	public function validate($data = null)

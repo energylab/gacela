@@ -131,13 +131,16 @@ abstract class Mapper implements iMapper {
 	{
 		$query = $this->_source->getQuery();
 		
-		foreach($this->_resources as $resource) {
-			$query->from($resource->getName());
-		}
+		$query->from($this->_resource->getName());
 
 		$records = $this->_source->query($query);
 
 		return new \Gacela\Collection($this, $records);
+	}
+
+	public function delete($id)
+	{
+
 	}
 
 	/**
@@ -146,14 +149,6 @@ abstract class Mapper implements iMapper {
 	public function getFields()
 	{
 		return $this->_resource->getFields();
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getPrimaryKey()
-	{
-		return $this->_primaryKey;
 	}
 
 	public function init()
@@ -175,15 +170,29 @@ abstract class Mapper implements iMapper {
 	public function save(array $changed, \stdClass $data)
 	{
 		$primary = $this->_primaryKey($data);
+		$fields = $this->getFields();
 
-		if(!isset($this->_models[$primary])) {
-			$rs = $this->_resource->insert($data);
-
-			// More stuff to do
-		} else {
-			$this->_resource->update($data);
+		$toSave = array();
+		foreach($changed as $field) {
+			$toSave[$field] = $fields[$field]->transform($data->$field);
 		}
 
-		return $this->_primaryKey($data);
+		if(!isset($this->_models[$primary])) {
+			$rs = $this->_source->insert($this->_resource->getName(), $toSave);
+
+			if($rs === false) {
+				return false;
+			}
+
+			if(count($this->_primaryKey) == 1) {
+				if($fields[$this->_primaryKey[0]]->sequenced == true) {
+					$data->{$this->_primaryKey[0]} = $rs;
+				}
+			}
+		} else {
+			return $this->_source->update($data);
+		}
+
+		return $data;
 	}
 }
