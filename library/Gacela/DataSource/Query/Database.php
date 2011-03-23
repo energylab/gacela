@@ -40,6 +40,11 @@ class Database {
 		return join(', ', $_from);
 	}
 
+	private function _join()
+	{
+		
+	}
+
 	private function _select()
 	{
 		$select = array();
@@ -83,15 +88,17 @@ class Database {
 		return $this;
 	}
 
-	public function where($stmt, $value, $or = false)
+	public function where($stmt, $value = null, $or = false)
 	{
 		$this->_where[] = array($stmt, $value, $or);
 
 		return $this;
 	}
 
-	public function join()
+	public function join($table, $on, array $columns = array(), $type = 'inner')
 	{
+		$this->_join[] = array($table, $on, $columns, $type);
+		
 		return $this;
 	}
 
@@ -110,19 +117,19 @@ class Database {
 		return $this;
 	}
 
-	public function expr()
-	{
-		$expr = null;
-		
-		return $expr;
-	}
-
 	public function assemble()
 	{
 		$select = $this->_select();
 		$from = $this->_from();
-
-		$sql = "SELECT {$select} FROM {$from}";
+		$where = $this->_where();
+		$join = $this->_join();
+		
+		$sql = "
+				SELECT {$select}
+				FROM {$from}
+				{$join}
+				{$where}
+			";
 		
 		$statement = $this->_config->db->prepare($sql);
 
