@@ -10,6 +10,8 @@ namespace Gacela\DataSource\Query;
 
 class Database {
 
+	protected $_binds = array();
+	
 	protected $_config;
 
 	protected $_select = array();
@@ -37,12 +39,28 @@ class Database {
 			}
 		}
 
-		return join(', ', $_from);
+		return join(', ', $_from)."\n";
 	}
 
 	private function _join()
 	{
-		
+		$_join = '';
+
+		if(!count($this->_join)) {
+			return $_join;
+		}
+
+		foreach($this->_join as $join) {
+			$type = strtoupper($join[3]);
+
+			if(is_array($join[0])) {
+				$join[0] = "{$join[0][0]} AS {$join[0][1]}";
+			}
+
+			$_join .= "{$type} JOIN {$join[0]} ON {$on}\n";
+		}
+
+		return $_join;
 	}
 
 	private function _select()
@@ -50,20 +68,47 @@ class Database {
 		$select = array();
 		foreach($this->_from as $from) {
 			if(is_array($from[1])) {
-				$select = array_merge($from[1]);
+				$select = array_merge($from[1], $select);
 			} else {
 				$select[] = $from[1];
 			}
 		}
 
-		return join(', ', $select);
+		foreach($this->_join as $join) {
+			
+		}
+
+		return join(', ', $select)."\n";
 	}
 
 	private function _where()
 	{
-		foreach($this->_where as $where) {
-			
+		$_where = '';
+
+		if(!count($this->_where)) {
+			return $_where;
 		}
+
+		foreach($this->_where as $where) {
+			if(empty($_where)) {
+				$_where = "WHERE ({$where[0]})";
+			} else {
+				// Check for OR statements
+				if($where[2]) {
+					$_where .= "OR ({$where[0]})";
+				} else {
+					$_where .= "AND ({$where[0]})";
+				}
+			}
+
+			if(count($where[1])) {
+				foreach($where[1] as $param => $val) {
+					$this->_binds[$param] = $val;
+				}
+			}
+		}
+
+		return $_where;
 	}
 	
 	public function __construct(array $config)
@@ -88,13 +133,26 @@ class Database {
 		return $this;
 	}
 
-	public function where($stmt, $value = null, $or = false)
+	/**
+	 * @param  $stmt
+	 * @param array $value
+	 * @param bool $or
+	 * @return Query\Database
+	 */
+	public function where($stmt, array $value = array(), $or = false)
 	{
 		$this->_where[] = array($stmt, $value, $or);
 
 		return $this;
 	}
 
+	/**
+	 * @param  string|array $table
+	 * @param  string $on
+	 * @param array $columns
+	 * @param string $type
+	 * @return Query\Database
+	 */
 	public function join($table, $on, array $columns = array(), $type = 'inner')
 	{
 		$this->_join[] = array($table, $on, $columns, $type);
@@ -132,6 +190,10 @@ class Database {
 			";
 		
 		$statement = $this->_config->db->prepare($sql);
+
+		foreach($this->_binds as $key => $val) {
+			$statement->bindValue($key, $val);
+		}
 
 		return $statement;
 	}

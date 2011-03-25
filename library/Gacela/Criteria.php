@@ -8,7 +8,7 @@
 
 namespace Gacela;
 
-class Criteria {
+class Criteria implements \IteratorAggregate {
 
 	protected $_criteria = array();
 
@@ -32,6 +32,11 @@ class Criteria {
 		$this->_addCriterion('notEquals', func_get_args());
 
 		return $this;
+	}
+
+	public function getIterator()
+	{
+		return $this->_criteria;
 	}
 
 	public function greaterThan($field, $value, $isArgument = true)
