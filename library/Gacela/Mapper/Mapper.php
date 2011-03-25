@@ -138,9 +138,9 @@ abstract class Mapper implements iMapper {
 		return new \Gacela\Collection($this, $records);
 	}
 
-	public function delete($id)
+	public function delete(\stdClass $data)
 	{
-
+		
 	}
 
 	/**
@@ -190,7 +190,9 @@ abstract class Mapper implements iMapper {
 				}
 			}
 		} else {
-			return $this->_source->update($data);
+			// Add where statement to a Query\Database object and pass as third param.
+			
+			return $this->_source->update($this->_resource->getName(), $data);
 		}
 
 		return $data;

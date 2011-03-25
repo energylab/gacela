@@ -18,4 +18,6 @@ interface iMapper {
 	public function findAll(Gacela\Criteria $criteria = null);
 
 	public function save(array $changed, \stdClass $data);
+
+	public function delete(\stdClass $data);
 }

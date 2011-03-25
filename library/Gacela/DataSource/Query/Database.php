@@ -14,19 +14,25 @@ class Database {
 	
 	protected $_config;
 
-	protected $_select = array();
+	protected $_delete = null;
 
 	protected $_from = array();
 
-	protected $_where = array();
+	protected $_groupBy = array();
+
+	protected $_having = array();
+
+	protected $_insert = array();
 
 	protected $_join = array();
 
-	protected $_groupBy = array();
-
 	protected $_orderBy = array();
 
-	protected $_having = array();
+	protected $_select = array();
+
+	protected $_update = array();
+	
+	protected $_where = array();
 
 	private function _from()
 	{
@@ -40,6 +46,53 @@ class Database {
 		}
 
 		return join(', ', $_from)."\n";
+	}
+
+	private function _insert()
+	{
+		if(!isset($this->_insert[0])) {
+			return '';
+		}
+		
+		$name = $this->_insert[0];
+		$data = $this->_insert[1];
+		
+		if(!is_array($data[0])) {
+			$data = array($data);
+		}
+
+		$keys = current($data);
+
+		if(is_object($keys)) {
+			$keys = (array) $keys;
+		}
+
+		$keys = array_keys($keys);
+
+		$sql = "INSERT INTO `{$name}` (".join(',',$keys).") VALUES\n";
+
+		// Dynamically sets up the params to be bound
+		foreach($data as $index => $row) {
+			$tuple = $keys;
+
+			array_walk($tuple, function(&$key, $k, $index) {  $key = ':'.$key.$index; }, $index);
+
+			$sql .= "(".join(",", $tuple)."),";
+		}
+
+		// Removes the trailing comma created above.
+		$sql = substr($sql, 0, strlen($sql) - 1);
+
+		$stmt = $this->_db->prepare($sql);
+
+		// Binding the params per row
+		foreach($data as $index => $row) {
+			foreach($row as $key => $field) {
+				$stmt->bindValue($key.$index, $field);
+			}
+		}
+
+		return $stmt;
 	}
 
 	private function _join()
@@ -75,10 +128,34 @@ class Database {
 		}
 
 		foreach($this->_join as $join) {
-			
+			if(count($join[3])) {
+				$select = array_merge($join[3], $select);
+			}
 		}
 
 		return join(', ', $select)."\n";
+	}
+
+	private function _update()
+	{
+		if(!isset($this->_update[0])) {
+			return '';
+		}
+
+		$data = $this->_update[1];
+		$name = $this->_update[0];
+
+		$sql = "UPDATE {$name} SET \n";
+
+		foreach($data as $key => $val) {
+			$sql .= $key." = :".$key.",\n";
+
+			$this->_binds[':'.$key] = $val;
+		}
+
+		$sql = substr($sql, 0, strlen($sql) - 2);
+
+		return $sql;
 	}
 
 	private function _where()
@@ -116,6 +193,77 @@ class Database {
 		$this->_config = (object) $config;
 	}
 
+	/**
+	 * @return \PdoStatement
+	 */
+	public function assemble()
+	{
+		// First make sure this isn't an insert statement.
+		// If it is just return the insert statement.
+		$sql = $this->_insert();
+		if(!empty($sql)) {
+			return $sql;
+		}
+
+		// Now it might be an update statement in which case we'll skip select and from
+		$sql = $this->_update();
+
+		// If its not an insert or an update, it might also be a delete
+		if(!is_null($this->_delete)) {
+			$sql = "DELETE FROM {$this->_delete}\n";
+		}
+
+		if(empty($sql)) {
+			$select = $this->_select();
+			$from = $this->_from();
+			$sql = '';
+
+			if(!empty($select)) {
+				$sql .= "SELECT {$select}\n";
+			}
+
+			if(!empty($from)) {
+				$sql .= "FROM {$from}\n";
+			}
+		}
+		
+		$where = $this->_where();
+		$join = $this->_join();
+
+		if(!empty($join)) {
+			$sql .= $join;
+		}
+
+		if(!empty($where)) {
+			$sql .= $where;
+		}
+
+		$statement = $this->_config->db->prepare($sql);
+
+		foreach($this->_binds as $key => $val) {
+			$statement->bindValue($key, $val);
+		}
+
+		return $statement;
+	}
+
+	/**
+	 * @param  $name
+	 * @return Database
+	 */
+	public function delete($name)
+	{
+		$this->_delete = $name;
+
+		return $this;
+	}
+
+	/**
+	 * @param  $tableName
+	 * @param array $columns
+	 * @param null $schema
+	 * @return Database
+	 */
 	public function from($tableName, array $columns = array(), $schema = null)
 	{
 		if(is_array($tableName)) {
@@ -133,15 +281,18 @@ class Database {
 		return $this;
 	}
 
-	/**
-	 * @param  $stmt
-	 * @param array $value
-	 * @param bool $or
-	 * @return Query\Database
-	 */
-	public function where($stmt, array $value = array(), $or = false)
+	public function groupBy($column)
 	{
-		$this->_where[] = array($stmt, $value, $or);
+		return $this;
+	}
+
+	public function having($stmt, $value, $or = false)
+	{
+		return $this;
+	}
+	public function insert($tableName, $data)
+	{
+		$this->_insert = array($tableName, $data);
 
 		return $this;
 	}
@@ -155,13 +306,12 @@ class Database {
 	 */
 	public function join($table, $on, array $columns = array(), $type = 'inner')
 	{
-		$this->_join[] = array($table, $on, $columns, $type);
-		
-		return $this;
-	}
+		if($table instanceof $this) {
+			$table = $table->assemble();
+		}
 
-	public function groupBy($column)
-	{
+		$this->_join[] = array($table, $on, $columns, $type);
+
 		return $this;
 	}
 
@@ -170,31 +320,27 @@ class Database {
 		return $this;
 	}
 
-	public function having($stmt, $value, $or = false)
+	public function update($tableName, $data)
 	{
+		$this->_update = array($tableName, $data);
+
 		return $this;
 	}
 
-	public function assemble()
+	/**
+	 * @param  $stmt
+	 * @param array $value
+	 * @param bool $or
+	 * @return Query\Database
+	 */
+	public function where($stmt, array $value = array(), $or = false)
 	{
-		$select = $this->_select();
-		$from = $this->_from();
-		$where = $this->_where();
-		$join = $this->_join();
-		
-		$sql = "
-				SELECT {$select}
-				FROM {$from}
-				{$join}
-				{$where}
-			";
-		
-		$statement = $this->_config->db->prepare($sql);
-
-		foreach($this->_binds as $key => $val) {
-			$statement->bindValue($key, $val);
+		if($stmt instanceof $this) {
+			$stmt = $stmt->assemble();
 		}
+		
+		$this->_where[] = array($stmt, $value, $or);
 
-		return $statement;
+		return $this;
 	}
 }

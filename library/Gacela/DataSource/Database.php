@@ -45,55 +45,31 @@ class Database extends DataSource {
 	 * @param bool $multiple
 	 * @return int
 	 */
-	public function insert($name, $data, $multiple = false)
+	public function insert($name, $data)
 	{
-		if(!$multiple) {
-			$data = array($data);
-		}
-
-		$keys = current($data);
-
-		if(is_object($keys)) {
-			$keys = (array) $keys;
-		}
-
-		$keys = array_keys($keys);
-
-		$sql = "INSERT INTO `{$name}` (".join(',',$keys).") VALUES\n";
-
-		foreach($data as $index => $row) {
-			$tuple = $keys;
-
-			array_walk($tuple, function(&$key, $k, $index) {  $key = ':'.$key.$index; }, $index);
-
-			$sql .= "(".join(",", $tuple)."),";
-		}
-
-		$sql = substr($sql, 0, strlen($sql) - 1);
-
-		$stmt = $this->_db->prepare($sql);
-		
-		foreach($data as $index => $row) {
-			foreach($row as $key => $field) {
-				$stmt->bindValue($key.$index, $field);
-			}
-		}
-
-		if($stmt->execute()) {
+		if($this->getQuery()->insert($name, $data)->assemble()->execute()) {
 			return $this->_db->lastInsertId();
 		} else {
-			throw new \Exception('Insert failed with errors: '.\Util::debug($stmt->errorInfo()));
+			throw new \Exception('Insert failed with errors: '.\Util::debug($query->errorInfo()));
 		}
 	}
 
-	public function update($name, $data)
+	public function update($name, $data, Query\Database $where)
 	{
-		
+		if($where->update($name, $data)->assemble()->execute()) {
+			return true;
+		} else {
+			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));
+		}
 	}
 
-	public function delete($name, $id)
+	public function delete($name, Query\Database $where)
 	{
-
+		if($where->delete($name)->assemble()->execute()) {
+			return true;
+		} else {
+			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));
+		}
 	}
 
 	public function getQuery(\Gacela\Criteria $criteria = null)
