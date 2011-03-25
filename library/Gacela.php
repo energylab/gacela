@@ -10,7 +10,10 @@
 use Gacela as G;
 
 class Gacela {
+
 	protected static $_instance;
+
+	protected $_namespaces = array();
 
 	protected $_sources = array();
 
@@ -18,7 +21,52 @@ class Gacela {
 
 	protected $_resources = array();
 
-	protected function __construct() {}
+	protected function __construct()
+	{
+		spl_autoload_register(array(__CLASS__, 'autoload'));
+
+		$this->registerNamespace('Gacela', dirname(realpath(__FILE__)));
+	}
+
+	protected function _findFile($file)
+	{
+		if(file_exists($file) && is_readable($file)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public static function autoload($class)
+	{
+		$parts = explode("\\", $class);
+		$self = self::instance();
+		$return = false;
+
+		if(isset($self->_namespaces[$parts[0]])) {
+			$file = $self->_namespaces[$parts[0]].str_replace("\\", "/", $class).'.php';
+
+			if($self->_findFile($file)) {
+				$return = $class;
+			}
+		} else {
+
+			$namespaces = array_reverse($self->_namespaces);
+
+			foreach ($namespaces as $ns => $path) {
+				$file = $path.$ns.str_replace("\\", "/", $class).'.php';
+
+				if($self->_findFile($file)) {
+					$return = "\\" . $ns . $class;
+					break;
+				}
+			}
+		}
+
+		require $file;
+		echo $return.'<br/>';
+		return $return;
+	}
 
 	public static function instance()
 	{
@@ -33,11 +81,22 @@ class Gacela {
 	{
 		$config['name'] = $name;
 		$config['type'] = $type;
-
-		$datasource = "\\Gacela\\DataSource\\".ucfirst($type);
-
-		$this->_sources[$name] = new $datasource($config);
 		
+		$class = self::autoload("\\Gacela\\DataSource\\".ucfirst($type));
+		exit($class);
+		$this->_sources[$name] = new $class($config);
+		
+		return $this;
+	}
+
+	public function registerNamespace($ns, $path)
+	{
+		if(substr($path, -1, 1) != '/') {
+			$path .= '/';
+		}
+		
+		$this->_namespaces[$ns] = $path;
+
 		return $this;
 	}
 
