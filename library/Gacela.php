@@ -57,14 +57,14 @@ class Gacela {
 				$file = $path.$ns.str_replace("\\", "/", $class).'.php';
 
 				if($self->_findFile($file)) {
-					$return = "\\" . $ns . $class;
+					$return = $ns . $class;
 					break;
 				}
 			}
 		}
 
 		require $file;
-		echo $return.'<br/>';
+
 		return $return;
 	}
 
@@ -83,7 +83,7 @@ class Gacela {
 		$config['type'] = $type;
 		
 		$class = self::autoload("\\Gacela\\DataSource\\".ucfirst($type));
-		exit($class);
+		
 		$this->_sources[$name] = new $class($config);
 		
 		return $this;
