@@ -14,9 +14,9 @@ interface iDataSource {
 
 	public function insert($name, $data);
 
-	public function update($name, $data);
+	public function update($name, $data, $where);
 
-	public function delete($name, $id);
+	public function delete($name, $where);
 
 	public function getQuery();
 

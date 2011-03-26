@@ -54,7 +54,7 @@ class Database extends DataSource {
 		}
 	}
 
-	public function update($name, $data, Query\Database $where)
+	public function update($name, $data, $where)
 	{
 		if($where->update($name, $data)->assemble()->execute()) {
 			return true;
@@ -63,7 +63,7 @@ class Database extends DataSource {
 		}
 	}
 
-	public function delete($name, Query\Database $where)
+	public function delete($name, $where)
 	{
 		if($where->delete($name)->assemble()->execute()) {
 			return true;
