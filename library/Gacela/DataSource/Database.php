@@ -19,9 +19,9 @@ class Database extends DataSource {
 	public function __construct(array $config)
 	{
 		$this->_config = (object) $config;
-		
+
 		$dsn = $this->_config->dbtype.':dbname='.$this->_config->database.';host='.$this->_config->host;
-		
+
 		$this->_db = new \PDO($dsn, $this->_config->user, $this->_config->password);
 	}
 
