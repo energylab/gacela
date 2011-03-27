@@ -45,6 +45,7 @@ class Gacela {
             $namespaces = array_reverse($self->_namespaces);
             foreach ($namespaces as $ns => $path) {
                 $file = $path.$ns.str_replace("\\", "/", $class).'.php';
+                
                 if($self->_findFile($file)) {
                     require $file;
                     return $ns . $class;
@@ -104,7 +105,9 @@ class Gacela {
 	public function loadMapper($name)
 	{
 		if(!isset($this->_mappers[$name])) {
-			$this->_mappers[$name] = new $name();
+			$class = self::instance()->autoload("\\Mapper\\".ucfirst($name));
+			
+			$this->_mappers[$name] = new $class();
 		}
 
 		return $this->_mappers[$name];

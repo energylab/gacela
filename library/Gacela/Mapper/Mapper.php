@@ -190,9 +190,13 @@ abstract class Mapper implements iMapper {
 				}
 			}
 		} else {
-			// Add where statement to a Query\Database object and pass as third param.
+			$where = $this->_resource->getQuery();
+
+			foreach($this->_primary($data) as $key => $val) {
 			
-			return $this->_source->update($this->_resource->getName(), $data);
+			}
+			
+			return $this->_source->update($this->_resource->getName(), $data, $where);
 		}
 
 		return $data;
