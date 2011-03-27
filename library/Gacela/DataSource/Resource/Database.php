@@ -96,6 +96,10 @@ class Database extends Resource {
 						$meta['type'] = 'bool';
 					}
 					break;
+				case 'datetime':
+				case 'timestamp':
+					$meta['type'] = 'date';
+					break;
 			}
 
 			$field = "\\Gacela\\Field\\".ucfirst($meta['type']);

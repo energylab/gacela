@@ -55,13 +55,8 @@ abstract class Model implements iModel {
 		if(!empty($this->_mapper)) return $this->_mapper;
 
 		$class = explode("\\", get_class($this));
-		$pos = array_search('Model', $class);
 
-		$class[$pos] = 'Mapper';
-
-		$class = join("\\", $class);
-
-		$this->_mapper = \Gacela::instance()->loadMapper($class);
+		$this->_mapper = \Gacela::instance()->loadMapper(end($class));
 
 		return $this->_mapper;
 	}
@@ -97,7 +92,7 @@ abstract class Model implements iModel {
 			return $this->$method();
 		}
 		
-		return $this->_data->$key;
+		return $this->_fields[$key]->transform($this->_data->$key, false);
 	}
 
 	public function __isset($key)
