@@ -20,14 +20,14 @@ class Criteria implements \IteratorAggregate {
 	/**
 	 * @return Criteria
 	 */
-	public function equals($field, $value, $isArgument = true)
+	public function equals($field, $value)
 	{
 		$this->_addCriterion('equals', func_get_args());
 
 		return $this;
 	}
 
-	public function notEquals($field, $value, $isArgument = true)
+	public function notEquals($field, $value)
 	{
 		$this->_addCriterion('notEquals', func_get_args());
 
@@ -36,43 +36,43 @@ class Criteria implements \IteratorAggregate {
 
 	public function getIterator()
 	{
-		return $this->_criteria;
+		return new \ArrayObject($this->_criteria);
 	}
 
-	public function greaterThan($field, $value, $isArgument = true)
+	public function greaterThan($field, $value)
 	{
 		$this->_addCriterion('greaterThan', func_get_args());
 	}
 
-	public function lessThan($field, $value, $isArgument = true)
+	public function lessThan($field, $value)
 	{
 		$this->_addCriterion('lessThan', func_get_args());
 
 		return $this;
 	}
 
-	public function in($field, $value, $isArgument)
+	public function in($field, array $value)
 	{
 		$this->_addCriterion('in', func_get_args());
 
 		return $this;
 	}
 
-	public function notIn($field, $value, $isArgument = true)
+	public function notIn($field, array $value)
 	{
 		$this->_addCriterion('notIn', func_get_args());
 
 		return $this;
 	}
 
-	public function like($field, $value, $isArgument = true)
+	public function like($field, $value)
 	{
 		$this->_addCriterion('like', func_get_args());
 
 		return $this;
 	}
 
-	public function notLike($field, $value, $isArgument = true)
+	public function notLike($field, $value)
 	{
 
 		return $this;

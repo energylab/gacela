@@ -10,6 +10,18 @@ namespace Gacela\DataSource\Query;
 
 class Database {
 
+	protected static $_operators = array(
+		'equals' => '=',
+		'notEquals' => '!=',
+		'lessThan' => '<',
+		'greaterThan' => '>',
+		'notIn' => 'NOT IN',
+		'in' => "IN",
+		'like' => 'LIKE',
+		'notLike' => 'NOT LIKE',
+		'isNull' => 'IS NULL'
+	);
+
 	protected $_binds = array();
 	
 	protected $_config;
@@ -33,6 +45,21 @@ class Database {
 	protected $_update = array();
 	
 	protected $_where = array();
+
+	private function _buildFromCriteria($criteria)
+	{
+		foreach($criteria as $stmt) {
+			$field = $stmt[1];
+			$value = $stmt[2];
+			$toBind = ":{$stmt[1]}";
+
+			if(in_array($stmt[0], array('equals', 'notEquals', 'lessThan', 'greaterThan'))) {
+				$this->where("{$field} ".self::$_operators[$stmt[0]]." {$toBind}", array("{$toBind}" => $value));
+			} elseif(in_array($stmt[0], array('in', 'notIn'))) {
+
+			}
+		}
+	}
 
 	private function _from()
 	{
@@ -191,6 +218,11 @@ class Database {
 	public function __construct(array $config)
 	{
 		$this->_config = (object) $config;
+
+		if(isset($config['criteria']) && !is_null($config['criteria'])) {
+			$this->_buildFromCriteria($config['criteria']);
+			unset($config['criteria']);
+		}
 	}
 
 	/**

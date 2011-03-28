@@ -34,7 +34,7 @@ class Database extends DataSource {
 		}
 
 		$stmt->execute();
-
+		
 		return $stmt->fetchAll(\PDO::FETCH_OBJ);
 	}
 
@@ -54,18 +54,18 @@ class Database extends DataSource {
 		}
 	}
 
-	public function update($name, $data, Query\Query $where)
+	public function update($name, $data, Gacela\Criteria $where)
 	{
-		if($where->update($name, $data)->assemble()->execute()) {
+		if($this->getQuery($where)->update($name, $data)->assemble()->execute()) {
 			return true;
 		} else {
 			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));
 		}
 	}
 
-	public function delete($name, Query\Query $where)
+	public function delete($name, Gacela\Criteria $where)
 	{
-		if($where->delete($name)->assemble()->execute()) {
+		if($this->getQuery($where)->delete($name)->assemble()->execute()) {
 			return true;
 		} else {
 			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));

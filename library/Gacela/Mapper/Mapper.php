@@ -16,7 +16,7 @@ abstract class Mapper implements iMapper {
 
 	protected $_models = array();
 
-	protected $_modelName;
+	protected $_modelName = null;
 
 	protected $_primaryKey = array();
 	
@@ -118,9 +118,24 @@ abstract class Mapper implements iMapper {
 
 	public function find($id)
 	{
-		$query = $this->_source->getQuery();
+		$criteria = \Gacela::instance()->autoload('\\Criteria');
+		$criteria = new $criteria();
+		
+		if(!is_array($id)) {
+			$id = array(current($this->_primaryKey) => $id);
+		}
 
-		$query->from($this->_resource->getName());
+		foreach($this->_primaryKey as $key) {
+			$criteria->equals($key, $id[$key]);
+		}
+
+		$data = $this->_source->query(
+						$this->_source
+							->getQuery($criteria)
+							->from($this->_resource->getName())
+					);
+
+		return $this->_load(current($data));
 	}
 
 	/**
@@ -129,7 +144,7 @@ abstract class Mapper implements iMapper {
 	 */
 	public function findAll(Gacela\Criteria $criteria = null)
 	{
-		$query = $this->_source->getQuery();
+		$query = $this->_source->getQuery($criteria);
 		
 		$query->from($this->_resource->getName());
 
@@ -140,7 +155,13 @@ abstract class Mapper implements iMapper {
 
 	public function delete(\stdClass $data)
 	{
-		
+		$where = new \Gacela\Criteria();
+
+		foreach($this->_primaryKey as $key) {
+			$where->equals($key, $data[$key]);
+		}
+
+		return $this->_source->delete($this->_resource->getName(), $where);
 	}
 
 	/**
@@ -190,10 +211,10 @@ abstract class Mapper implements iMapper {
 				}
 			}
 		} else {
-			$where = $this->_resource->getQuery();
+			$where = new \Gacela\Criteria();
 
-			foreach($this->_primary($data) as $key => $val) {
-			
+			foreach($this->_primaryKey as $key) {
+				$where->equals($key, $data[$key]);
 			}
 			
 			return $this->_source->update($this->_resource->getName(), $data, $where);
