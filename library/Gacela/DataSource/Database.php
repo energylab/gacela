@@ -33,9 +33,11 @@ class Database extends DataSource {
 			$stmt = $this->_db->prepare($query);
 		}
 
-		$stmt->execute();
-		
-		return $stmt->fetchAll(\PDO::FETCH_OBJ);
+		if($stmt->execute() === true) {
+			return $stmt->fetchAll(\PDO::FETCH_OBJ);
+		} else {
+			throw new \Exception(print_r($stmt->errorInfo()));
+		}
 	}
 
 	/**

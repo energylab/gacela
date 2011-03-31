@@ -10,11 +10,18 @@ namespace Gacela\DataSource\Resource;
 
 class Database extends Resource {
 
+	protected static $_separator = "_";
+	
 	/**
 	 * @var PDO
 	 */
 	protected $_db;
-	
+
+	public static function setSeparator($separator)
+	{
+		self::$_separator = $separator;
+	}
+
 	public function __construct(array $config)
 	{
 		$this->_db = $config['db'];

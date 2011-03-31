@@ -142,7 +142,7 @@ abstract class Mapper implements iMapper {
 	 * @param Gacela\Criteria|null $criteria
 	 * @return \Gacela\Collection
 	 */
-	public function findAll(Gacela\Criteria $criteria = null)
+	public function findAll(\Gacela\Criteria $criteria = null)
 	{
 		$query = $this->_source->getQuery($criteria);
 		
