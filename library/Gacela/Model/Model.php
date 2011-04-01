@@ -90,11 +90,11 @@ abstract class Model implements iModel {
 
 	public function __get($key)
 	{
-		$method = '_get'.ucfirst($key);
-		if(method_exists($this, $method)) {
+		$method = '_get' . ucfirst($key);
+		if (method_exists($this, $method)) {
 			return $this->$method();
-		} elseif(in_array($key, $this->_relations)) {
-			return $this->_mapper()->findRelation($key);
+		} elseif (in_array($key, $this->_relations)) {
+			return $this->_mapper()->findRelation($key, $this->_data);
 		} else {
 			return $this->_fields[$key]->transform($this->_data->$key, false);
 		}

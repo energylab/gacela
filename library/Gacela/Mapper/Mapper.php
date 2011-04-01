@@ -203,15 +203,20 @@ abstract class Mapper implements iMapper {
 		return new \Gacela\Collection($this, $records);
 	}
 
-	public function findRelation($name)
-	{
+	public function findRelation($name, $data) {
 		$relation = $this->_relations[$name];
 
 		$criteria = new \Gacela\Criteria();
 
-		$query = $this->_source->getQuery();
-				
-		return \Gacela::instance()->loadMapper($name);
+		$criteria->equals($relation['meta']->refColumn, $data->{$relation['meta']->keyColumn});
+
+		$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
+
+		if ($relation['meta']->type == 'belongsTo') {
+			return $result->current();
+		} elseif ($relation['meta']->type == 'hasMany') {
+			return $result;
+		}
 	}
 
 	public function delete(\stdClass $data)

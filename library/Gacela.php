@@ -102,15 +102,16 @@ class Gacela {
 		
 	}
 
-	public function loadMapper($name)
-	{
-		if(!isset($this->_mappers[$name])) {
-			$class = self::instance()->autoload("\\Mapper\\".ucfirst($name));
+	public function loadMapper($name) {
+		$name = ucfirst($name);
 
-			if(!$class) {
+		if (!isset($this->_mappers[$name])) {
+			$class = self::instance()->autoload("\\Mapper\\" . $name);
+
+			if (!$class) {
 				throw new \Exception("Failed to find mapper ({$name})!");
 			}
-			
+
 			$this->_mappers[$name] = new $class();
 		}
 
