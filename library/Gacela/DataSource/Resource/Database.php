@@ -120,7 +120,7 @@ class Database extends Resource {
 		
 		unset($stmt);
 
-		/*
+
 		// Setup Relationships
 
 		// First check for stored procedure used to generate belongs_to relationships
@@ -135,7 +135,9 @@ class Database extends Resource {
 			$rs = $sp->fetchAll(\PDO::FETCH_OBJ);
 
 			foreach($rs as $row) {
-				
+				$key = explode(self::$_separator, $row->constraintName);
+				$key = $key[1];
+				$this->_meta['belongs_to'][$key] = $row;
 			}
 		}
 
@@ -148,14 +150,12 @@ class Database extends Resource {
 			$rs = $sp->fetchAll(\PDO::FETCH_OBJ);
 
 			foreach($rs as $row) {
-				if(!isset($this->_meta['has_many'][$row->referencedTable])) {
-					
-				}
-				$this->_meta['has_many'][$row->referencedTable] = array($row->keyColumn => $row->referencedColumn);
+				$key = explode(self::$_separator, $row->constraintName);
+				$key = $key[2];
+
+				$this->_meta['has_many'][$key] = $row;
 			}
 		}
-		 
-		 */
 	}
 
 	public function getName()
@@ -175,7 +175,7 @@ class Database extends Resource {
 
 	public function getRelations()
 	{
-		// @TODO - Have to figure out how to make automatic relationship determination work
+		return array('has_many' => $this->_meta['has_many'], 'belongs_to' => $this->_meta['belongs_to']);
 	}
 
 }

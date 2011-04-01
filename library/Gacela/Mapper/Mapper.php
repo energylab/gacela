@@ -10,10 +10,12 @@ namespace Gacela\Mapper;
 
 abstract class Mapper implements iMapper {
 
+	protected $_dependents = array();
+
 	protected $_expressions = array('resource' => "{className}s");
 
-	protected $_loadWith = array();
-
+	protected $_inheritsFrom = array();
+	
 	protected $_models = array();
 
 	protected $_modelName = null;
@@ -80,9 +82,11 @@ abstract class Mapper implements iMapper {
 
 		$this->_source = \Gacela::instance()->getDataSource($this->_source);
 
-		$this->_resource = $this->_source->loadResource($resource);
+		$this->_resource = $this->_source->loadResource($this->_resource);
 
 		$this->_primaryKey = $this->_resource->getPrimaryKey();
+
+		$this->_relations = $this->_resource->getFields();
 
 		return $this;
 	}
