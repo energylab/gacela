@@ -36,7 +36,9 @@ class Database extends DataSource {
 		if($stmt->execute() === true) {
 			return $stmt->fetchAll(\PDO::FETCH_OBJ);
 		} else {
-			throw new \Exception(print_r($stmt->errorInfo()));
+			$error = $stmt->errorInfo();
+			$error = $error[2];
+			throw new \Exception("Code ({$stmt->errorCode()}): Error: ".$error);
 		}
 	}
 

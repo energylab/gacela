@@ -14,7 +14,7 @@ abstract class Mapper implements iMapper {
 
 	protected $_expressions = array('resource' => "{className}s");
 
-	protected $_inheritsFrom = array();
+	protected $_inherits = array();
 	
 	protected $_models = array();
 
@@ -84,10 +84,50 @@ abstract class Mapper implements iMapper {
 
 		$this->_resource = $this->_source->loadResource($this->_resource);
 
-		$this->_primaryKey = $this->_resource->getPrimaryKey();
+		if(empty($this->_primaryKey)) {
+			$this->_primaryKey = $this->_resource->getPrimaryKey();
+		}
 
-		$this->_relations = $this->_resource->getFields();
+		if(empty($this->_relations)) {
+			$relations = $this->_resource->getRelations();
 
+			foreach($relations['belongsTo'] as $relation => $meta) {
+				$resource = $this->_source->loadResource($meta->refTable);
+
+				$meta->type = 'belongsTo';
+				$this->_relations[$relation] = array('meta' => $meta, 'resource' => $resource);
+			}
+
+			foreach($relations['hasMany'] as $relation => $meta) {
+				$resource = $this->_source->loadResource($meta->refTable);
+
+				$meta->type = 'hasMany';
+				$this->_relations[$relation] = array('meta' => $meta, 'resource' => $resource);
+			}
+		} else {
+			foreach($this->_relations as $relation => $meta) {
+				$meta = (object) $meta;
+
+				$this->_relations[$relation]['resource'] = $this->_source->loadResource($meta->refTable);
+			}
+		}
+
+		if(empty($this->_inherits)) {;
+			foreach($this->_relations as $name => $stuff) {
+				if($stuff['meta']->type == 'hasMany') {
+					continue;
+				}
+				
+				$refPrimary = $stuff['resource']->getPrimaryKey();
+				
+				if($refPrimary[0] == $stuff['meta']->refColumn && count($this->_primaryKey) == 1 && $this->_primaryKey[0] == $stuff['meta']->keyColumn) {
+					$this->_inherits[$stuff['resource']->getName()] = $stuff;
+
+					unset($this->_relations[$name]);
+				}
+			}
+		}
+		
 		return $this;
 	}
 
@@ -152,9 +192,26 @@ abstract class Mapper implements iMapper {
 		
 		$query->from($this->_resource->getName());
 
+		foreach($this->_inherits as $name => $relation) {
+			$on = $this->_resource->getName().'.'.$relation['meta']->keyColumn." = ".$relation['meta']->refTable.'.'.$relation['meta']->refColumn;
+
+			$query->join($name, $on);
+		}
+		
 		$records = $this->_source->query($query);
 
 		return new \Gacela\Collection($this, $records);
+	}
+
+	public function findRelation($name)
+	{
+		$relation = $this->_relations[$name];
+
+		$criteria = new \Gacela\Criteria();
+
+		$query = $this->_source->getQuery();
+				
+		return \Gacela::instance()->loadMapper($name);
 	}
 
 	public function delete(\stdClass $data)
@@ -173,7 +230,18 @@ abstract class Mapper implements iMapper {
 	 */
 	public function getFields()
 	{
-		return $this->_resource->getFields();
+		$array = $this->_resource->getFields();
+
+		foreach($this->_inherits as $key => $stuff) {
+			$array = array_merge($array, $stuff['resource']->getFields());
+		}
+
+		return $array;
+	}
+
+	public function getRelations()
+	{
+		return array_keys($this->_relations);
 	}
 
 	public function init()

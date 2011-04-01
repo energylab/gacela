@@ -47,6 +47,8 @@ abstract class Model implements iModel {
 	 */
 	protected $_originalData = array();
 
+	protected $_relations = array();
+
 	/**
 	 * @return \Gacela\Mapper\Mapper
 	 */
@@ -71,7 +73,8 @@ abstract class Model implements iModel {
 		}
 
 		$this->_fields = $this->_mapper()->getFields();
-
+		$this->_relations = $this->_mapper()->getRelations();
+		
 		if(!isset($data->{key($this->_fields)})) {
 			$this->_data = new \stdClass;
 
@@ -90,9 +93,11 @@ abstract class Model implements iModel {
 		$method = '_get'.ucfirst($key);
 		if(method_exists($this, $method)) {
 			return $this->$method();
+		} elseif(in_array($key, $this->_relations)) {
+			return $this->_mapper()->findRelation($key);
+		} else {
+			return $this->_fields[$key]->transform($this->_data->$key, false);
 		}
-		
-		return $this->_fields[$key]->transform($this->_data->$key, false);
 	}
 
 	public function __isset($key)

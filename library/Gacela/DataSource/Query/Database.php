@@ -137,7 +137,7 @@ class Database {
 				$join[0] = "{$join[0][0]} AS {$join[0][1]}";
 			}
 
-			$_join .= "{$type} JOIN {$join[0]} ON {$on}\n";
+			$_join .= "{$type} JOIN {$join[0]} ON {$join[1]}\n";
 		}
 
 		return $_join;
@@ -155,8 +155,8 @@ class Database {
 		}
 
 		foreach($this->_join as $join) {
-			if(count($join[3])) {
-				$select = array_merge($join[3], $select);
+			if(count($join[2])) {
+				$select = array_merge($join[2], $select);
 			}
 		}
 
