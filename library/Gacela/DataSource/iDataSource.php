@@ -10,6 +10,8 @@ namespace Gacela\DataSource;
 
 interface iDataSource {
 
+	public function __construct(array $config);
+	
 	public function query($query);
 
 	public function insert($name, $data);

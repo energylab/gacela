@@ -3,25 +3,49 @@
  * @author noah
  * @date Oct 4, 2010
  * @brief
- * 
+ *
+ * @namespace Gacela\Mapper
+ * @class Mapper
 */
 
 namespace Gacela\Mapper;
 
 abstract class Mapper implements iMapper {
 
+	/**
+	 * @var array
+	 * @brief Contains the names of resources that are associations to Mapper::$_resource
+	 * <a href="http://martinfowler.com/eaaCatalog/associationTableMapping.html">Association Table Mapping</a>
+	 */
 	protected $_associations = array();
 
+	/**'
+	 * @var array
+	 * @brief Contains the names of resources that are dependent on Mapper::$_resource
+	 * <a href="http://martinfowler.com/eaaCatalog/dependentMapping.html">Dependent Mapping</a>
+	 */
 	protected $_dependents = array();
 
 	protected $_expressions = array('resource' => "{className}s");
 
+	/**
+	 * @var array
+	 * @brief Contains the names of resources that Mapper::$_resource inherits from based on Mapper::$_foreignKeys and shared
+	 * primary keys
+	 * <a href="http://martinfowler.com/eaaCatalog/concreteTableInheritance.html">Concrete Table Inheritance</a>
+	 */
 	protected $_inherits = array();
 	
 	protected $_models = array();
 
 	protected $_modelName = null;
 
+	/**
+	 * @var array
+	 * @brief Contains the primary key fields for the mapper.
+	 * By default the primary key loads from Gacela\DataSource\Resource::getPrimaryKey()
+	 * 
+	 */
 	protected $_primaryKey = array();
 	
 	protected $_foreignKeys = array();
@@ -31,6 +55,10 @@ abstract class Mapper implements iMapper {
 	 */
 	protected $_resource = null;
 
+	/**
+	 * @var string
+	 * @brief Instance of Gacela\DataSource\DataSource to use for the mapper.
+	 */
 	protected $_source = 'db';
 
 	/**
