@@ -84,7 +84,7 @@ class Database {
 		$name = $this->_insert[0];
 		$data = $this->_insert[1];
 		
-		if(!is_array($data[0])) {
+		if(!isset($data[0]) || !is_array($data[0])) {
 			$data = array($data);
 		}
 
@@ -110,7 +110,7 @@ class Database {
 		// Removes the trailing comma created above.
 		$sql = substr($sql, 0, strlen($sql) - 1);
 
-		$stmt = $this->_db->prepare($sql);
+		$stmt = $this->_config->db->prepare($sql);
 
 		// Binding the params per row
 		foreach($data as $index => $row) {

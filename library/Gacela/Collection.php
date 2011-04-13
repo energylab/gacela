@@ -40,6 +40,10 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 
 	public function current()
 	{
+		if(!isset($this->_data[$this->_pointer])) {
+			return $this->_mapper->find(null);
+		}
+		
 		$data = $this->_data[$this->_pointer];
 
 		if(is_object($data)) {

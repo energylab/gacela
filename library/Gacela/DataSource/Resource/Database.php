@@ -49,9 +49,9 @@ class Database extends Resource {
 				'Error Code: '.
 				$stmt->errorCode().
 				'<br/>'.
-				\Util::debug($stmt->errorInfo()).
+				\Debug::vars($stmt->errorInfo()).
 				'Param Dump:'.
-				\Util::debug($stmt->debugDumpParams())
+				\Debug::vars($stmt->debugDumpParams())
 			);
 		}
 

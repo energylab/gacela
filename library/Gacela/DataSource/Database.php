@@ -38,7 +38,7 @@ class Database extends DataSource {
 		} else {
 			$error = $stmt->errorInfo();
 			$error = $error[2];
-			throw new \Exception("Code ({$stmt->errorCode()}): Error: ".$error);
+			throw new \Exception("Code ({$stmt->errorCode()}) Error: ".$error);
 		}
 	}
 

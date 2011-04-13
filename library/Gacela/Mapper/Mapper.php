@@ -56,8 +56,9 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _load(\stdClass $data)
 	{
+		
 		$primary = $this->_primaryKey($data);
-
+		
 		if(is_null($primary)) {
 			return new $this->_modelName($data);
 		}
@@ -183,7 +184,7 @@ abstract class Mapper implements iMapper {
 	{
 		$primary = array();
 		foreach($this->_primaryKey as $k) {
-			if(is_null($data->$k)) {
+			if(!isset($data->$k) || is_null($data->$k)) {
 				continue;
 			}
 			
@@ -206,24 +207,33 @@ abstract class Mapper implements iMapper {
 
 	public function find($id)
 	{
-		$criteria = \Gacela::instance()->autoload('\\Criteria');
-		$criteria = new $criteria();
+		$criteria = new \Gacela\Criteria();
 		
 		if(!is_array($id)) {
 			$id = array(current($this->_primaryKey) => $id);
 		}
 
-		foreach($this->_primaryKey as $key) {
-			$criteria->equals($key, $id[$key]);
+		$primary = $this->_primaryKey($id);
+
+		if(!is_null($primary)) {
+			foreach($primary as $key) {
+				$criteria->equals($key, $id[$key]);
+			}
+
+			$data = $this->_source->query(
+							$this->_source
+								->getQuery($criteria)
+								->from($this->_resource->getName())
+						);
+
+			$data = current($data);
 		}
 
-		$data = $this->_source->query(
-						$this->_source
-							->getQuery($criteria)
-							->from($this->_resource->getName())
-					);
+		if(!isset($data) || !count($data)) {
+			$data = new \stdClass();
+		}
 
-		return $this->_load(current($data));
+		return $this->_load($data);
 	}
 
 	/**
