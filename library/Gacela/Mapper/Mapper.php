@@ -35,7 +35,7 @@ abstract class Mapper implements iMapper {
 	protected $_inherits = array();
 
 	/**
-	 * @brief Registry of models already loaded from the database.
+	 * @brief Registry of Model objects already loaded from the DataSource.
 	 */
 	protected $_models = array();
 
@@ -45,9 +45,8 @@ abstract class Mapper implements iMapper {
 	protected $_modelName = null;
 
 	/**
-	 * @var array
 	 * @brief Contains the primary key fields for the mapper.
-	 * By default the primary key loads from Gacela\DataSource\Resource::getPrimaryKey()
+	 * By default the primary key loads from Resource::getPrimaryKey()
 	 * 
 	 */
 	protected $_primaryKey = array();
@@ -55,13 +54,12 @@ abstract class Mapper implements iMapper {
 	protected $_foreignKeys = array();
 
 	/**
-	 * @var Gacela\DataSource\Resource
+	 * @brief 
 	 */
 	protected $_resource = null;
 
 	/**
-	 * @var string
-	 * @brief Instance of Gacela\DataSource\DataSource to use for the mapper.
+	 * @brief Instance of DataSource to use for the Mapper.
 	 */
 	protected $_source = 'db';
 
@@ -296,6 +294,11 @@ abstract class Mapper implements iMapper {
 		return new \Gacela\Collection($this, $records);
 	}
 
+	/**
+	 * @param  $name
+	 * @param  $data
+	 * @return Model | Collection
+	 */
 	public function findRelation($name, $data) {
 		$relation = $this->_foreignKeys[$name];
 
@@ -313,7 +316,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * 
+	 * @brief Called by the Model to delete the record represented by the identity field
 	 */
 	public function delete(\stdClass $data)
 	{
@@ -327,7 +330,8 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @return array
+	 * @brief Used by Model to get all of the fields available from mapper.
+	 * @return A merged array of all fields from $_resource, $_inherits, $_dependents
 	 */
 	public function getFields()
 	{
@@ -340,6 +344,10 @@ abstract class Mapper implements iMapper {
 		return $array;
 	}
 
+	/**
+	 * @brief Provides the Model with the names of related Models
+	 * @return An array of all the relation names whether as $_associations or $_foreignKeys meaning belongsTo or hasMany
+	 */
 	public function getRelations()
 	{
 		return array_keys($this->_foreignKeys);
@@ -350,12 +358,17 @@ abstract class Mapper implements iMapper {
 		$this->_init();
 	}
 
+	/**
+	 * @brief Loads a new instance of $_modelName from the $data provided. 
+	 * @returns Model
+	 */
 	public function load(\stdClass $data)
 	{
 		return $this->_load($data);
 	}
 
 	/**
+	 * @brief Save is called by Model, the Mapper is responsible for knowing whether to call insert() or update() on the DataSource for $_resource, $_inherits, and $_dependents.
 	 * @param array $changed
 	 * @param \stdClass $data
 	 * @return bool
