@@ -1,10 +1,9 @@
 <?php
 /** 
- * @author noah
- * @date Oct 4, 2010
- * @brief
+ * @author Noah Goodrich
+ * @date April 13, 2010
  *
- * @namespace Gacela\Mapper
+ * @namespace Mapper
  * @class Mapper
 */
 
@@ -50,7 +49,12 @@ abstract class Mapper implements iMapper {
 	 * 
 	 */
 	protected $_primaryKey = array();
-	
+
+	/**
+	 * @brief Contains the meta information necessary to load hasMany, belongsTo related data
+	 * Also used by Mapper::$_associations to load related data and by Mapper::$_inherits to determine whether
+	 * Concrete Table Inheritance is applicable.
+	 */
 	protected $_foreignKeys = array();
 
 	/**
@@ -236,11 +240,10 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
+	 * @brief Returns a single instance of Mapper::$_modelName based on the identity field
 	 * @param  $id integer|array
-	 * @return \Gacela\Model\Model
+	 * @return Model
 	 *
-	 * \brief Find and load a model based on its identity field.
-	 * \return Model
 	 */
 	public function find($id)
 	{
@@ -274,8 +277,9 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @param Gacela\Criteria|null $criteria
-	 * @return \Gacela\Collection
+	 * @brief Returns a Collection of Model objects based on the Criteria specified
+	 * @param Criteria|null $criteria
+	 * @return Collection
 	 */
 	public function findAll(\Gacela\Criteria $criteria = null)
 	{
@@ -295,8 +299,11 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @param  $name
-	 * @param  $data
+	 * @brief Requests a related Model or Collection and returns it to the requesting Model.
+	 * Uses Mapper::$_associations, Mapper::$_foreignKeys
+	 *
+	 * @param  $name - The name of the Model or Collection to return
+	 * @param  $data - The data from the Model
 	 * @return Model | Collection
 	 */
 	public function findRelation($name, $data) {
@@ -317,6 +324,8 @@ abstract class Mapper implements iMapper {
 
 	/**
 	 * @brief Called by the Model to delete the record represented by the identity field
+	 * @param stdClass - The data from the Model
+	 * @return true on success, false on failure
 	 */
 	public function delete(\stdClass $data)
 	{
@@ -359,7 +368,8 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief Loads a new instance of $_modelName from the $data provided. 
+	 * @brief Loads a new instance of $_modelName from the $data provided.
+	 * @param stdClass $data 
 	 * @returns Model
 	 */
 	public function load(\stdClass $data)
@@ -369,8 +379,8 @@ abstract class Mapper implements iMapper {
 
 	/**
 	 * @brief Save is called by Model, the Mapper is responsible for knowing whether to call insert() or update() on the DataSource for $_resource, $_inherits, and $_dependents.
-	 * @param array $changed
-	 * @param \stdClass $data
+	 * @param array $changed - An array of the changed fields
+	 * @param \stdClass $data - The data from the Model
 	 * @return bool
 	 */
 	public function save(array $changed, \stdClass $data)
