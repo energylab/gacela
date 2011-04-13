@@ -6,6 +6,8 @@
  * 
 */
 
-class Adapter_Xml extends Adapter_Abstract {
+namespace Gacela\DataSource;
+
+class Xml extends DataSource {
 
 }

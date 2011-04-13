@@ -13,14 +13,13 @@ namespace Gacela\Mapper;
 abstract class Mapper implements iMapper {
 
 	/**
-	 * @var array
+	 * 
 	 * @brief Contains the names of resources that are associations to Mapper::$_resource
 	 * <a href="http://martinfowler.com/eaaCatalog/associationTableMapping.html">Association Table Mapping</a>
 	 */
 	protected $_associations = array();
 
-	/**'
-	 * @var array
+	/**
 	 * @brief Contains the names of resources that are dependent on Mapper::$_resource
 	 * <a href="http://martinfowler.com/eaaCatalog/dependentMapping.html">Dependent Mapping</a>
 	 */
@@ -29,15 +28,20 @@ abstract class Mapper implements iMapper {
 	protected $_expressions = array('resource' => "{className}s");
 
 	/**
-	 * @var array
 	 * @brief Contains the names of resources that Mapper::$_resource inherits from based on Mapper::$_foreignKeys and shared
 	 * primary keys
 	 * <a href="http://martinfowler.com/eaaCatalog/concreteTableInheritance.html">Concrete Table Inheritance</a>
 	 */
 	protected $_inherits = array();
-	
+
+	/**
+	 * @brief Registry of models already loaded from the database.
+	 */
 	protected $_models = array();
 
+	/**
+	 * @brief Model class name to create in _load()
+	 */
 	protected $_modelName = null;
 
 	/**
@@ -80,7 +84,7 @@ abstract class Mapper implements iMapper {
 
 	/**
 	 * @param \stdClass $data
-	 * @return \Gacela\Model\Model
+	 * @return Model
 	 */
 	protected function _load(\stdClass $data)
 	{
@@ -233,6 +237,13 @@ abstract class Mapper implements iMapper {
 		$this->init();
 	}
 
+	/**
+	 * @param  $id integer|array
+	 * @return \Gacela\Model\Model
+	 *
+	 * \brief Find and load a model based on its identity field.
+	 * \return Model
+	 */
 	public function find($id)
 	{
 		$criteria = new \Gacela\Criteria();
@@ -301,6 +312,9 @@ abstract class Mapper implements iMapper {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	public function delete(\stdClass $data)
 	{
 		$where = new \Gacela\Criteria();
