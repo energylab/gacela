@@ -8,6 +8,9 @@
 
 namespace Gacela\DataSource\Query;
 
+/**
+ * @class Query_Database
+ */
 class Database {
 
 	protected static $_operators = array(

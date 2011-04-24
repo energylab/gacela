@@ -8,6 +8,9 @@
 
 namespace Gacela\DataSource\Resource;
 
+/**
+ * @class Resource_Database
+ */
 class Database extends Resource {
 
 	protected static $_separator = "_";

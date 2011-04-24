@@ -90,17 +90,18 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _load(\stdClass $data)
 	{
-		
 		$primary = $this->_primaryKey($data);
 		
 		if(is_null($primary)) {
 			return new $this->_modelName($data);
 		}
 
+		$primary = join('-', array_values($primary));
+		
 		if(!isset($this->_models[$primary])) {
 			$this->_models[$primary] = new $this->_modelName($data);
 		}
-
+		
 		return $this->_models[$primary];
 	}
 
@@ -222,13 +223,11 @@ abstract class Mapper implements iMapper {
 				continue;
 			}
 			
-			$primary[] = $data->$k;
+			$primary[$k] = $data->$k;
 		}
 		
 		if(!count($primary) || count($primary) != count($this->_primaryKey)) {
 			$primary = null;
-		} else {
-			$primary = join("_", $primary);
 		}
 		
 		return $primary;
@@ -248,25 +247,33 @@ abstract class Mapper implements iMapper {
 	public function find($id)
 	{
 		$criteria = new \Gacela\Criteria();
-		
-		if(!is_array($id)) {
-			$id = array(current($this->_primaryKey) => $id);
+
+		if(!is_object($id)) {
+			if(is_scalar($id)) {
+				$id = array(current($this->_primaryKey) => $id);
+			}
+
+			$id = (object) $id;
 		}
 
 		$primary = $this->_primaryKey($id);
-
+		
 		if(!is_null($primary)) {
-			foreach($primary as $key) {
-				$criteria->equals($key, $id[$key]);
+			foreach($primary as $key => $value) {
+				$criteria->equals($key, $value);
 			}
 
-			$data = $this->_source->query(
-							$this->_source
+			$query = $this->_source
 								->getQuery($criteria)
-								->from($this->_resource->getName())
-						);
+								->from($this->_resource->getName());
 
-			$data = current($data);
+			foreach($this->_inherits as $name => $relation) {
+				$on = $this->_resource->getName().'.'.$relation['meta']->keyColumn." = ".$relation['meta']->refTable.'.'.$relation['meta']->refColumn;
+
+				$query->join($name, $on);
+			}
+
+			$data = current($this->_source->query($query));
 		}
 
 		if(!isset($data) || !count($data)) {
@@ -312,7 +319,7 @@ abstract class Mapper implements iMapper {
 		$criteria = new \Gacela\Criteria();
 
 		$criteria->equals($relation['meta']->refColumn, $data->{$relation['meta']->keyColumn});
-
+		
 		$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
 
 		if ($relation['meta']->type == 'belongsTo') {
@@ -359,7 +366,12 @@ abstract class Mapper implements iMapper {
 	 */
 	public function getRelations()
 	{
-		return array_keys($this->_foreignKeys);
+		$relations = array();
+		foreach($this->_foreignKeys as $key => $array) {
+			$relations[$key] = $array['meta']->keyColumn;
+		}
+
+		return $relations;
 	}
 
 	public function init()

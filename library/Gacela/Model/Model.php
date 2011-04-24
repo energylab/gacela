@@ -54,11 +54,15 @@ abstract class Model implements iModel {
 	 */
 	protected function _mapper()
 	{
-		if(!empty($this->_mapper)) return $this->_mapper;
+		if(!is_string($this->_mapper) && !empty($this->_mapper)) return $this->_mapper;
 
-		$class = explode("\\", get_class($this));
-
-		$this->_mapper = \Gacela::instance()->loadMapper(end($class));
+		if(is_string($this->_mapper)) {
+			$class = $this->_mapper;
+		} else {
+			$class = end(explode("\\", get_class($this)));
+		}
+	
+		$this->_mapper = \Gacela::instance()->loadMapper($class);
 
 		return $this->_mapper;
 	}
@@ -93,7 +97,7 @@ abstract class Model implements iModel {
 		$method = '_get' . ucfirst($key);
 		if (method_exists($this, $method)) {
 			return $this->$method();
-		} elseif (in_array($key, $this->_relations)) {
+		} elseif (array_key_exists($key, $this->_relations)) {
 			return $this->_mapper()->findRelation($key, $this->_data);
 		} else {
 			return $this->_fields[$key]->transform($this->_data->$key, false);
@@ -102,6 +106,24 @@ abstract class Model implements iModel {
 
 	public function __isset($key)
 	{
+		$method = '_isset'.ucfirst($key);
+		
+		if(method_exists($this, $method)) {
+			return $this->$method($key);
+		} elseif(isset($this->_relations[$key])) {
+			$relation = $this->$key;
+
+			if($relation instanceof \Gacela\Collection) {
+				return count($relation) > 0;
+			} else {
+				if(!is_array($this->_relations[$key])) {
+					return isset($relation->{$this->_relations[$key]});
+				} else {
+					// Need to support multi-field key relations
+				}
+			}
+		}
+		
 		return isset($this->_data->$key);
 	}
 
@@ -125,7 +147,7 @@ abstract class Model implements iModel {
 	 * having to directly override the constructor.
 	 * 
 	 */
-	abstract public function init();
+	public function init() {}
 
 	/**
 	 * @return bool
