@@ -24,8 +24,6 @@ abstract class Mapper implements iMapper {
 	 */
 	protected $_dependents = array();
 
-	protected $_expressions = array('resource' => "{className}s");
-
 	/**
 	 * @brief Contains the names of resources that Mapper::$_resource inherits from based on Mapper::$_foreignKeys and shared
 	 * primary keys
@@ -196,12 +194,10 @@ abstract class Mapper implements iMapper {
 	protected function _initResource()
 	{
 		if(is_null($this->_resource)) {
-			$classes = explode('\\', get_class($this));
-
-			$resource = str_replace("{className}", end($classes), $this->_expressions['resource']);
-			$resource[0] = strtolower($resource[0]);
-
-			$this->_resource = $resource;
+			$class = end(explode('\\', get_class($this)));
+			$class[0] = strtolower($class[0]);
+			
+			$this->_resource = \Gacela\Inflector::pluralize($class);
 		}
 
 		$this->_source = \Gacela::instance()->getDataSource($this->_source);
@@ -315,6 +311,10 @@ abstract class Mapper implements iMapper {
 	 */
 	public function findRelation($name, $data) {
 		$relation = $this->_foreignKeys[$name];
+
+		if($relation['meta']->type == 'hasMany') {
+			$name = \Gacela\Inflector::singularize($name);
+		}
 
 		$criteria = new \Gacela\Criteria();
 

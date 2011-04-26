@@ -1,7 +1,8 @@
 <?php
 /** 
- * @author Noah Goodrich
- * @date 4/25/11
+ * @author 		Noah Goodrich
+ * @author      Sho Kuwamoto <sho@kuwamoto.org>
+ * @date 		4/25/11
  * 
  * Thanks to http://www.eval.ca/articles/php-pluralize (MIT license)
  *           http://dev.rubyonrails.org/browser/trunk/activesupport/lib/active_support/inflections.rb (MIT license)
@@ -9,7 +10,6 @@
  *           http://www2.gsu.edu/~wwwesl/egw/crump.htm
  * 			 http://code.google.com/p/leek-zf-components/source/browse/trunk/Leek/View/Helper/Inflect/Abstract.php?r=52
  *
- * @author      Sho Kuwamoto <sho@kuwamoto.org>
  */
 
 namespace Gacela;

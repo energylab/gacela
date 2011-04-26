@@ -52,9 +52,9 @@ class Database extends Resource {
 				'Error Code: '.
 				$stmt->errorCode().
 				'<br/>'.
-				\Debug::vars($stmt->errorInfo()).
+				print_r($stmt->errorInfo(), true).
 				'Param Dump:'.
-				\Debug::vars($stmt->debugDumpParams())
+				print_r($stmt->debugDumpParams(), true)
 			);
 		}
 
