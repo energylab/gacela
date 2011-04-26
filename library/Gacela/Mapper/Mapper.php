@@ -194,7 +194,8 @@ abstract class Mapper implements iMapper {
 	protected function _initResource()
 	{
 		if(is_null($this->_resource)) {
-			$class = end(explode('\\', get_class($this)));
+			$class = explode('\\', get_class($this));
+			$class = end($class);
 			$class[0] = strtolower($class[0]);
 			
 			$this->_resource = \Gacela\Inflector::pluralize($class);

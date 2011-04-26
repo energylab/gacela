@@ -59,7 +59,8 @@ abstract class Model implements iModel {
 		if(is_string($this->_mapper)) {
 			$class = $this->_mapper;
 		} else {
-			$class = end(explode("\\", get_class($this)));
+			$class = explode("\\", get_class($this));
+			$class = end($class);
 		}
 	
 		$this->_mapper = \Gacela::instance()->loadMapper($class);
@@ -100,7 +101,16 @@ abstract class Model implements iModel {
 		} elseif (array_key_exists($key, $this->_relations)) {
 			return $this->_mapper()->findRelation($key, $this->_data);
 		} else {
-			return $this->_fields[$key]->transform($this->_data->$key, false);
+			if(isset($this->_fields[$key])) {
+				return $this->_fields[$key]->transform($this->_data->$key, false);
+			}
+
+			if(isset($this->_data->$key)) {
+				return $this->_data->$key;
+			}
+
+			throw new Exception("Specified key ($key) does not exist!");
+
 		}
 	}
 

@@ -69,7 +69,7 @@ class Database {
 		$_from = array();
 		foreach($this->_from as $from) {
 			if(is_array($from[0])) {
-				$_from[] = "{$from[0][1]} AS {$from[0][0]}";
+				$_from[] = current($from[0])." AS ".key($from[0]);
 			} else {
 				$_from[] = "{$from[0]}";
 			}
@@ -137,7 +137,7 @@ class Database {
 			$type = strtoupper($join[3]);
 
 			if(is_array($join[0])) {
-				$join[0] = "{$join[0][0]} AS {$join[0][1]}";
+				$join[0] = current($join[0])." AS ".key($join[0]);
 			}
 
 			$_join .= "{$type} JOIN {$join[0]} ON {$join[1]}\n";
@@ -302,7 +302,7 @@ class Database {
 	public function from($tableName, array $columns = array(), $schema = null)
 	{
 		if(is_array($tableName)) {
-			$name = $tableName[0];
+			$name = current($tableName);
 		} else {
 			$name = $tableName;
 		}
