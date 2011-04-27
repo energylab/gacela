@@ -60,6 +60,8 @@ abstract class Mapper implements iMapper {
 	 */
 	protected $_resource = null;
 
+	protected $_resourceName = null;
+
 	/**
 	 * @brief Instance of DataSource to use for the Mapper.
 	 */
@@ -73,7 +75,7 @@ abstract class Mapper implements iMapper {
 		// Everything loads in order based on what resources are needed first.
 		$this->_initResource()
 			->_initPrimaryKey()
-			->_initForeignKeys()
+			->_initForeignKeys($this->_resource->getRelations())
 			->_initInherits()
 			->_initDependents()
 			->_initAssociations()
@@ -110,33 +112,25 @@ abstract class Mapper implements iMapper {
 
 	protected function _initDependents()
 	{
+	
 		return $this;
 	}
 
-	protected function _initForeignKeys()
+	protected function _initForeignKeys($relations)
 	{
-		if(empty($this->_foreignKeys)) {
-			$relations = $this->_resource->getRelations();
+		$this->_foreignKeys = array_merge($relations, $this->_foreignKeys);
 
-			foreach($relations['belongsTo'] as $relation => $meta) {
-				$resource = $this->_source->loadResource($meta->refTable);
-
-				$meta->type = 'belongsTo';
-				$this->_foreignKeys[$relation] = array('meta' => $meta, 'resource' => $resource);
+		foreach($this->_foreignKeys as $relation => $meta) {
+			// This foreign key is already initialized
+			if(is_array($meta) && isset($meta['resource'])) {
+				continue;
 			}
+			
+			$meta = (object) $meta;
 
-			foreach($relations['hasMany'] as $relation => $meta) {
-				$resource = $this->_source->loadResource($meta->refTable);
+			$resource = $this->_source->loadResource($meta->refTable);
 
-				$meta->type = 'hasMany';
-				$this->_foreignKeys[$relation] = array('meta' => $meta, 'resource' => $resource);
-			}
-		} else {
-			foreach($this->_foreignKeys as $relation => $meta) {
-				$meta = (object) $meta;
-
-				$this->_foreignKeys[$relation]['resource'] = $this->_source->loadResource($meta->refTable);
-			}
+			$this->_foreignKeys[$relation] = array('meta' => $meta, 'resource' => $resource);
 		}
 
 		return $this;
@@ -155,11 +149,17 @@ abstract class Mapper implements iMapper {
 				if($refPrimary[0] == $stuff['meta']->refColumn && count($this->_primaryKey) == 1 && $this->_primaryKey[0] == $stuff['meta']->keyColumn) {
 					$this->_inherits[$stuff['resource']->getName()] = $stuff;
 
-					unset($this->_foreignKeys[$name]);
+					$relations = $stuff['resource']->getRelations();
+
+					unset($relations[\Gacela\Inflector::singularize($this->_resourceName)]);
+					
+					$this->_initForeignKeys($stuff['resource']->getRelations());
 				}
 			}
+		} else {
+			throw new \Exception('Not Implemented Yet');
 		}
-
+		
 		return $this;
 	}
 
@@ -193,18 +193,18 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _initResource()
 	{
-		if(is_null($this->_resource)) {
+		if(is_null($this->_resourceName)) {
 			$class = explode('\\', get_class($this));
 			$class = end($class);
 			$class[0] = strtolower($class[0]);
 			
-			$this->_resource = \Gacela\Inflector::pluralize($class);
+			$this->_resourceName = \Gacela\Inflector::pluralize($class);
 		}
 
 		$this->_source = \Gacela::instance()->getDataSource($this->_source);
 
-		$this->_resource = $this->_source->loadResource($this->_resource);
-
+		$this->_resource = $this->_source->loadResource($this->_resourceName);
+				
 		return $this;
 	}
 	
@@ -264,10 +264,18 @@ abstract class Mapper implements iMapper {
 								->getQuery($criteria)
 								->from($this->_resource->getName());
 
-			foreach($this->_inherits as $name => $relation) {
+			foreach($this->_inherits as $relation) {
 				$on = $this->_resource->getName().'.'.$relation['meta']->keyColumn." = ".$relation['meta']->refTable.'.'.$relation['meta']->refColumn;
 
-				$query->join($name, $on);
+				$query->join($relation['meta']->refTable, $on, array('*'));
+			}
+
+			foreach($this->_dependents as $dependent) {
+				$relation = $this->_foreignKeys[$dependent];
+
+				$on = $this->_resource->getName().'.'.$relation['meta']->keyColumn." = ".$relation['meta']->refTable.'.'.$relation['meta']->refColumn;
+
+				$query->join($relation['meta']->refTable, $on, array('*'), 'left');
 			}
 
 			$data = current($this->_source->query($query));
@@ -291,10 +299,18 @@ abstract class Mapper implements iMapper {
 		
 		$query->from($this->_resource->getName());
 
-		foreach($this->_inherits as $name => $relation) {
+		foreach($this->_inherits as $relation) {
 			$on = $this->_resource->getName().'.'.$relation['meta']->keyColumn." = ".$relation['meta']->refTable.'.'.$relation['meta']->refColumn;
 
-			$query->join($name, $on);
+			$query->join($relation['meta']->refTable, $on, array('*'));
+		}
+
+		foreach($this->_dependents as $dependent) {
+			$relation = $this->_foreignKeys[$dependent];
+
+			$on = $this->_resource->getName().'.'.$relation['meta']->keyColumn." = ".$relation['meta']->refTable.'.'.$relation['meta']->refColumn;
+
+			$query->join($relation['meta']->refTable, $on, array('*'), 'left');
 		}
 		
 		$records = $this->_source->query($query);
@@ -358,6 +374,10 @@ abstract class Mapper implements iMapper {
 			$array = array_merge($array, $stuff['resource']->getFields());
 		}
 
+		foreach($this->_dependents as $dependent) {
+			$array = array_merge($array, $this->_foreignKeys[$dependent]['resource']->getFields());
+		}
+		
 		return $array;
 	}
 

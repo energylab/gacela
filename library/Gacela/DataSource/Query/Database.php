@@ -22,7 +22,8 @@ class Database {
 		'in' => "IN",
 		'like' => 'LIKE',
 		'notLike' => 'NOT LIKE',
-		'isNull' => 'IS NULL'
+		'null' => 'IS NULL',
+		'notNull' => 'IS NOT NULL'
 	);
 
 	protected $_binds = array();
@@ -62,13 +63,19 @@ class Database {
 	{
 		foreach($criteria as $stmt) {
 			$field = $stmt[1];
-			$value = $stmt[2];
-			$toBind = ":{$stmt[1]}";
+
+			if(isset($stmt[2])) {
+				$value = $stmt[2];
+				$toBind = ":{$stmt[1]}";
+			}
+
 
 			if(in_array($stmt[0], array('equals', 'notEquals', 'lessThan', 'greaterThan'))) {
 				$this->where("{$field} ".self::$_operators[$stmt[0]]." {$toBind}", array("{$toBind}" => $value));
 			} elseif(in_array($stmt[0], array('in', 'notIn'))) {
 
+			} elseif($stmt[0] == 'notNull') {
+				$this->where("{$field} ".self::$_operators[$stmt[0]]);
 			}
 		}
 	}
@@ -153,7 +160,7 @@ class Database {
 
 			$_join .= "{$type} JOIN {$join[0]} ON {$join[1]}\n";
 		}
-
+		
 		return $_join;
 	}
 
@@ -166,10 +173,10 @@ class Database {
 		} elseif(strpos($identifier, '.') !== false) {
 			$identifier = explode('.', $identifier);
 
-			foreach($identifier as $value) {
-				$identifier[$value] = $this->_quoteIdentifier($value);
+			foreach($identifier as $key => $value) {
+				$identifier[$key] = $this->_quoteIdentifier($value);
 			}
-
+			
 			return join('.', $identifier);
 		} else {
 			return "`$identifier`";
@@ -194,10 +201,6 @@ class Database {
 			}
 		}
 
-		foreach($select as $key => $field) {
-			$select[$key] = $this->_quoteIdentifier($field);
-		}
-		
 		return join(', ', $select)."\n";
 	}
 
@@ -230,7 +233,7 @@ class Database {
 		if(!count($this->_where)) {
 			return $_where;
 		}
-
+		exit(debug($this->_where));
 		foreach($this->_where as $where) {
 			$where[0] = $this->_quoteIdentifier($where[0]);
 
@@ -309,7 +312,7 @@ class Database {
 		if(!empty($where)) {
 			$sql .= $where;
 		}
-
+		
 		$statement = $this->_config->db->prepare($sql);
 
 		foreach($this->_binds as $key => $val) {
