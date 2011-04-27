@@ -49,6 +49,15 @@ class Database {
 	
 	protected $_where = array();
 
+	private function _alias($schema)
+	{
+		if(is_array($schema)) {
+			return key($schema);
+		}
+
+		return $schema;
+	}
+
 	private function _buildFromCriteria($criteria)
 	{
 		foreach($criteria as $stmt) {
@@ -69,9 +78,9 @@ class Database {
 		$_from = array();
 		foreach($this->_from as $from) {
 			if(is_array($from[0])) {
-				$_from[] = current($from[0])." AS ".key($from[0]);
+				$_from[] = $this->_quoteIdentifier(current($from[0]))." AS ".$this->_quoteIdentifier(key($from[0]));
 			} else {
-				$_from[] = "{$from[0]}";
+				$_from[] = $this->_quoteIdentifier($from[0]);
 			}
 		}
 
@@ -137,7 +146,9 @@ class Database {
 			$type = strtoupper($join[3]);
 
 			if(is_array($join[0])) {
-				$join[0] = current($join[0])." AS ".key($join[0]);
+				$join[0] = $this->_quoteIdentifier(current($join[0]))." AS ".$this->_quoteIdentifier(key($join[0]));
+			} else {
+				$join[0] = $this->_quoteIdentifier($join[0]);
 			}
 
 			$_join .= "{$type} JOIN {$join[0]} ON {$join[1]}\n";
@@ -146,23 +157,47 @@ class Database {
 		return $_join;
 	}
 
+	private function _quoteIdentifier($identifier)
+	{
+		if(is_array($identifier)) exit(debug($identifier));
+		
+		if(strpos($identifier, '*') !== false) {
+			return $identifier;
+		} elseif(strpos($identifier, '.') !== false) {
+			$identifier = explode('.', $identifier);
+
+			foreach($identifier as $value) {
+				$identifier[$value] = $this->_quoteIdentifier($value);
+			}
+
+			return join('.', $identifier);
+		} else {
+			return "`$identifier`";
+		}
+	}
+	
 	private function _select()
 	{
 		$select = array();
+
 		foreach($this->_from as $from) {
-			if(is_array($from[1])) {
-				$select = array_merge($from[1], $select);
-			} else {
-				$select[] = $from[1];
+			foreach($from[1] as $item) {
+				$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$item);
 			}
 		}
-
+		
 		foreach($this->_join as $join) {
 			if(count($join[2])) {
-				$select = array_merge($join[2], $select);
+				foreach($join[2] as $item) {
+					$select[] = $this->_quoteIdentifier($this->_alias($join[0]).'.'.$item);
+				}
 			}
 		}
 
+		foreach($select as $key => $field) {
+			$select[$key] = $this->_quoteIdentifier($field);
+		}
+		
 		return join(', ', $select)."\n";
 	}
 
@@ -172,8 +207,8 @@ class Database {
 			return '';
 		}
 
-		$data = $this->_update[1];
 		$name = $this->_update[0];
+		$data = $this->_update[1];
 
 		$sql = "UPDATE {$name} SET \n";
 
@@ -197,6 +232,8 @@ class Database {
 		}
 
 		foreach($this->_where as $where) {
+			$where[0] = $this->_quoteIdentifier($where[0]);
+
 			if(empty($_where)) {
 				$_where = "WHERE ({$where[0]})";
 			} else {
@@ -278,7 +315,7 @@ class Database {
 		foreach($this->_binds as $key => $val) {
 			$statement->bindValue($key, $val);
 		}
-
+		
 		return $statement;
 	}
 
@@ -350,11 +387,18 @@ class Database {
 		return $this;
 	}
 
+	/**
+	 *
+	 */
 	public function orderBy($column, $direction = 'ASC')
 	{
 		return $this;
 	}
 
+	/**
+	 * @param Name of the table (resource) you wish to update
+	 * @param An associative array of the fields and data to update
+	 */
 	public function update($tableName, $data)
 	{
 		$this->_update = array($tableName, $data);

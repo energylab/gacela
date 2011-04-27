@@ -109,7 +109,7 @@ abstract class Model implements iModel {
 				return $this->_data->$key;
 			}
 
-			throw new Exception("Specified key ($key) does not exist!");
+			throw new \Exception("Specified key ($key) does not exist!");
 
 		}
 	}
