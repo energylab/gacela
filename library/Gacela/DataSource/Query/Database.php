@@ -233,7 +233,7 @@ class Database {
 		if(!count($this->_where)) {
 			return $_where;
 		}
-		exit(debug($this->_where));
+		
 		foreach($this->_where as $where) {
 			$where[0] = $this->_quoteIdentifier($where[0]);
 
