@@ -92,10 +92,10 @@ class Database {
 		if(!isset($this->_insert[0])) {
 			return '';
 		}
-		
+
 		$name = $this->_insert[0];
 		$data = $this->_insert[1];
-		
+
 		if(!isset($data[0]) || !is_array($data[0])) {
 			$data = array($data);
 		}
@@ -160,7 +160,7 @@ class Database {
 	private function _quoteIdentifier($identifier)
 	{
 		if(is_array($identifier)) exit(debug($identifier));
-		
+
 		if(strpos($identifier, '*') !== false) {
 			return $identifier;
 		} elseif(strpos($identifier, '.') !== false) {
@@ -175,7 +175,7 @@ class Database {
 			return "`$identifier`";
 		}
 	}
-	
+
 	private function _select()
 	{
 		$select = array();
@@ -185,7 +185,7 @@ class Database {
 				$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$item);
 			}
 		}
-		
+
 		foreach($this->_join as $join) {
 			if(count($join[2])) {
 				foreach($join[2] as $item) {
@@ -197,7 +197,7 @@ class Database {
 		foreach($select as $key => $field) {
 			$select[$key] = $this->_quoteIdentifier($field);
 		}
-		
+
 		return join(', ', $select)."\n";
 	}
 
@@ -232,7 +232,6 @@ class Database {
 		}
 
 		foreach($this->_where as $where) {
-			$where[0] = $this->_quoteIdentifier($where[0]);
 
 			if(empty($_where)) {
 				$_where = "WHERE ({$where[0]})";
@@ -254,7 +253,7 @@ class Database {
 
 		return $_where;
 	}
-	
+
 	public function __construct(array $config)
 	{
 		$this->_config = (object) $config;
@@ -298,7 +297,7 @@ class Database {
 				$sql .= "FROM {$from}\n";
 			}
 		}
-		
+
 		$where = $this->_where();
 		$join = $this->_join();
 
@@ -315,7 +314,7 @@ class Database {
 		foreach($this->_binds as $key => $val) {
 			$statement->bindValue($key, $val);
 		}
-		
+
 		return $statement;
 	}
 
@@ -343,7 +342,7 @@ class Database {
 		} else {
 			$name = $tableName;
 		}
-		
+
 		if(is_null($schema)) $schema = $this->_config->database;
 
 		if(empty($columns)) $columns = array('*');
