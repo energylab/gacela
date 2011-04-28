@@ -22,7 +22,8 @@ class Database {
 		'in' => "IN",
 		'like' => 'LIKE',
 		'notLike' => 'NOT LIKE',
-		'isNull' => 'IS NULL'
+		'null' => 'IS NULL',
+		'notNull' => 'IS NOT NULL'
 	);
 
 	protected $_binds = array();
@@ -62,13 +63,19 @@ class Database {
 	{
 		foreach($criteria as $stmt) {
 			$field = $stmt[1];
-			$value = $stmt[2];
-			$toBind = ":{$stmt[1]}";
+
+			if(isset($stmt[2])) {
+				$value = $stmt[2];
+				$toBind = ":{$stmt[1]}";
+			}
+
 
 			if(in_array($stmt[0], array('equals', 'notEquals', 'lessThan', 'greaterThan'))) {
 				$this->where("{$field} ".self::$_operators[$stmt[0]]." {$toBind}", array("{$toBind}" => $value));
 			} elseif(in_array($stmt[0], array('in', 'notIn'))) {
 
+			} elseif($stmt[0] == 'notNull') {
+				$this->where("{$field} ".self::$_operators[$stmt[0]]);
 			}
 		}
 	}
@@ -92,10 +99,10 @@ class Database {
 		if(!isset($this->_insert[0])) {
 			return '';
 		}
-
+		
 		$name = $this->_insert[0];
 		$data = $this->_insert[1];
-
+		
 		if(!isset($data[0]) || !is_array($data[0])) {
 			$data = array($data);
 		}
@@ -153,29 +160,29 @@ class Database {
 
 			$_join .= "{$type} JOIN {$join[0]} ON {$join[1]}\n";
 		}
-
+		
 		return $_join;
 	}
 
 	private function _quoteIdentifier($identifier)
 	{
 		if(is_array($identifier)) exit(debug($identifier));
-
+		
 		if(strpos($identifier, '*') !== false) {
 			return $identifier;
 		} elseif(strpos($identifier, '.') !== false) {
 			$identifier = explode('.', $identifier);
 
-			foreach($identifier as $value) {
-				$identifier[$value] = $this->_quoteIdentifier($value);
+			foreach($identifier as $key => $value) {
+				$identifier[$key] = $this->_quoteIdentifier($value);
 			}
-
+			
 			return join('.', $identifier);
 		} else {
 			return "`$identifier`";
 		}
 	}
-
+	
 	private function _select()
 	{
 		$select = array();
@@ -185,17 +192,13 @@ class Database {
 				$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$item);
 			}
 		}
-
+		
 		foreach($this->_join as $join) {
 			if(count($join[2])) {
 				foreach($join[2] as $item) {
 					$select[] = $this->_quoteIdentifier($this->_alias($join[0]).'.'.$item);
 				}
 			}
-		}
-
-		foreach($select as $key => $field) {
-			$select[$key] = $this->_quoteIdentifier($field);
 		}
 
 		return join(', ', $select)."\n";
@@ -232,6 +235,7 @@ class Database {
 		}
 
 		foreach($this->_where as $where) {
+			$where[0] = $this->_quoteIdentifier($where[0]);
 
 			if(empty($_where)) {
 				$_where = "WHERE ({$where[0]})";
@@ -253,7 +257,7 @@ class Database {
 
 		return $_where;
 	}
-
+	
 	public function __construct(array $config)
 	{
 		$this->_config = (object) $config;
@@ -297,7 +301,7 @@ class Database {
 				$sql .= "FROM {$from}\n";
 			}
 		}
-
+		
 		$where = $this->_where();
 		$join = $this->_join();
 
@@ -314,7 +318,7 @@ class Database {
 		foreach($this->_binds as $key => $val) {
 			$statement->bindValue($key, $val);
 		}
-
+		
 		return $statement;
 	}
 
@@ -342,7 +346,7 @@ class Database {
 		} else {
 			$name = $tableName;
 		}
-
+		
 		if(is_null($schema)) $schema = $this->_config->database;
 
 		if(empty($columns)) $columns = array('*');

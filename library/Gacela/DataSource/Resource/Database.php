@@ -40,8 +40,7 @@ class Database extends Resource {
 	private function _loadMysql()
 	{
 		$this->_meta['columns'] = array();
-		$this->_meta['belongsTo'] = array();
-		$this->_meta['hasMany'] = array();
+		$this->_meta['relations'] = array();
 		$this->_meta['primary'] = array();
 
 		// Setup Column meta information
@@ -140,7 +139,9 @@ class Database extends Resource {
 			foreach($rs as $row) {
 				$key = explode(self::$_separator, $row->constraintName);
 				$key = $key[1];
-				$this->_meta['belongsTo'][$key] = $row;
+
+				$row->type = 'belongsTo';
+				$this->_meta['relations'][$key] = $row;
 			}
 		}
 
@@ -156,7 +157,8 @@ class Database extends Resource {
 				$key = explode(self::$_separator, $row->constraintName);
 				$key = $key[2];
 
-				$this->_meta['hasMany'][$key] = $row;
+				$row->type = 'hasMany';
+				$this->_meta['relations'][$key] = $row;
 			}
 		}
 	}
@@ -178,7 +180,7 @@ class Database extends Resource {
 
 	public function getRelations()
 	{
-		return array('hasMany' => $this->_meta['hasMany'], 'belongsTo' => $this->_meta['belongsTo']);
+		return $this->_meta['relations'];
 	}
 
 }

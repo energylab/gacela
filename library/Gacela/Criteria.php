@@ -80,7 +80,14 @@ class Criteria implements \IteratorAggregate {
 
 	public function isNull($field)
 	{
+		$this->_addCriterion('null', func_get_args());
+		return $this;
+	}
 
+	public function isNotNull($field)
+	{
+
+		$this->_addCriterion('notNull', func_get_args());
 		return $this;
 	}
 }
