@@ -235,7 +235,6 @@ class Database {
 		}
 
 		foreach($this->_where as $where) {
-			$where[0] = $this->_quoteIdentifier($where[0]);
 
 			if(empty($_where)) {
 				$_where = "WHERE ({$where[0]})";
@@ -312,7 +311,7 @@ class Database {
 		if(!empty($where)) {
 			$sql .= $where;
 		}
-
+		
 		$statement = $this->_config->db->prepare($sql);
 
 		foreach($this->_binds as $key => $val) {
