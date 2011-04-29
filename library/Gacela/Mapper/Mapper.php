@@ -77,7 +77,6 @@ abstract class Mapper implements iMapper {
 			->_initPrimaryKey()
 			->_initForeignKeys($this->_resource->getRelations())
 			->_initInherits()
-			->_initDependents()
 			->_initAssociations()
 			->_initModelName();
 			
@@ -107,12 +106,6 @@ abstract class Mapper implements iMapper {
 
 	protected function _initAssociations()
 	{
-		return $this;
-	}
-
-	protected function _initDependents()
-	{
-	
 		return $this;
 	}
 
