@@ -62,7 +62,7 @@ abstract class Model implements iModel {
 			$class = explode("\\", get_class($this));
 			$class = end($class);
 		}
-	
+		
 		$this->_mapper = \Gacela::instance()->loadMapper($class);
 
 		return $this->_mapper;

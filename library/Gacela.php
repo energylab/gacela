@@ -36,19 +36,29 @@ class Gacela {
 		$self = self::instance();
 		
         if(isset($self->_namespaces[$parts[0]])) {
-            $file = $self->_namespaces[$parts[0]].str_replace("\\", "/", $class).'.php';
-            if($self->_findFile($file)) {
-                require $file;
-                return $class;
-            }
+        	if(class_exists($class)) {
+				return $class;
+			} else {
+				$file = $self->_namespaces[$parts[0]].str_replace("\\", "/", $class).'.php';
+				if($self->_findFile($file)) {
+					require $file;
+					return $class;
+				}
+			}
         } else {
             $namespaces = array_reverse($self->_namespaces);
             foreach ($namespaces as $ns => $path) {
                 $file = $path.$ns.str_replace("\\", "/", $class).'.php';
-                
+
                 if($self->_findFile($file)) {
-                    require $file;
-                    return $ns . $class;
+                	$class = $ns.$class;
+                	
+                	if(class_exists($class)) {
+                		return $class;
+                	} else {
+                		require $file;
+                    	return $class;
+                	}
                 }
             }
         }
@@ -71,7 +81,7 @@ class Gacela {
 		$config['type'] = $type;
 		
 		$class = self::instance()->autoload("\\DataSource\\".ucfirst($type));
-		
+
 		$this->_sources[$name] = new $class($config);
 		
 		return $this;
@@ -106,13 +116,14 @@ class Gacela {
 		$name = ucfirst($name);
 
 		if (!isset($this->_mappers[$name])) {
-			$class = self::instance()->autoload("\\Mapper\\" . $name);
+			$class = "\\Mapper\\" . $name;
+			$class = self::instance()->autoload($class);
 
 			if (!$class) {
 				throw new \Exception("Failed to find mapper ({$name})!");
 			}
 
-			$this->_mappers[$name] = new $class();
+			$this->_mappers[$name] = new $class;
 		}
 
 		return $this->_mappers[$name];
