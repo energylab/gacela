@@ -3,8 +3,6 @@
  * @author Noah Goodrich
  * @date April 13, 2010
  *
- * @namespace Mapper
- * @class Mapper
 */
 
 namespace Gacela\Mapper;

@@ -3,15 +3,12 @@
  * @author noah
  * @date 2/24/11
  * @brief
- * 
+ *
 */
 
 namespace Gacela\DataSource\Query;
 
-/**
- * @class Query_Database
- */
-class Database {
+class Database extends Query {
 
 	protected static $_operators = array(
 		'equals' => '=',

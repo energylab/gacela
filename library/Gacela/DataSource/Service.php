@@ -6,9 +6,8 @@
  * 
 */
 
-use \Gacela\DataSource;
+namespace Gacela\DataSource;
 
-class Service extends DataSource
-{
+class Service extends DataSource {
 
 }
