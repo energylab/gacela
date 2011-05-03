@@ -12,7 +12,9 @@ class String extends Field {
 
 	public function validate($value)
 	{
-		if(is_null($value)) return $this->null;
+		if(empty($value)) {
+			return $this->null;
+		}
 
 		if(strlen($value) <= $this->length) {
 			return true;
