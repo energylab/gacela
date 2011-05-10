@@ -1,7 +1,8 @@
 <?php
 /** 
- * @author noah
- * @date 2/24/11
+ * @author Noah Goodrich
+ * @date May 7, 2011
+ * @package Gacela
  * @brief
  * 
 */
@@ -25,11 +26,19 @@ class Gacela {
         $this->registerNamespace('Gacela', __DIR__);
     }
 
+	/**
+	 * @param  $file
+	 * @return bool
+	 */
     protected function _findFile($file)
     {
         return file_exists($file) && is_readable($file);
     }
 
+	/**
+	 * @param  string $class
+	 * @return bool|string
+	 */
     public function autoload($class)
     {
         $parts = explode("\\", $class);
@@ -66,6 +75,10 @@ class Gacela {
         return false;
     }
 
+	/**
+	 * @static
+	 * @return Gacela
+	 */
 	public static function instance()
 	{
 		if(is_null(self::$_instance)) {
@@ -75,6 +88,12 @@ class Gacela {
 		return self::$_instance;
 	}
 
+	/**
+	 * @param  string $name Name by which the DataSource can later be referenced in Mappers and when directly accessing the registered DataSource.
+	 * @param  string $type Type of DataSource (database, *service, *xml ) *coming soon
+	 * @param  array $config Configuration arguments required by the DataSource
+	 * @return Gacela
+	 */
 	public function registerDataSource($name, $type, $config)
 	{
 		$config['name'] = $name;
@@ -87,6 +106,11 @@ class Gacela {
 		return $this;
 	}
 
+	/**
+	 * @param  string $ns
+	 * @param  string $path
+	 * @return Gacela
+	 */
 	public function registerNamespace($ns, $path)
 	{
 		if(substr($path, -1, 1) != '/') {
@@ -98,6 +122,11 @@ class Gacela {
 		return $this;
 	}
 
+	/**
+	 * @throws Exception
+	 * @param  $name
+	 * @return Gacela\DataSource\DataSource
+	 */
 	public function getDataSource($name)
 	{
 		if(!isset($this->_sources[$name])) {
@@ -107,12 +136,22 @@ class Gacela {
 		return $this->_sources[$name];
 	}
 
+	/**
+	 * @param  string $path
+	 * @return Gacela
+	 */
 	public function setCachePath($path)
 	{
 		
 	}
 
-	public function loadMapper($name) {
+	/**
+	 * @throws Exception
+	 * @param  string $name Relative name of the Mapper to load. For example, if the absolute name of the mapper was \App\Mapper\User, you would pass 'user' in as the argument
+	 * @return Gacela\Mapper\Mapper
+	 */
+	public function loadMapper($name)
+	{
 		$name = ucfirst($name);
 
 		if (!isset($this->_mappers[$name])) {

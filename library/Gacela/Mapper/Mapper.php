@@ -9,6 +9,8 @@ namespace Gacela\Mapper;
 
 abstract class Mapper implements iMapper {
 
+	protected static $_deletedField = 'isDeleted';
+
 	/**
 	 * 
 	 * @brief Contains the names of resources that are associations to Mapper::$_resource

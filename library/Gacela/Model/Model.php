@@ -10,31 +10,16 @@ namespace Gacela\Model;
 
 abstract class Model implements iModel {
 
-	/**
-	 * @var 
-	 */
 	protected $_changed = array();
 
-	/**
-	 * @var stdClass
-	 */
 	protected $_data;
 
 	protected $_errors = array();
 
-	/**
-	 * @var array
-	 */
 	protected $_fields;
 
-	/**
-	 * @var bool
-	 */
 	protected $_isValidated = false;
 
-	/**
-	 * @var bool
-	 */
 	protected $_isValid = false;
 
 	/**
@@ -48,6 +33,11 @@ abstract class Model implements iModel {
 	protected $_originalData = array();
 
 	protected $_relations = array();
+
+	protected function _get_errors()
+	{
+		return $this->_errors;
+	}
 
 	/**
 	 * @return \Gacela\Mapper\Mapper
@@ -93,6 +83,11 @@ abstract class Model implements iModel {
 		$this->init();
 	}
 
+	/**
+	 * @throws \Exception
+	 * @param  string $key
+	 * @return mixed
+	 */
 	public function __get($key)
 	{
 		$method = '_get' . ucfirst($key);
@@ -114,6 +109,10 @@ abstract class Model implements iModel {
 		}
 	}
 
+	/**
+	 * @param  string $key
+	 * @return bool
+	 */
 	public function __isset($key)
 	{
 		$method = '_isset'.ucfirst($key);
@@ -137,6 +136,11 @@ abstract class Model implements iModel {
 		return isset($this->_data->$key);
 	}
 
+	/**
+	 * @param  $key
+	 * @param  $val
+	 * @return void
+	 */
 	public function __set($key, $val)
 	{
 		$this->_originalData[$key] = $this->_data->$key;
@@ -152,7 +156,7 @@ abstract class Model implements iModel {
 	}
 
 	/**
-	 * Called at the end of __construct.
+	 * @brief Called at the end of __construct.
 	 * Allows developers to add additional stuff to the setup process without
 	 * having to directly override the constructor.
 	 * 
@@ -160,9 +164,10 @@ abstract class Model implements iModel {
 	public function init() {}
 
 	/**
+	 * @param \stdClass|null $data
 	 * @return bool
 	 */
-	public function save($data = null)
+	public function save(array $data = null)
 	{
 		if(!$this->validate($data)) {
 			return false;
@@ -183,7 +188,11 @@ abstract class Model implements iModel {
 		return true;
 	}
 
-	public function validate($data = null)
+	/**
+	 * @param \stdClass|null $data
+	 * @return bool
+	 */
+	public function validate(array $data = null)
 	{
 		if(!is_null($data)) {
 			foreach($data as $key => $val) {

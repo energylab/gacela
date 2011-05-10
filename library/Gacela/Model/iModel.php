@@ -10,7 +10,7 @@ namespace Gacela\Model;
 
 interface iModel {
 
-	public function save($data = null);
+	public function save(array $data = null);
 
-	public function validate($data = null);
+	public function validate(array $data = null);
 }

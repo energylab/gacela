@@ -1,7 +1,7 @@
 <?php
 /** 
- * @author noah
- * @date Oct 4, 2010
+ * @author Noah Goodrich
+ * @date May 7, 2011
  * @brief
 */
 
@@ -24,6 +24,56 @@ class Database extends DataSource {
 		$this->_db = new \PDO($dsn, $this->_config->user, $this->_config->password);
 	}
 
+	/**
+	 * @throws \Exception
+	 * @param  $name
+	 * @param Gacela\Criteria $where
+	 * @return bool
+	 */
+	public function delete($name, Gacela\Criteria $where)
+	{
+		if($this->getQuery($where)->delete($name)->assemble()->execute()) {
+			return true;
+		} else {
+			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));
+		}
+	}
+
+	/**
+	 * @see \Gacela\DataSource\iDataSource::getQuery()
+	 */
+	public function getQuery(\Gacela\Criteria $criteria = null)
+	{
+		return new Query\Database(array_merge((array) $this->_config, array('db' => $this->_db, 'criteria' => $criteria)));
+	}
+
+	/**
+	 * @see Gacela\DataSource\iDataSource::insert()
+	 */
+	public function insert($name, $data)
+	{
+		if($this->getQuery()->insert($name, $data)->assemble()->execute()) {
+			return $this->_db->lastInsertId();
+		} else {
+			throw new \Exception('Insert failed with errors: '.\Util::debug($query->errorInfo()));
+		}
+	}
+
+	/**
+	 * @see \Gacela\DataSource\iDataSource::loadResource()
+	 */
+	public function loadResource($name)
+	{
+		if(!isset($this->_resources[$name]))  {
+			$this->_resources[$name] = new Resource\Database(array_merge((array) $this->_config, array('name' => $name, 'db' => $this->_db)));
+		}
+
+		return $this->_resources[$name];
+	}
+
+	/**
+	 * @see Gacela\DataSource\iDataSource::query()
+	 */
 	public function query($query)
 	{
 		if($query instanceof Query\Database)  {
@@ -41,51 +91,12 @@ class Database extends DataSource {
 		}
 	}
 
-	/**
-	 * @throws \Exception
-	 * @param  string $name
-	 * @param  array $data
-	 * @param bool $multiple
-	 * @return int
-	 */
-	public function insert($name, $data)
-	{
-		if($this->getQuery()->insert($name, $data)->assemble()->execute()) {
-			return $this->_db->lastInsertId();
-		} else {
-			throw new \Exception('Insert failed with errors: '.\Util::debug($query->errorInfo()));
-		}
-	}
-
-	public function update($name, $data, Gacela\Criteria $where)
+	public function update($name, $data, \Gacela\Criteria $where)
 	{
 		if($this->getQuery($where)->update($name, $data)->assemble()->execute()) {
 			return true;
 		} else {
 			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));
 		}
-	}
-
-	public function delete($name, Gacela\Criteria $where)
-	{
-		if($this->getQuery($where)->delete($name)->assemble()->execute()) {
-			return true;
-		} else {
-			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));
-		}
-	}
-
-	public function getQuery(\Gacela\Criteria $criteria = null)
-	{
-		return new Query\Database(array_merge((array) $this->_config, array('db' => $this->_db, 'criteria' => $criteria)));
-	}
-
-	public function loadResource($name)
-	{
-		if(!isset($this->_resources[$name]))  {
-			$this->_resources[$name] = new Resource\Database(array_merge((array) $this->_config, array('name' => $name, 'db' => $this->_db)));
-		}
-
-		return $this->_resources[$name];
 	}
 }

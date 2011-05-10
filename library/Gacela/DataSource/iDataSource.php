@@ -1,7 +1,7 @@
 <?php
 /** 
- * @author noah
- * @date 2/24/11
+ * @author Noah Goodrich
+ * @date May 7, 2011
  * @brief
  * 
 */
@@ -10,17 +10,57 @@ namespace Gacela\DataSource;
 
 interface iDataSource {
 
+	/**
+	 * @abstract
+	 * @param array $config
+	 */
 	public function __construct(array $config);
-	
-	public function query($query);
 
-	public function insert($name, $data);
-
-	public function update($name, $data, Gacela\Criteria $where);
-
+	/**
+	 * @abstract
+	 * @param  $name
+	 * @param \Gacela\Criteria $where
+	 * @return bool
+	 */
 	public function delete($name, Gacela\Criteria $where);
 
-	public function getQuery();
+	/**
+	 * @abstract
+	 * @param \Gacela\Criteria $criteria
+	 * @return \Gacela\DataSource\Query\Query
+	 */
+	public function getQuery(\Gacela\Criteria $criteria = null);
 
+	/**
+	 * @abstract
+	 * @throws \Exception
+	 * @param  string $name Resource Name to use
+	 * @param  array $data Can be a multi-dimensional array to insert many records or a single array to insert one record
+	 * @return int|bool Last insert id (if supported by the DataSource and Resource) otherwise a boolean true
+	 */
+	public function insert($name, $data);
+
+	/**
+	 * @abstract
+	 * @param  string $name
+	 * @return \Gacela\DataSource\Resource\Resource
+	 */
 	public function loadResource($name);
+
+	/**
+	 * @abstract
+	 * @throws \Exception
+	 * @param  string|Query $query A valid representation of a query for the DataSource
+	 * @return array 
+	 */
+	public function query($query);
+
+	/**
+	 * @abstract
+	 * @param  string $name
+	 * @param  array $data
+	 * @param \Gacela\Criteria $where
+	 * @return bool 
+	 */
+	public function update($name, $data, \Gacela\Criteria $where);
 }
