@@ -362,6 +362,9 @@ abstract class Mapper implements iMapper {
 
 			$criteria->equals($relation['meta']->refColumn, $data->{$relation['meta']->keyColumn});
 
+			// How to handle situations where a Model uses a Mapper other than the default?
+			// Two possible solutions: Create an empty Mapper, Register irregular relationships with Gacela
+			
 			$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
 
 			if ($relation['meta']->type == 'belongsTo') {

@@ -34,7 +34,7 @@ abstract class Model implements iModel {
 
 	protected $_relations = array();
 
-	protected function _get_errors()
+	protected function _getErrors()
 	{
 		return $this->_errors;
 	}
@@ -143,14 +143,14 @@ abstract class Model implements iModel {
 	 */
 	public function __set($key, $val)
 	{
-		$this->_originalData[$key] = $this->_data->$key;
-		$this->_changed[] = $key;
-		
 		$method = '_set'.ucfirst($key);
 
 		if(method_exists($this, $method)) {
 			$this->$method($val);
 		} else {
+			$this->_originalData[$key] = $this->_data->$key;
+			$this->_changed[] = $key;
+
 			$this->_data->$key = $val;
 		}
 	}
@@ -201,9 +201,7 @@ abstract class Model implements iModel {
 		}
 
 		foreach((array) $this->_data as $key => $val) {
-			$rs = $this->_fields[$key]->validate($val);
-
-			if(!$rs) {
+			if($this->_fields[$key]->validate($val) === false) {
 				$this->_errors[$key] = 'Error Will Robinson!';
 			}
 		}
