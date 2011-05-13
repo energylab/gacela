@@ -1,7 +1,7 @@
 <?php
 /** 
- * @author noah
- * @date Oct 4, 2010
+ * @author Noah Goodrich
+ * @date May 12, 2011
  * @brief
  * 
 */
