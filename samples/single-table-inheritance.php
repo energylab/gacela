@@ -6,33 +6,36 @@
  * 
  */
 
- require '_init.php';
+require '_init.php';
 
-$wizardId = null;
-$fullName = null;
-$errors = null;
+$errors = '';
+
+if(isset($_GET['id'])) {
+	$model = Gacela::instance()->loadMapper('teacher')->find($_GET['id']);
+} else {
+	$model = new \App\Model\Teacher;
+	$model->role = 'teacher';
+}
 
 if(count($_POST)) {
-
-	$model = new \App\Model\Teacher;
-
 	$model->fullName = $_POST['fullName'];
-	$model->role = 'teacher';
 
 	if(!$model->save()) {
-		$errors = join('<br/>', $model->errors);
+		foreach($model->errors as $key => $val) {
+			$errors .= 'Field: '.$key.' ErrorCode: '.$val.'<br/>';
+		}
 	}
 }
 ?>
  
 <h3>Single Table Inheritance</h3>
 
-<p><?= $errors ?></p>
+<p><?//= $errors ?></p>
 <form action="/single-table-inheritance.php" method="post">
-	<input type="hidden" name="wizardId" value="<? $wizardId ?>" />
+	<input type="hidden" name="wizardId" value="<?//= $model->wizardId ?>" />
 
 	<label>Full Name</label>
-	<input type="text" name="fullName" value="<?= $fullName ?>" />
+	<input type="text" name="fullName" value="<?//= $model->fullName ?>" />
 
 	<input type="submit" />
 </form>
@@ -69,8 +72,8 @@ foreach($wizards as $wiz) {
 				<td>'.$names.'</td>
 				<td>'.get_class($wiz).'</td>
 				<td>
-					<a href="">Edit</a>
-					<a href="">Delete</a>
+					<a href="/single-table-inheritance.php?id='.$wiz->wizardId.'">Edit</a>
+					<a href="/single-table-inheritance.php?id='.$wiz->wizardId.'">Delete</a>
 				</td>
 			</tr>';
 }

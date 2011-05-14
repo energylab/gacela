@@ -10,15 +10,22 @@ namespace Gacela\Field;
 
 class Bool extends Field {
 
+	const TYPE_CODE = 'invalid_bool';
+	
 	public function validate($value)
 	{
-		$value = $this->transform($value, false);
+		unset($this->errorCode);
 
 		if(is_null($value)) {
+			if(!$this->null) {
+				$this->errorCode = self::NULL_CODE;
+			}
+
 			return $this->null;
 		}
 
 		if(!is_bool($value)) {
+			$this->errorCode = self::TYPE_CODE;
 			return false;
 		} else {
 			return true;
@@ -27,10 +34,12 @@ class Bool extends Field {
 
 	public function transform($value, $in = true)
 	{
-		if($in) {
+		if($in && is_bool($value)) {
 			$value === true ? $value = 1 : $value = 0;
 			return $value;
-		} else {
+		} elseif($in && ctype_digit($value)) {
+			return $value;
+		} elseif(!$in) {
 			if(is_bool($value)) {
 				return $value;
 			} else {

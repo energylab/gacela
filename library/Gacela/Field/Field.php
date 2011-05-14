@@ -10,6 +10,11 @@ namespace Gacela\Field;
 
 abstract class Field {
 
+	const NULL_CODE = 'null';
+	const LENGTH_CODE = 'invalid_length';
+
+	public $errorCode = null;
+
 	protected $_meta = array();
 
 	public function __construct(array $meta)
@@ -24,6 +29,11 @@ abstract class Field {
 			}
 
 		return $this->_meta[$key];
+	}
+
+	public function override($key, $val)
+	{
+		$this->_meta[$key] = $val;
 	}
 
 	/**

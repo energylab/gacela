@@ -142,9 +142,29 @@ abstract class Mapper implements iMapper {
 		$_dependents = $this->_dependents;
 		$this->_dependents = array();
 
+		$fields = $this->_resource->getFields();
+
 		foreach($_dependents as $name) {
-			$this->_dependents[$name] = $this->_foreignKeys[$name];
+			$dependent = $this->_foreignKeys[$name];
+
 			unset($this->_foreignKeys[$name]);
+
+			/**
+			 * If the keyColumn of the primary resource is nullable, then all fields in the dependent relationship need to
+			 * appear nullable.
+			 */
+			if($fields[$dependent['meta']->keyColumn]->null) {
+
+				foreach($dependent['resource']->getFields() as $key => $val) {
+					if(in_array($key, $this->_primaryKey)) {
+						continue;
+					}
+
+					$val->override('null', true);
+				}
+			}
+
+			$this->_dependents[$name] = $dependent;
 		}
 		
 		return $this;
@@ -314,7 +334,7 @@ abstract class Mapper implements iMapper {
 			foreach($primary as $key => $value) {
 				$criteria->equals($key, $value);
 			}
-
+			
 			$query = $this->_source->getQuery($criteria);
 
 			$data = current($this->_query($query));
@@ -362,9 +382,6 @@ abstract class Mapper implements iMapper {
 
 			$criteria->equals($relation['meta']->refColumn, $data->{$relation['meta']->keyColumn});
 
-			// How to handle situations where a Model uses a Mapper other than the default?
-			// Two possible solutions: Create an empty Mapper, Register irregular relationships with Gacela
-			
 			$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
 
 			if ($relation['meta']->type == 'belongsTo') {
@@ -401,11 +418,11 @@ abstract class Mapper implements iMapper {
 		$array = $this->_resource->getFields();
 
 		foreach($this->_inherits as $stuff) {
-			$array = array_merge($array, $stuff['resource']->getFields());
+			$array = array_merge($stuff['resource']->getFields(), $array);
 		}
 
 		foreach($this->_dependents as $dependent) {
-			$array = array_merge($array, $dependent['resource']->getFields());
+			$array = array_merge($dependent['resource']->getFields(), $array);
 		}
 		
 		return $array;

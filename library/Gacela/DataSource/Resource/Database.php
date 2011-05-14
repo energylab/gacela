@@ -55,7 +55,7 @@ class Database extends Resource {
 		}
 
 		$columns = $stmt->fetchAll(\PDO::FETCH_OBJ);
-
+		
 		foreach($columns as $column) {
 			preg_match('/(?P<type>\w+)($|\((?P<length>(\d+|(.*)))\))/', $column->Type, $meta);
 
@@ -71,7 +71,7 @@ class Database extends Resource {
 						$meta
 					);
 			
-			$column->Null == 'No' ? $meta['null'] = true : $meta['null'] = false;
+			$column->Null == 'YES' ? $meta['null'] = true : $meta['null'] = false;
 
 			if($column->Key == 'PRI') {
 				$meta['primary'] = true;

@@ -61,14 +61,15 @@ class Database extends Query {
 		foreach($criteria as $stmt) {
 			$field = $stmt[1];
 
+			$bind = array();
+			$toBind = '';
 			if(isset($stmt[2])) {
-				$value = $stmt[2];
 				$toBind = ":{$stmt[1]}";
+				$bind = array($toBind => $stmt[2]);
 			}
 
-
 			if(in_array($stmt[0], array('equals', 'notEquals', 'lessThan', 'greaterThan'))) {
-				$this->where("{$field} ".self::$_operators[$stmt[0]]." {$toBind}", array("{$toBind}" => $value));
+				$this->where("{$field} ".self::$_operators[$stmt[0]]." {$toBind}", $bind);
 			} elseif(in_array($stmt[0], array('in', 'notIn'))) {
 
 			} elseif($stmt[0] == 'notNull') {

@@ -63,21 +63,21 @@ abstract class Model implements iModel {
 	 */
 	public function __construct($data = array())
 	{
-		if(is_array($data)) {
-			$data = (object) $data;
+		if(is_object($data)) {
+			$data = (array) $data;
 		}
 
 		$this->_fields = $this->_mapper()->getFields();
 		$this->_relations = $this->_mapper()->getRelations();
-		
-		if(!isset($data->{key($this->_fields)})) {
+
+		if(!count($data)) {
 			$this->_data = new \stdClass;
 
 			foreach($this->_fields as $field => $meta) {
 				$this->_data->$field = $meta->default;
 			}
 		} else {
-			$this->_data = $data;
+			$this->_data = (object) $data;
 		}
 
 		$this->init();
@@ -96,17 +96,12 @@ abstract class Model implements iModel {
 		} elseif (array_key_exists($key, $this->_relations)) {
 			return $this->_mapper()->findRelation($key, $this->_data);
 		} else {
-			if(isset($this->_fields[$key])) {
-				return $this->_fields[$key]->transform($this->_data->$key, false);
-			}
-
 			if(isset($this->_data->$key)) {
 				return $this->_data->$key;
 			}
-
-			throw new \Exception("Specified key ($key) does not exist!");
-
 		}
+
+		throw new \Exception("Specified key ($key) does not exist!");
 	}
 
 	/**
@@ -151,7 +146,7 @@ abstract class Model implements iModel {
 			$this->_originalData[$key] = $this->_data->$key;
 			$this->_changed[] = $key;
 
-			$this->_data->$key = $val;
+			$this->_data->$key = $this->_fields[$key]->transform($val, false);
 		}
 	}
 
@@ -202,7 +197,7 @@ abstract class Model implements iModel {
 
 		foreach((array) $this->_data as $key => $val) {
 			if($this->_fields[$key]->validate($val) === false) {
-				$this->_errors[$key] = 'Error Will Robinson!';
+				$this->_errors[$key] = $this->_fields[$key]->errorCode;
 			}
 		}
 

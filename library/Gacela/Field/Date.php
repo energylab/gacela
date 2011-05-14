@@ -12,11 +12,14 @@ class Date extends Field {
 
 	public function validate($value)
 	{
-		if(is_null($value) && $this->_meta->null) {
+		unset($this->errorCode);
+		
+		if(empty($value) && $this->_meta->null) {
 			return true;
 		}
 
-		if(is_null($value) && !$this->_meta->null) {
+		if(empty($value) && !$this->_meta->null) {
+			$this->errorCode = self::NULL_CODE;
 			return false;
 		}
 
@@ -25,10 +28,14 @@ class Date extends Field {
 
 	public function transform($value, $in = true)
 	{
-		if($in) {
+		if($in && ctype_digit($value)) {
 			return date($value, 'c');
-		} else {
+		} elseif($in && ctype_alnum($value)) {
+			return $value;
+		} elseif(!$in && ctype_alnum($value)) {
 			return strtotime($value);
+		} elseif(!$in && ctype_digit($value)) {
+			return $value;
 		}
 	}
 }
