@@ -17,8 +17,8 @@ class Wizard extends M {
 	protected function _load(\stdClass $data)
 	{
 		$primary = $this->_primaryKey($data);
-
-		if(is_null($data->role) || is_null($primary)) {
+		
+		if(!property_exists($data, 'role') || is_null($data->role) || is_null($primary)) {
 			return parent::_load($data);
 		} elseif($data->role == 'student' && get_class($this) != 'App\Mapper\Student') {
 			// Because students load from their mapper that allows them to inherit

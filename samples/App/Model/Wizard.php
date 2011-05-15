@@ -19,7 +19,7 @@ class Wizard extends M {
 
 	protected function _setFullName($value)
 	{
-		$this->fname = substr($value, 0, strpos($value, ' '));
-		$this->lname = substr($value, strpos($value, ' '));
+		$this->fname = trim(substr($value, 0, strpos($value, ' ')));
+		$this->lname = trim(substr($value, strpos($value, ' ')));
 	}
 }

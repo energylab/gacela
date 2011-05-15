@@ -84,6 +84,22 @@ abstract class Mapper implements iMapper {
 		return $this;
 	}
 
+	protected function _fields(\Gacela\DataSource\Resource\Resource $resource, $data)
+	{
+		$data = (array) $data;
+		$fields = $resource->getFields();
+		
+		foreach($data as $key => $val) {
+			if(!isset($fields[$key])) {
+				unset($data[$key]);
+			} else {
+				$data[$key] = $fields[$key]->transform($val);
+			}
+		}
+		
+		return $data;
+	}
+
 	protected function _query($query)
 	{
 		$query->from($this->_resource->getName());
@@ -339,8 +355,8 @@ abstract class Mapper implements iMapper {
 
 			$data = current($this->_query($query));
 		}
-
-		if(!isset($data) || !count($data)) {
+		
+		if(!isset($data) || empty($data)) {
 			$data = new \stdClass();
 		}
 
@@ -481,20 +497,25 @@ abstract class Mapper implements iMapper {
 	 */
 	public function save(array $changed, \stdClass $data)
 	{
-		$primary = $this->_primaryKey($data);
-		$fields = $this->getFields();
-
-		$toSave = array();
-		foreach($changed as $field) {
-			$toSave[$field] = $fields[$field]->transform($data->$field);
+		foreach($this->_dependents as $dependent) {
+			//$this->_fields($dependent['resource'], $data);
 		}
+
+		foreach($this->_inherits as $name => $parent) {
+			// $this->_fields($parent['resource'], $data);
+		}
+
+		$primary = $this->_primaryKey($data);
 
 		if(is_array($primary)) {
 			$primary = join('-', array_values($primary));
 		}
 
+		$save = $this->_fields($this->_resource, $data);
+		$fields = $this->_resource->getFields();
+
 		if(!isset($this->_models[$primary])) {
-			$rs = $this->_source->insert($this->_resource->getName(), $toSave);
+			$rs = $this->_source->insert($this->_resourceName, $save);
 
 			if($rs === false) {
 				return false;
@@ -512,7 +533,7 @@ abstract class Mapper implements iMapper {
 				$where->equals($key, $data->$key);
 			}
 			
-			return $this->_source->update($this->_resource->getName(), $data, $where);
+			return $this->_source->update($this->_resourceName, $save, $where);
 		}
 
 		return $data;
