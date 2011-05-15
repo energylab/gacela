@@ -489,6 +489,10 @@ abstract class Mapper implements iMapper {
 			$toSave[$field] = $fields[$field]->transform($data->$field);
 		}
 
+		if(is_array($primary)) {
+			$primary = join('-', array_values($primary));
+		}
+
 		if(!isset($this->_models[$primary])) {
 			$rs = $this->_source->insert($this->_resource->getName(), $toSave);
 
@@ -505,7 +509,7 @@ abstract class Mapper implements iMapper {
 			$where = new \Gacela\Criteria();
 
 			foreach($this->_primaryKey as $key) {
-				$where->equals($key, $data[$key]);
+				$where->equals($key, $data->$key);
 			}
 			
 			return $this->_source->update($this->_resource->getName(), $data, $where);

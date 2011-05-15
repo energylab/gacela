@@ -221,7 +221,7 @@ class Database extends Query {
 
 		$sql = substr($sql, 0, strlen($sql) - 2);
 
-		return $sql;
+		return $sql.' ';
 	}
 
 	private function _where()

@@ -93,10 +93,12 @@ class Database extends DataSource {
 
 	public function update($name, $data, \Gacela\Criteria $where)
 	{
-		if($this->getQuery($where)->update($name, $data)->assemble()->execute()) {
+		$query = $this->getQuery($where)->update($name, $data)->assemble();
+		
+		if($query->execute()) {
 			return true;
 		} else {
-			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));
+			throw new \Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');
 		}
 	}
 }

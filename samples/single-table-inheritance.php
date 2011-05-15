@@ -10,8 +10,9 @@ require '_init.php';
 
 $errors = '';
 
-if(isset($_GET['id'])) {
-	$model = Gacela::instance()->loadMapper('teacher')->find($_GET['id']);
+if(isset($_GET['id']) || isset($_POST['id'])) {
+	$id = isset($_GET['id']) ? $_GET['id'] : $_POST['id'];
+	$model = Gacela::instance()->loadMapper('teacher')->find($id);
 } else {
 	$model = new \App\Model\Teacher;
 	$model->role = 'teacher';
@@ -26,16 +27,17 @@ if(count($_POST)) {
 		}
 	}
 }
+
 ?>
  
 <h3>Single Table Inheritance</h3>
 
 <p><?//= $errors ?></p>
 <form action="/single-table-inheritance.php" method="post">
-	<input type="hidden" name="wizardId" value="<?//= $model->wizardId ?>" />
+	<input type="hidden" name="id" value="<?= $model->wizardId ?>" />
 
 	<label>Full Name</label>
-	<input type="text" name="fullName" value="<?//= $model->fullName ?>" />
+	<input type="text" name="fullName" value="<?= $model->fullName ?>" />
 
 	<input type="submit" />
 </form>
