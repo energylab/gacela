@@ -72,14 +72,18 @@ abstract class Model implements iModel {
 
 		if(!count($data)) {
 			$this->_data = new \stdClass;
-
+			
 			foreach($this->_fields as $field => $meta) {
-				$this->_data->$field = $meta->default;
+				$this->$field = $meta->default;
 			}
 		} else {
-			$this->_data = (object) $data;
+			$this->_data = new \stdClass;
+			
+			foreach($data as $key => $value) {
+				$this->_data->$key = $this->_fields[$key]->transform($data[$key], false);
+			}
 		}
-
+		
 		$this->init();
 	}
 
@@ -143,7 +147,10 @@ abstract class Model implements iModel {
 		if(method_exists($this, $method)) {
 			$this->$method($val);
 		} else {
-			$this->_originalData[$key] = $this->_data->$key;
+			if(isset($this->_data->$key)) {
+				$this->_originalData[$key] = $this->_data->$key;
+			}
+			
 			$this->_changed[] = $key;
 
 			$this->_data->$key = $this->_fields[$key]->transform($val, false);

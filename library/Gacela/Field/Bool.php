@@ -23,7 +23,7 @@ class Bool extends Field {
 
 			return $this->null;
 		}
-
+		
 		if(!is_bool($value)) {
 			$this->errorCode = self::TYPE_CODE;
 			return false;

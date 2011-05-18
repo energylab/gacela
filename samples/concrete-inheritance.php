@@ -8,20 +8,47 @@
 
 require '_init.php';
 
-$students = Gacela::instance()->loadMapper('student')->findAll();
+$houses = Gacela::instance()->loadMapper('house')->findAll();
+
+if(isset($_GET['id']) || isset($_POST['id'])) {
+	$id = isset($_GET['id']) ? $_GET['id'] : $_POST['id'];
+	$student = Gacela::instance()->loadMapper('student')->find($id);
+}
+
+if(count($_POST)) {
+	if(!isset($student)) {
+		$student = new \App\Model\Student;
+	}
+
+	$student->fullName = $_POST['fullName'];
+	$student->role = 'student';
+	$student->houseId = $_POST['houseId'];
+
+	if(!$student->save()) {
+		exit(debug($student->errors));
+	}
+}
+
+if(!isset($_GET['action']) || $_GET['action'] != 'edit') {
+	unset($student);
+}
 
 ?>
 <h3>Concrete Table Inheritance</h3>
 
-<form>
+<form action="/concrete-inheritance.php" method="post">
+	<input type="hidden" name="id" value="<?= isset($student) ? $student->wizardId : null ?>" />
 	<label>Student Name</label>
-	<input type="text" name="fullName" /><br/>
+	<input type="text" name="fullName"  value="<?= isset($student) ? $student->fullName : null ?>" /><br/>
 
+	<label>House</label>
 	<select name="houseId">
 	<? foreach($houses as $house): ?>
-
+		<option value="<?= $house->houseId ?>"><?= $house->houseName ?></option>
 	<? endforeach; ?>
-	</select>
+	</select><br/>
+
+	<input type="submit" />
 </form>
 
 <table>
@@ -32,13 +59,15 @@ $students = Gacela::instance()->loadMapper('student')->findAll();
 	</thead>
 	<tbody>
 <?
+$students = Gacela::instance()->loadMapper('student')->findAll();
+
 foreach($students as $student) {
 	echo '<tr>
 			<td>'.$student->fullName.'</td>
 			<td>'.$student->house->houseName.'</td>
 			<td>
-				<a href="">Edit</a>
-				<a href="">Delete</a>
+				<a href="concrete-inheritance.php?action=edit&id='.$student->wizardId.'">Edit</a>
+				<a href="concrete-inheritance.php?action=delete&id='.$student->wizardId.'">Delete</a>
 			</td>
 		</tr>';
 }

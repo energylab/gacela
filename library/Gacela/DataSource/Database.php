@@ -25,6 +25,7 @@ class Database extends DataSource {
 	}
 
 	/**
+	 * @see Gacela\DataSource\iDataSource::delete()
 	 * @throws \Exception
 	 * @param  $name
 	 * @param Gacela\Criteria $where
@@ -37,6 +38,16 @@ class Database extends DataSource {
 		} else {
 			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));
 		}
+	}
+
+	public function find()
+	{
+
+	}
+
+	public function findAll()
+	{
+
 	}
 
 	/**
@@ -91,6 +102,14 @@ class Database extends DataSource {
 		}
 	}
 
+	/**
+	 * @see Gacela\DataSource\iDataSource::update()
+	 * @throws \Exception
+	 * @param  $name
+	 * @param  $data
+	 * @param \Gacela\Criteria $where
+	 * @return bool
+	 */
 	public function update($name, $data, \Gacela\Criteria $where)
 	{
 		$query = $this->getQuery($where)->update($name, $data)->assemble();

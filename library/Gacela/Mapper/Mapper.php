@@ -123,7 +123,7 @@ abstract class Mapper implements iMapper {
 	{
 		return \Gacela::instance()
 					->loadMapper(\Gacela\Inflector::singularize($name))
-					->findAllByAssociation($this->_resource->getName(), $this->_primaryKey($data));
+					->findAllByAssociation($this->_resource->getName(), $this->_primaryKey($this->_primaryKey, $data));
 
 	}
 
@@ -284,7 +284,7 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _load(\stdClass $data)
 	{
-		$primary = $this->_primaryKey($data);
+		$primary = $this->_primaryKey($this->_primaryKey, $data);
 
 		if(is_null($primary)) {
 			return new $this->_modelName($data);
@@ -303,10 +303,10 @@ abstract class Mapper implements iMapper {
 	 * @param  $data
 	 * @return null|string
 	 */
-	protected function _primaryKey($data)
+	protected function _primaryKey($primaryKey, $data)
 	{
 		$primary = array();
-		foreach($this->_primaryKey as $k) {
+		foreach($primaryKey as $k) {
 			if(!isset($data->$k) || is_null($data->$k)) {
 				continue;
 			}
@@ -344,7 +344,7 @@ abstract class Mapper implements iMapper {
 			$id = (object) $id;
 		}
 
-		$primary = $this->_primaryKey($id);
+		$primary = $this->_primaryKey($this->_primaryKey, $id);
 		
 		if(!is_null($primary)) {
 			foreach($primary as $key => $value) {
@@ -434,7 +434,7 @@ abstract class Mapper implements iMapper {
 		$array = $this->_resource->getFields();
 
 		foreach($this->_inherits as $stuff) {
-			$array = array_merge($stuff['resource']->getFields(), $array);
+			$array = array_merge($array, $stuff['resource']->getFields());
 		}
 
 		foreach($this->_dependents as $dependent) {
@@ -502,10 +502,30 @@ abstract class Mapper implements iMapper {
 		}
 
 		foreach($this->_inherits as $name => $parent) {
-			// $this->_fields($parent['resource'], $data);
+			$save = $this->_fields($parent['resource'], $data);
+
+			$primary = $this->_primaryKey($parent['resource']->getPrimaryKey(), $data);
+
+			if(is_null($primary)) {
+				$rs = $this->_source->insert($parent['resource']->getName(), $save);
+
+				// Handle a failed insertion.
+
+				$data->{current($this->_primaryKey)} = $rs;
+			} else {
+				$where = new \Gacela\Criteria();
+
+				foreach($this->_primaryKey as $key) {
+					$where->equals($key, $data->$key);
+				}
+
+				$this->_source->update($parent['resource']->getName(), $save, $where);
+
+				// Handle a failed update.
+			}
 		}
 
-		$primary = $this->_primaryKey($data);
+		$primary = $this->_primaryKey($this->_primaryKey, $data);
 
 		if(is_array($primary)) {
 			$primary = join('-', array_values($primary));
@@ -526,6 +546,8 @@ abstract class Mapper implements iMapper {
 					$data->{$this->_primaryKey[0]} = $rs;
 				}
 			}
+
+			$this->_load($data);
 		} else {
 			$where = new \Gacela\Criteria();
 
