@@ -22,8 +22,14 @@ interface iDataSource {
 	 * @param \Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function delete($name, Gacela\Criteria $where);
+	public function delete($name, \Gacela\Criteria $where);
 
+	public function find(array $primary, \Gacela\DataSource\Resource\Resource $resource, array $inherits, array $dependents);
+
+	public function findAll(\Gacela\Criteria $criteria = null, \Gacela\DataSource\Resource\Resource $resource, array $inherits, array $dependents);
+
+	public function findAllByAssociation(\Gacela\DataSource\Resource\Resource $resource, array $relation, array $data, array $inherits, array $dependents);
+	
 	/**
 	 * @abstract
 	 * @param \Gacela\Criteria $criteria

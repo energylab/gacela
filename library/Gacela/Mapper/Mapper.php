@@ -99,26 +99,7 @@ abstract class Mapper implements iMapper {
 		
 		return $data;
 	}
-
-	protected function _query($query)
-	{
-		$query->from($this->_resource->getName());
-
-		foreach($this->_inherits as $relation) {
-			$on = $this->_resource->getName().'.'.$relation['meta']->keyColumn." = ".$relation['meta']->refTable.'.'.$relation['meta']->refColumn;
-
-			$query->join($relation['meta']->refTable, $on, array('*'));
-		}
-
-		foreach($this->_dependents as $relation) {
-			$on = $this->_resource->getName().'.'.$relation['meta']->keyColumn." = ".$relation['meta']->refTable.'.'.$relation['meta']->refColumn;
-
-			$query->join($relation['meta']->refTable, $on, array('*'), 'left');
-		}
-
-		return $this->_source->query($query);
-	}
-
+	
 	protected function _findAssociation($name, $data)
 	{
 		return \Gacela::instance()
@@ -295,7 +276,7 @@ abstract class Mapper implements iMapper {
 		if(!isset($this->_models[$primary])) {
 			$this->_models[$primary] = new $this->_modelName($data);
 		}
-
+		
 		return $this->_models[$primary];
 	}
 
@@ -347,13 +328,7 @@ abstract class Mapper implements iMapper {
 		$primary = $this->_primaryKey($this->_primaryKey, $id);
 		
 		if(!is_null($primary)) {
-			foreach($primary as $key => $value) {
-				$criteria->equals($key, $value);
-			}
-			
-			$query = $this->_source->getQuery($criteria);
-
-			$data = current($this->_query($query));
+			$data = current($this->_source->find($primary, $this->_resource, $this->_inherits, $this->_dependents));
 		}
 		
 		if(!isset($data) || empty($data)) {
@@ -370,9 +345,10 @@ abstract class Mapper implements iMapper {
 	 */
 	public function findAll(\Gacela\Criteria $criteria = null)
 	{
-		$query = $this->_source->getQuery($criteria);
-		
-		return new \Gacela\Collection($this, $this->_query($query));
+		return new 	\Gacela\Collection(
+						$this,
+						$this->_source->findAll($criteria, $this->_resource, $this->_inherits, $this->_dependents)
+					);
 	}
 
 	/**
@@ -458,20 +434,18 @@ abstract class Mapper implements iMapper {
 		return $relations;
 	}
 
-	public function findAllByAssociation($relation, array $key)
+	public function findAllByAssociation($relation, array $data)
 	{
-		$relation = $this->_associations[$relation];
-
-		$query = $this->_source->getQuery()
-					->join($relation['meta']->refTable, $this->_resource->getName().'.'.$relation['meta']->keyColumn.' = '.$relation['meta']->refTable.'.'.$relation['meta']->refColumn);
-
-		foreach($key as $primary => $value) {
-			$query->where($relation['meta']->refTable.'.'.$primary.' = :'.$primary, array(':'.$primary => $value));
-		}
-
-		$rs = $this->_query($query);
-		
-		return new \Gacela\Collection($this, $rs);
+		return new 	\Gacela\Collection(
+						$this,
+						$this->_source->findAllByAssociation(
+							$this->_resource,
+							$this->_associations[$relation],
+							$data,
+							$this->_inherits,
+							$this->_dependents
+						)
+					);
 	}
 
 	public function init()
@@ -554,8 +528,8 @@ abstract class Mapper implements iMapper {
 			foreach($this->_primaryKey as $key) {
 				$where->equals($key, $data->$key);
 			}
-			
-			return $this->_source->update($this->_resourceName, $save, $where);
+
+			$this->_source->update($this->_resourceName, $save, $where);
 		}
 
 		return $data;

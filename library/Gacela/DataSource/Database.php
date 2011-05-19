@@ -15,6 +15,37 @@ class Database extends DataSource {
 
 	protected $_resources = array();
 
+	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, $name, array $inherits, array $dependents)
+	{
+		$query->from($name);
+
+		foreach($inherits as $relation) {
+			$on = 	$name
+					.'.'
+					.$relation['meta']->keyColumn
+					." = "
+					.$relation['meta']->refTable
+					.'.'
+					.$relation['meta']->refColumn;
+
+			$query->join($relation['meta']->refTable, $on, array('*'));
+		}
+
+		foreach($dependents as $relation) {
+			$on = 	$name
+					.'.'
+					.$relation['meta']->keyColumn
+					." = ".
+					$relation['meta']->refTable
+					.'.'
+					.$relation['meta']->refColumn;
+
+			$query->join($relation['meta']->refTable, $on, array('*'), 'left');
+		}
+
+		return $query;
+	}
+
 	public function __construct(array $config)
 	{
 		$this->_config = (object) $config;
@@ -31,7 +62,7 @@ class Database extends DataSource {
 	 * @param Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function delete($name, Gacela\Criteria $where)
+	public function delete($name, \Gacela\Criteria $where)
 	{
 		if($this->getQuery($where)->delete($name)->assemble()->execute()) {
 			return true;
@@ -40,16 +71,79 @@ class Database extends DataSource {
 		}
 	}
 
-	public function find()
+	/**
+	 * @param array $primary
+	 * @param Resource\Resource $resource
+	 * @param array $inherits
+	 * @param array $dependents
+	 * @return 
+	 */
+	public function find(array $primary, \Gacela\DataSource\Resource\Resource $resource, array $inherits, array $dependents)
 	{
+		$query = $this->getQuery();
 
+		foreach($primary as $key => $val) {
+			$query->where($resource->getName().'.'.$key.' = :'.$key, array(':'.$key => $val));
+		}
+
+		return $this->query($this->_buildFinder($query, $resource->getName(), $inherits, $dependents));
 	}
 
-	public function findAll()
+	/**
+	 * @param \Gacela\Criteria|null $criteria
+	 * @param Resource\Resource $resource
+	 * @param array $inherits
+	 * @param array $dependents
+	 * @return
+	 */
+	public function findAll(\Gacela\Criteria $criteria = null, \Gacela\DataSource\Resource\Resource $resource, array $inherits, array $dependents)
 	{
-
+		return 	$this->query(
+					$this->_buildFinder(
+						$this->getQuery($criteria),
+						$resource->getName(),
+						$inherits,
+						$dependents
+					)
+				);
 	}
 
+	/**
+	 * @param Resource\Resource $resource
+	 * @param array $relation
+	 * @param array $data
+	 * @param array $inherits
+	 * @param array $dependents
+	 * @return 
+	 */
+	public function findAllByAssociation(\Gacela\DataSource\Resource\Resource $resource, array $relation, array $data, array $inherits, array $dependents)
+	{
+		$query = $this->getQuery()
+					->join(
+						$relation['meta']->refTable,
+						$resource->getName()
+						.'.'
+						.$relation['meta']->keyColumn
+						.' = '
+						.$relation['meta']->refTable
+						.'.'
+						.$relation['meta']->refColumn
+					);
+
+		foreach($data as $primary => $value) {
+			$query->where(
+				$relation['meta']->refTable
+				.'.'
+				.$primary
+				.' = :'
+				.$primary,
+				array(':'.$primary => $value)
+			);
+		}
+
+		return $this->query($this->_buildFinder($query, $resource->getName(), $inherits, $dependents));
+	}
+	
 	/**
 	 * @see \Gacela\DataSource\iDataSource::getQuery()
 	 */
