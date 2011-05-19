@@ -22,18 +22,15 @@ abstract class Model implements iModel {
 
 	protected $_isValid = false;
 
-	/**
-	 * @var \Gacela\Mapper\Mapper
-	 */
 	protected $_mapper;
 
-	/**
-	 * @var array $_originalData
-	 */
 	protected $_originalData = array();
 
 	protected $_relations = array();
 
+	/**
+	 * @return array $_errors
+	 */
 	protected function _getErrors()
 	{
 		return $this->_errors;
@@ -78,7 +75,7 @@ abstract class Model implements iModel {
 			}
 		} else {
 			$this->_data = new \stdClass;
-			
+			exit(debug($this->_fields));
 			foreach($data as $key => $value) {
 				$this->_data->$key = $this->_fields[$key]->transform($data[$key], false);
 			}

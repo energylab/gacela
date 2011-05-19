@@ -434,6 +434,11 @@ abstract class Mapper implements iMapper {
 		return $relations;
 	}
 
+	/**
+	 * @param  $relation
+	 * @param array $data
+	 * @return \Gacela\Collection
+	 */
 	public function findAllByAssociation($relation, array $data)
 	{
 		return new 	\Gacela\Collection(

@@ -16,7 +16,7 @@ class Wizard extends M {
 	
 	protected function _load(\stdClass $data)
 	{
-		$primary = $this->_primaryKey($data);
+		$primary = $this->_primaryKey($this->_primaryKey, $data);
 		
 		if(!property_exists($data, 'role') || is_null($data->role) || is_null($primary)) {
 			return parent::_load($data);

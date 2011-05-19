@@ -9,22 +9,26 @@
 require '_init.php';
 
 ?>
-	<h3>Dependency Mapping</h3>
+<h3>Dependency Mapping</h3>
 
-	<table>
-		<thead>
-		<tr>
-			<th>Name</th>
-			<th>Class</th>
-			<th>Location</th>
-		</tr>
-		</thead>
-		<tbody>
+<form>
+	<input type="">
+</form>
+
+<table>
+	<thead>
+	<tr>
+		<th>Name</th>
+		<th>Class</th>
+		<th>Location</th>
+	</tr>
+	</thead>
+	<tbody>
 
 <?
 
 // Return all wizards who have an address
-$wizards = \Gacela::instance()->loadMapper('wizard')->findAllWithAddress();
+$wizards = \Gacela::instance()->loadMapper('wizard')->findAll();
 
 foreach($wizards as $wiz) {
 	echo 	'<tr>
