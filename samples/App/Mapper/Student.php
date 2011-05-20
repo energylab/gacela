@@ -12,4 +12,5 @@ use Gacela\Mapper\Mapper as M;
 
 class Student extends M {
 
+	protected $_dependents = array('address');
 }

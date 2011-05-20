@@ -139,13 +139,13 @@ abstract class Mapper implements iMapper {
 		$_dependents = $this->_dependents;
 		$this->_dependents = array();
 
-		$fields = $this->_resource->getFields();
+		$fields = $this->getFields();
 
 		foreach($_dependents as $name) {
 			$dependent = $this->_foreignKeys[$name];
 
 			unset($this->_foreignKeys[$name]);
-
+		
 			/**
 			 * If the keyColumn of the primary resource is nullable, then all fields in the dependent relationship need to
 			 * appear nullable.

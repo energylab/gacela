@@ -75,7 +75,7 @@ abstract class Model implements iModel {
 			}
 		} else {
 			$this->_data = new \stdClass;
-			exit(debug($this->_fields));
+			
 			foreach($data as $key => $value) {
 				$this->_data->$key = $this->_fields[$key]->transform($data[$key], false);
 			}

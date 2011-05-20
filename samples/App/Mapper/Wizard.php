@@ -21,6 +21,7 @@ class Wizard extends M {
 		if(!property_exists($data, 'role') || is_null($data->role) || is_null($primary)) {
 			return parent::_load($data);
 		} elseif($data->role == 'student' && get_class($this) != 'App\Mapper\Student') {
+
 			// Because students load from their mapper that allows them to inherit
 			// from the wizards resource
 			return \Gacela::instance()->loadMapper('student')->load($data);
