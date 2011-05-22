@@ -16,7 +16,7 @@ class Enum extends Field{
 	{
 		unset($this->errorCode);
 		
-		if(is_null($value)) {
+		if(empty($value)) {
 			if(!$this->null) {
 				$this->errorCode = self::NULL_CODE;
 			}

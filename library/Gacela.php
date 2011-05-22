@@ -11,13 +11,15 @@ class Gacela {
 
 	protected static $_instance;
 
+	protected $_memcache = null;
+
+	protected $_memcacheEnabled = false;
+
 	protected $_namespaces = array();
 
 	protected $_sources = array();
 
-	protected $_mappers = array();
-
-	protected $_resources = array();
+	protected $_cache = array();
 
     protected function __construct()
     {
@@ -76,6 +78,60 @@ class Gacela {
     }
 
 	/**
+	 * @param  $key
+	 * @param null $object
+	 * @return object|bool
+	 */
+	public function cache($key, $object = null)
+	{
+		if(!$this->_memcacheEnabled) {
+			if(is_null($object)) {
+				if(isset($this->_cache[$key])) {
+					return $this->_cache[$key];
+				}
+
+				return false;
+			} else {
+				$this->_cache[$key] = $object;
+
+				return true;
+			}
+		} else {
+			if(is_null($object)) {
+				return $this->_memcache->get($key);
+			} else {
+				return $this->_memcache->set($key, $object);
+			}
+		}
+
+	}
+
+	public function configureMemcacheServers(array $servers)
+	{
+		$this->_memcache = new Memcache;
+
+		foreach($servers as $server) {
+			call_user_method_array('addServer', $this->_memcache, $server);
+		}
+
+		$this->_memcacheEnabled = true;
+	}
+
+	/**
+	 * @throws Exception
+	 * @param  $name
+	 * @return Gacela\DataSource\DataSource
+	 */
+	public function getDataSource($name)
+	{
+		if(!isset($this->_sources[$name])) {
+			throw new Exception("Invalid Data Source {$name} Referenced");
+		}
+
+		return $this->_sources[$name];
+	}
+
+	/**
 	 * @static
 	 * @return Gacela
 	 */
@@ -86,6 +142,33 @@ class Gacela {
 		}
 
 		return self::$_instance;
+	}
+
+	/**
+	 * @throws Exception
+	 * @param  string $name Relative name of the Mapper to load. For example, if the absolute name of the mapper was \App\Mapper\User, you would pass 'user' in as the argument
+	 * @return Gacela\Mapper\Mapper
+	 */
+	public function loadMapper($name)
+	{
+		$name = ucfirst($name);
+
+		$cached = $this->cache('mapper_'.$name);
+
+		if ($cached === false) {
+			$class = "\\Mapper\\" . $name;
+			$class = self::instance()->autoload($class);
+
+			if (!$class) {
+				throw new \Exception("Failed to find mapper ({$name})!");
+			}
+
+			$cached = new $class;
+
+			$this->cache('mapper_'.$name, $cached);
+		}
+
+		return $cached;
 	}
 
 	/**
@@ -120,51 +203,5 @@ class Gacela {
 		$this->_namespaces[$ns] = $path;
 
 		return $this;
-	}
-
-	/**
-	 * @throws Exception
-	 * @param  $name
-	 * @return Gacela\DataSource\DataSource
-	 */
-	public function getDataSource($name)
-	{
-		if(!isset($this->_sources[$name])) {
-			throw new Exception("Invalid Data Source {$name} Referenced");
-		}
-		
-		return $this->_sources[$name];
-	}
-
-	/**
-	 * @param  string $path
-	 * @return Gacela
-	 */
-	public function setCachePath($path)
-	{
-		
-	}
-
-	/**
-	 * @throws Exception
-	 * @param  string $name Relative name of the Mapper to load. For example, if the absolute name of the mapper was \App\Mapper\User, you would pass 'user' in as the argument
-	 * @return Gacela\Mapper\Mapper
-	 */
-	public function loadMapper($name)
-	{
-		$name = ucfirst($name);
-
-		if (!isset($this->_mappers[$name])) {
-			$class = "\\Mapper\\" . $name;
-			$class = self::instance()->autoload($class);
-
-			if (!$class) {
-				throw new \Exception("Failed to find mapper ({$name})!");
-			}
-
-			$this->_mappers[$name] = new $class;
-		}
-
-		return $this->_mappers[$name];
 	}
 }

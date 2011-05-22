@@ -84,17 +84,12 @@ abstract class Mapper implements iMapper {
 		return $this;
 	}
 
-	protected function _fields(\Gacela\DataSource\Resource\Resource $resource, $data)
+	protected function _fields(\Gacela\DataSource\Resource\Resource $resource, $data, $changed)
 	{
-		$data = (array) $data;
-		$fields = $resource->getFields();
+		$data = array_intersect_key((array) $data, $resource->getFields(), $changed);
 		
 		foreach($data as $key => $val) {
-			if(!isset($fields[$key])) {
-				unset($data[$key]);
-			} else {
-				$data[$key] = $fields[$key]->transform($val);
-			}
+			$data[$key] = $fields[$key]->transform($val);
 		}
 		
 		return $data;
@@ -477,7 +472,31 @@ abstract class Mapper implements iMapper {
 	public function save(array $changed, \stdClass $data)
 	{
 		foreach($this->_dependents as $dependent) {
-			//$this->_fields($dependent['resource'], $data);
+			$save = $this->_fields($dependent['resource'], $data, $changed);
+
+			if(empty($save)) {
+				continue;
+			}
+
+			$primary = $this->_primaryKey($dependent['resource']->getPrimaryKey(), $data);
+
+			if(is_null($primary)) {
+				$rs = $this->_source->insert($dependent['resource']->getName(), $save);
+
+				// Handle a failed insertion.
+
+				$data->{current($this->_primaryKey)} = $rs;
+			} else {
+				$where = new \Gacela\Criteria();
+
+				foreach($dependent['resource']->getPrimaryKey() as $key) {
+					$where->equals($key, $data->$key);
+				}
+
+				$this->_source->update($dependent['resource']->getName(), $save, $where);
+
+				// Handle a failed update.
+			}
 		}
 
 		foreach($this->_inherits as $name => $parent) {
@@ -485,7 +504,7 @@ abstract class Mapper implements iMapper {
 
 			$primary = $this->_primaryKey($parent['resource']->getPrimaryKey(), $data);
 
-			if(is_null($primary)) {
+			if(!isset($this->_models[$primary])) {
 				$rs = $this->_source->insert($parent['resource']->getName(), $save);
 
 				// Handle a failed insertion.

@@ -15,12 +15,12 @@ class Database extends DataSource {
 
 	protected $_resources = array();
 
-	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, $name, array $inherits, array $dependents)
+	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource\Resource $resource, array $inherits, array $dependents)
 	{
-		$query->from($name);
+		$query->from($resource->getName());
 
 		foreach($inherits as $relation) {
-			$on = 	$name
+			$on = 	$relation['meta']->keyTable
 					.'.'
 					.$relation['meta']->keyColumn
 					." = "
@@ -32,14 +32,14 @@ class Database extends DataSource {
 		}
 
 		foreach($dependents as $relation) {
-			$on = 	$name
+			$on = 	$relation['meta']->keyTable
 					.'.'
 					.$relation['meta']->keyColumn
 					." = ".
 					$relation['meta']->refTable
 					.'.'
 					.$relation['meta']->refColumn;
-
+						
 			$query->join($relation['meta']->refTable, $on, array('*'), 'left');
 		}
 
@@ -86,7 +86,7 @@ class Database extends DataSource {
 			$query->where($resource->getName().'.'.$key.' = :'.$key, array(':'.$key => $val));
 		}
 
-		return $this->query($this->_buildFinder($query, $resource->getName(), $inherits, $dependents));
+		return $this->query($this->_buildFinder($query, $resource, $inherits, $dependents));
 	}
 
 	/**
@@ -101,7 +101,7 @@ class Database extends DataSource {
 		return 	$this->query(
 					$this->_buildFinder(
 						$this->getQuery($criteria),
-						$resource->getName(),
+						$resource,
 						$inherits,
 						$dependents
 					)
@@ -141,7 +141,7 @@ class Database extends DataSource {
 			);
 		}
 
-		return $this->query($this->_buildFinder($query, $resource->getName(), $inherits, $dependents));
+		return $this->query($this->_buildFinder($query, $resource, $inherits, $dependents));
 	}
 	
 	/**
@@ -169,11 +169,15 @@ class Database extends DataSource {
 	 */
 	public function loadResource($name)
 	{
-		if(!isset($this->_resources[$name]))  {
-			$this->_resources[$name] = new Resource\Database(array_merge((array) $this->_config, array('name' => $name, 'db' => $this->_db)));
+		$cached = \Gacela::instance()->cache('resource_'.$name);
+
+		if($cached === false)  {
+			$cached = new Resource\Database(array_merge((array) $this->_config, array('name' => $name, 'db' => $this->_db)));
+
+			\Gacela::instance()->cache('resource_'.$name, $cached);
 		}
 
-		return $this->_resources[$name];
+		return $cached;
 	}
 
 	/**
