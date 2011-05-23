@@ -1,47 +1,27 @@
 <?php
 /** 
- * @author noah
- * @date 2/26/11
+ * @author Noah Goodrich
+ * @date 5/22/11
  * @brief
  * 
 */
 
-namespace Gacela\DataSource\Resource;
+namespace Gacela\DataSource\Adapter;
 
-class Database extends Resource {
+class Mysql implements iAdapter {
 
-	protected static $_separator = "_";
+	public static $_separator = "_";
 	
-	/**
-	 * @var PDO
-	 */
-	protected $_db;
-
-	public static function setSeparator($separator)
+	public function load($conn, $name, $schema)
 	{
-		self::$_separator = $separator;
-	}
-
-	public function __construct(array $config)
-	{
-		$this->_db = $config['db'];
-		unset($config['db']);
-
-		parent::__construct($config);
-
-		$method = '_load'.ucfirst($this->_config->dbtype);
-
-		$this->$method();
-	}
-
-	private function _loadMysql()
-	{
-		$this->_meta['columns'] = array();
-		$this->_meta['relations'] = array();
-		$this->_meta['primary'] = array();
+		$_meta = array('name' => $name);
+		
+		$_meta['columns'] = array();
+		$_meta['relations'] = array();
+		$_meta['primary'] = array();
 
 		// Setup Column meta information
-		$stmt = $this->_db->prepare("DESCRIBE ".$this->_config->name);
+		$stmt = $conn->prepare("DESCRIBE ".$name);
 
 		if(!$stmt->execute()) {
 			throw new \Exception(
@@ -55,7 +35,7 @@ class Database extends Resource {
 		}
 
 		$columns = $stmt->fetchAll(\PDO::FETCH_OBJ);
-		
+
 		foreach($columns as $column) {
 			preg_match('/(?P<type>\w+)($|\((?P<length>(\d+|(.*)))\))/', $column->Type, $meta);
 
@@ -70,7 +50,7 @@ class Database extends Resource {
 						),
 						$meta
 					);
-			
+
 			$column->Null == 'YES' ? $meta['null'] = true : $meta['null'] = false;
 
 			if($column->Key == 'PRI') {
@@ -109,27 +89,27 @@ class Database extends Resource {
 			}
 
 			$field = "\\Gacela\\Field\\".ucfirst($meta['type']);
-			
-			$this->_meta['columns'][$column->Field] = new $field($meta);
-			
-			if($this->_meta['columns'][$column->Field]->primary === true) {
-				$this->_meta['primary'][] = $column->Field;
+
+			$_meta['columns'][$column->Field] = new $field($meta);
+
+			if($_meta['columns'][$column->Field]->primary === true) {
+				$_meta['primary'][] = $column->Field;
 			}
 		}
-		
+
 		unset($stmt);
 
 
 		// Setup Relationships
 
 		// First check for stored procedure used to generate belongs_to relationships
-		$stmt = $this->_db->prepare("SHOW PROCEDURE STATUS LIKE :sp");
+		$stmt = $conn->prepare("SHOW PROCEDURE STATUS LIKE :sp");
 
 		$stmt->execute(array(':sp' => 'sp_belongs_to'));
 
 		if($stmt->rowCount()) {
-			$sp = $this->_db->prepare("CALL sp_belongs_to (:schema,:table)");
-			$sp->execute(array(':schema' => $this->_config->database, ':table' => $this->_config->name));
+			$sp = $conn->prepare("CALL sp_belongs_to (:schema,:table)");
+			$sp->execute(array(':schema' => $schema, ':table' => $name));
 
 			$rs = $sp->fetchAll(\PDO::FETCH_OBJ);
 
@@ -138,15 +118,15 @@ class Database extends Resource {
 				$key = $key[1];
 
 				$row->type = 'belongsTo';
-				$this->_meta['relations'][$key] = $row;
+				$_meta['relations'][$key] = $row;
 			}
 		}
 
 		$stmt->execute(array(':sp' => 'sp_has_many'));
 
 		if($stmt->rowCount()) {
-			$sp = $this->_db->prepare("CALL sp_has_many (:schema, :table)");
-			$sp->execute(array(':schema' => $this->_config->database, ':table' => $this->_config->name));
+			$sp = $conn->prepare("CALL sp_has_many (:schema, :table)");
+			$sp->execute(array(':schema' => $schema, ':table' => $name));
 
 			$rs = $sp->fetchAll(\PDO::FETCH_OBJ);
 
@@ -155,29 +135,10 @@ class Database extends Resource {
 				$key = $key[2];
 
 				$row->type = 'hasMany';
-				$this->_meta['relations'][$key] = $row;
+				$_meta['relations'][$key] = $row;
 			}
 		}
-	}
 
-	public function getName()
-	{
-		return $this->_config->name;
+		return $_meta;
 	}
-
-	public function getFields()
-	{
-		return $this->_meta['columns'];
-	}
-
-	public function getPrimaryKey()
-	{
-		return $this->_meta['primary'];
-	}
-
-	public function getRelations()
-	{
-		return $this->_meta['relations'];
-	}
-
 }

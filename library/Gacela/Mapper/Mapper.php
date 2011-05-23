@@ -84,7 +84,7 @@ abstract class Mapper implements iMapper {
 		return $this;
 	}
 
-	protected function _fields(\Gacela\DataSource\Resource\Resource $resource, $data, $changed)
+	protected function _fields(\Gacela\DataSource\Resource $resource, $data, $changed)
 	{
 		$data = array_intersect_key((array) $data, $resource->getFields(), $changed);
 		
@@ -174,7 +174,7 @@ abstract class Mapper implements iMapper {
 			
 			$meta = (object) $meta;
 
-			$resource = $this->_source->loadResource($meta->refTable);
+			$resource = $this->_source()->loadResource($meta->refTable);
 
 			$this->_foreignKeys[$relation] = array('meta' => $meta, 'resource' => $resource);
 		}
@@ -247,9 +247,7 @@ abstract class Mapper implements iMapper {
 			$this->_resourceName = \Gacela\Inflector::pluralize($class);
 		}
 
-		$this->_source = \Gacela::instance()->getDataSource($this->_source);
-
-		$this->_resource = $this->_source->loadResource($this->_resourceName);
+		$this->_resource = $this->_source()->loadResource($this->_resourceName);
 				
 		return $this;
 	}
@@ -297,6 +295,11 @@ abstract class Mapper implements iMapper {
 		return $primary;
 	}
 
+	protected function _source()
+	{
+		return \Gacela::instance()->getDataSource($this->_source);
+	}
+
 	public function __construct()
 	{
 		$this->init();
@@ -310,8 +313,6 @@ abstract class Mapper implements iMapper {
 	 */
 	public function find($id)
 	{
-		$criteria = new \Gacela\Criteria();
-
 		if(!is_object($id)) {
 			if(is_scalar($id)) {
 				$id = array(current($this->_primaryKey) => $id);
@@ -323,7 +324,7 @@ abstract class Mapper implements iMapper {
 		$primary = $this->_primaryKey($this->_primaryKey, $id);
 		
 		if(!is_null($primary)) {
-			$data = current($this->_source->find($primary, $this->_resource, $this->_inherits, $this->_dependents));
+			$data = current($this->_source()->find($primary, $this->_resource, $this->_inherits, $this->_dependents));
 		}
 		
 		if(!isset($data) || empty($data)) {
@@ -342,7 +343,7 @@ abstract class Mapper implements iMapper {
 	{
 		return new 	\Gacela\Collection(
 						$this,
-						$this->_source->findAll($criteria, $this->_resource, $this->_inherits, $this->_dependents)
+						$this->_source()->findAll($criteria, $this->_resource, $this->_inherits, $this->_dependents)
 					);
 	}
 
@@ -393,7 +394,7 @@ abstract class Mapper implements iMapper {
 			$where->equals($key, $data[$key]);
 		}
 
-		return $this->_source->delete($this->_resource->getName(), $where);
+		return $this->_source()->delete($this->_resource->getName(), $where);
 	}
 
 	/**
@@ -438,7 +439,7 @@ abstract class Mapper implements iMapper {
 	{
 		return new 	\Gacela\Collection(
 						$this,
-						$this->_source->findAllByAssociation(
+						$this->_source()->findAllByAssociation(
 							$this->_resource,
 							$this->_associations[$relation],
 							$data,
@@ -481,7 +482,7 @@ abstract class Mapper implements iMapper {
 			$primary = $this->_primaryKey($dependent['resource']->getPrimaryKey(), $data);
 
 			if(is_null($primary)) {
-				$rs = $this->_source->insert($dependent['resource']->getName(), $save);
+				$rs = $this->_source()->insert($dependent['resource']->getName(), $save);
 
 				// Handle a failed insertion.
 
@@ -493,7 +494,7 @@ abstract class Mapper implements iMapper {
 					$where->equals($key, $data->$key);
 				}
 
-				$this->_source->update($dependent['resource']->getName(), $save, $where);
+				$this->_source()->update($dependent['resource']->getName(), $save, $where);
 
 				// Handle a failed update.
 			}
@@ -505,7 +506,7 @@ abstract class Mapper implements iMapper {
 			$primary = $this->_primaryKey($parent['resource']->getPrimaryKey(), $data);
 
 			if(!isset($this->_models[$primary])) {
-				$rs = $this->_source->insert($parent['resource']->getName(), $save);
+				$rs = $this->_source()->insert($parent['resource']->getName(), $save);
 
 				// Handle a failed insertion.
 
@@ -517,7 +518,7 @@ abstract class Mapper implements iMapper {
 					$where->equals($key, $data->$key);
 				}
 
-				$this->_source->update($parent['resource']->getName(), $save, $where);
+				$this->_source()->update($parent['resource']->getName(), $save, $where);
 
 				// Handle a failed update.
 			}
@@ -533,7 +534,7 @@ abstract class Mapper implements iMapper {
 		$fields = $this->_resource->getFields();
 
 		if(!isset($this->_models[$primary])) {
-			$rs = $this->_source->insert($this->_resourceName, $save);
+			$rs = $this->_source()->insert($this->_resourceName, $save);
 
 			if($rs === false) {
 				return false;
@@ -553,7 +554,7 @@ abstract class Mapper implements iMapper {
 				$where->equals($key, $data->$key);
 			}
 
-			$this->_source->update($this->_resourceName, $save, $where);
+			$this->_source()->update($this->_resourceName, $save, $where);
 		}
 
 		return $data;

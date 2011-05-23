@@ -16,11 +16,16 @@ $gacela->registerDataSource(
 	'db',
 	'database',
 	array(
-		'database' => 'gacela',
+		'schema' => 'gacela',
 		'host' => 'localhost',
 		'password' => 'I8Lissa',
 		'user' => 'root',
 		'dbtype' => 'mysql'
+	)
+)
+->enableMemcache(
+	array(
+		array('127.0.0.1', 11211)
 	)
 );
 

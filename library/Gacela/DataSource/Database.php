@@ -9,13 +9,15 @@ namespace Gacela\DataSource;
 
 class Database extends DataSource {
 
-	protected $_db;
+	protected $_conn;
 
 	protected $_config = array();
 
+	protected $_driver;
+
 	protected $_resources = array();
 
-	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource\Resource $resource, array $inherits, array $dependents)
+	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		$query->from($resource->getName());
 
@@ -46,13 +48,24 @@ class Database extends DataSource {
 		return $query;
 	}
 
+	protected function _driver()
+	{
+		if(empty($this->_driver)) {
+
+			$adapter = "\\Gacela\\DataSource\\Adapter\\".ucfirst($this->_config->dbtype);
+			$this->_driver = new $adapter;
+		}
+
+		return $this->_driver;
+	}
+
 	public function __construct(array $config)
 	{
 		$this->_config = (object) $config;
 
-		$dsn = $this->_config->dbtype.':dbname='.$this->_config->database.';host='.$this->_config->host;
+		$dsn = $this->_config->dbtype.':dbname='.$this->_config->schema.';host='.$this->_config->host;
 
-		$this->_db = new \PDO($dsn, $this->_config->user, $this->_config->password);
+		$this->_conn = new \PDO($dsn, $this->_config->user, $this->_config->password);
 	}
 
 	/**
@@ -78,7 +91,7 @@ class Database extends DataSource {
 	 * @param array $dependents
 	 * @return 
 	 */
-	public function find(array $primary, \Gacela\DataSource\Resource\Resource $resource, array $inherits, array $dependents)
+	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		$query = $this->getQuery();
 
@@ -96,7 +109,7 @@ class Database extends DataSource {
 	 * @param array $dependents
 	 * @return
 	 */
-	public function findAll(\Gacela\Criteria $criteria = null, \Gacela\DataSource\Resource\Resource $resource, array $inherits, array $dependents)
+	public function findAll(\Gacela\Criteria $criteria = null, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		return 	$this->query(
 					$this->_buildFinder(
@@ -116,7 +129,7 @@ class Database extends DataSource {
 	 * @param array $dependents
 	 * @return 
 	 */
-	public function findAllByAssociation(\Gacela\DataSource\Resource\Resource $resource, array $relation, array $data, array $inherits, array $dependents)
+	public function findAllByAssociation(\Gacela\DataSource\Resource $resource, array $relation, array $data, array $inherits, array $dependents)
 	{
 		$query = $this->getQuery()
 					->join(
@@ -149,7 +162,7 @@ class Database extends DataSource {
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		return new Query\Database(array_merge((array) $this->_config, array('db' => $this->_db, 'criteria' => $criteria)));
+		return new Query\Database(array_merge((array) $this->_config, array('db' => $this->_conn, 'criteria' => $criteria)));
 	}
 
 	/**
@@ -158,26 +171,10 @@ class Database extends DataSource {
 	public function insert($name, $data)
 	{
 		if($this->getQuery()->insert($name, $data)->assemble()->execute()) {
-			return $this->_db->lastInsertId();
+			return $this->_conn->lastInsertId();
 		} else {
 			throw new \Exception('Insert failed with errors: '.\Util::debug($query->errorInfo()));
 		}
-	}
-
-	/**
-	 * @see \Gacela\DataSource\iDataSource::loadResource()
-	 */
-	public function loadResource($name)
-	{
-		$cached = \Gacela::instance()->cache('resource_'.$name);
-
-		if($cached === false)  {
-			$cached = new Resource\Database(array_merge((array) $this->_config, array('name' => $name, 'db' => $this->_db)));
-
-			\Gacela::instance()->cache('resource_'.$name, $cached);
-		}
-
-		return $cached;
 	}
 
 	/**
@@ -188,7 +185,7 @@ class Database extends DataSource {
 		if($query instanceof Query\Database)  {
 			$stmt = $query->assemble();
 		} elseif(is_string($query)) {
-			$stmt = $this->_db->prepare($query);
+			$stmt = $this->_conn->prepare($query);
 		}
 
 		if($stmt->execute() === true) {
