@@ -67,23 +67,6 @@ abstract class Mapper implements iMapper {
 	 */
 	protected $_source = 'db';
 
-	/**
-	 * @return Mapper
-	 */
-	private function _init()
-	{
-		// Everything loads in order based on what resources are needed first.
-		$this->_initResource()
-			->_initPrimaryKey()
-			->_initForeignKeys($this->_resource->getRelations())
-			->_initInherits()
-			->_initAssociations()
-			->_initDependents()
-			->_initModelName();
-			
-		return $this;
-	}
-
 	protected function _fields(\Gacela\DataSource\Resource $resource, $data, $changed)
 	{
 		$data = array_intersect_key((array) $data, $resource->getFields(), $changed);
@@ -101,6 +84,23 @@ abstract class Mapper implements iMapper {
 					->loadMapper(\Gacela\Inflector::singularize($name))
 					->findAllByAssociation($this->_resource->getName(), $this->_primaryKey($this->_primaryKey, $data));
 
+	}
+
+	/**
+	 * @return Mapper
+	 */
+	protected function _init()
+	{
+		// Everything loads in order based on what resources are needed first.
+		$this->_initResource()
+			->_initPrimaryKey()
+			->_initForeignKeys($this->_resource->getRelations())
+			->_initInherits()
+			->_initAssociations()
+			->_initDependents()
+			->_initModelName();
+
+		return $this;
 	}
 
 	protected function _initAssociations()
@@ -191,10 +191,10 @@ abstract class Mapper implements iMapper {
 				}
 
 				$refPrimary = $stuff['resource']->getPrimaryKey();
-
+				
 				if($refPrimary[0] == $stuff['meta']->refColumn && count($this->_primaryKey) == 1 && $this->_primaryKey[0] == $stuff['meta']->keyColumn) {
 					$this->_inherits[$stuff['resource']->getName()] = $stuff;
-
+					
 					$relations = $stuff['resource']->getRelations();
 
 					unset($relations[\Gacela\Inflector::singularize($this->_resourceName)]);
@@ -383,7 +383,6 @@ abstract class Mapper implements iMapper {
 				return $result;
 			}
 		}
-
 	}
 
 	/**
@@ -413,7 +412,7 @@ abstract class Mapper implements iMapper {
 		foreach($this->_inherits as $stuff) {
 			$array = array_merge($array, $stuff['resource']->getFields());
 		}
-
+		
 		foreach($this->_dependents as $dependent) {
 			$array = array_merge($dependent['resource']->getFields(), $array);
 		}
