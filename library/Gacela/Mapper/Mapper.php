@@ -264,13 +264,18 @@ abstract class Mapper implements iMapper {
 			return new $this->_modelName($data);
 		}
 
-		$primary = join('-', array_values($primary));
+		$key = join('-', array_values($primary));
 
-		if(!isset($this->_models[$primary])) {
-			$this->_models[$primary] = new $this->_modelName($data);
+		$key = 'model_'.$this->_resourceName.'_'.$key;
+
+		$cached = \Gacela::instance()->cache($key);
+
+		if($cached === false) {
+			$cached = new $this->_modelName($data);
+			\Gacela::instance()->cache($key, $cached);
 		}
 		
-		return $this->_models[$primary];
+		return $cached;
 	}
 
 	/**
@@ -365,11 +370,11 @@ abstract class Mapper implements iMapper {
 			if($relation['meta']->type == 'hasMany') {
 				$name = \Gacela\Inflector::singularize($name);
 			}
-
+			
 			$criteria = new \Gacela\Criteria();
 
 			$criteria->equals($relation['meta']->refColumn, $data->{$relation['meta']->keyColumn});
-
+			
 			$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
 
 			if ($relation['meta']->type == 'belongsTo') {
