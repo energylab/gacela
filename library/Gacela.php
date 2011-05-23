@@ -106,15 +106,25 @@ class Gacela {
 
 	}
 
-	public function configureMemcacheServers(array $servers)
+	/**
+	 * @param  Memcache|array $servers
+	 * @return Gacela
+	 */
+	public function enableMemcache($servers)
 	{
-		$this->_memcache = new Memcache;
+		if($servers instanceof Memcache) {
+			$this->_memcache = $servers;
+		} elseif(is_array($servers)) {
+			$this->_memcache = new Memcache;
 
-		foreach($servers as $server) {
-			call_user_method_array('addServer', $this->_memcache, $server);
+			foreach($servers as $server) {
+				$this->_memcache->addServer($server[0], $server[1]);
+			}
 		}
 
 		$this->_memcacheEnabled = true;
+
+		return $this;
 	}
 
 	/**

@@ -344,7 +344,7 @@ class Database extends Query {
 			$name = $tableName;
 		}
 		
-		if(is_null($schema)) $schema = $this->_config->database;
+		if(is_null($schema)) $schema = $this->_config->schema;
 
 		if(empty($columns)) $columns = array('*');
 
