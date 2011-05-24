@@ -197,6 +197,11 @@ class Database extends DataSource {
 		}
 	}
 
+	public function quote($var, $type = null)
+	{
+		return $this->_conn->quote($var, $type);
+	}
+
 	/**
 	 * @see Gacela\DataSource\iDataSource::update()
 	 * @throws \Exception

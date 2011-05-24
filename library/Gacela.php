@@ -103,7 +103,6 @@ class Gacela {
 				return $this->_memcache->set($key, $object);
 			}
 		}
-
 	}
 
 	/**
@@ -179,6 +178,11 @@ class Gacela {
 		}
 
 		return $cached;
+	}
+
+	public function memcacheEnabled()
+	{
+		return $this->_memcacheEnabled;
 	}
 
 	/**
