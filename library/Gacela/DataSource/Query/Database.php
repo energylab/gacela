@@ -24,8 +24,6 @@ class Database extends Query {
 	);
 
 	protected $_binds = array();
-	
-	protected $_config;
 
 	protected $_delete = null;
 
@@ -41,7 +39,11 @@ class Database extends Query {
 
 	protected $_orderBy = array();
 
+	protected $_schema = null;
+
 	protected $_select = array();
+
+	protected $_sql = null;
 
 	protected $_update = array();
 	
@@ -255,13 +257,12 @@ class Database extends Query {
 		return $_where;
 	}
 	
-	public function __construct(array $config)
+	public function __construct($schema, \Gacela\Criteria $criteria = null)
 	{
-		$this->_config = (object) $config;
+		$this->_schema = $schema;
 
-		if(isset($config['criteria']) && !is_null($config['criteria'])) {
-			$this->_buildFromCriteria($config['criteria']);
-			unset($config['criteria']);
+		if(!is_null($criteria)) {
+			$this->_buildFromCriteria($criteria);
 		}
 	}
 
@@ -310,13 +311,9 @@ class Database extends Query {
 			$sql .= $where;
 		}
 		
-		$statement = $this->_config->db->prepare($sql);
+		$this->_sql = $sql;
 
-		foreach($this->_binds as $key => $val) {
-			$statement->bindValue($key, $val);
-		}
-		
-		return $statement;
+		return array($this->_sql, $this->_binds);
 	}
 
 	/**
@@ -344,9 +341,13 @@ class Database extends Query {
 			$name = $tableName;
 		}
 		
-		if(is_null($schema)) $schema = $this->_config->schema;
+		if(is_null($schema)) {
+			$schema = $this->_schema;
+		}
 
-		if(empty($columns)) $columns = array('*');
+		if(empty($columns)) {
+			$columns = array('*');
+		}
 
 		$this->_from[$name] = array($tableName, $columns, $schema);
 

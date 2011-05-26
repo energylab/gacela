@@ -48,10 +48,8 @@ class Database extends DataSource {
 		return $query;
 	}
 
-	protected function _cache($name, $query, $data = null)
+	protected function _cache($name, $key, $data = null)
 	{
-		$query = hash('whirlpool', serialize($query));
-
 		$instance = \Gacela::instance();
 		
 		$version = $instance->cache($name.'_version');
@@ -61,7 +59,7 @@ class Database extends DataSource {
 			$instance->cache($name.'_version', $version);
 		}
 
-		$key = 'query_'.$version.'_'.$query;
+		$key = 'query_'.$version.'_'.$key;
 
 		$cached = $instance->cache($key);
 
@@ -122,7 +120,9 @@ class Database extends DataSource {
 	 */
 	public function delete($name, \Gacela\Criteria $where)
 	{
-		if($this->getQuery($where)->delete($name)->assemble()->execute()) {
+		list($query, $args) = $this->getQuery($where)->delete($name)->assemble();
+		
+		if($this->_conn->prepare($query)->execute($args)) {
 			return true;
 		} else {
 			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));
@@ -214,7 +214,7 @@ class Database extends DataSource {
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		return new Query\Database(array_merge((array) $this->_config, array('dataSource' => $this->_config->name, 'criteria' => $criteria)));
+		return new Query\Database($this->_config->schema, $criteria);
 	}
 
 	/**
@@ -234,23 +234,25 @@ class Database extends DataSource {
 	/**
 	 * @see Gacela\DataSource\iDataSource::query()
 	 */
-	public function query(\Gacela\DataSource\Resource $resource, $query)
+	public function query(\Gacela\DataSource\Resource $resource, $query, $args = null)
 	{
-		$cached = $this->_cache($resource->getName(), $query);
+		if($query instanceof Query\Database)  {
+			list($query, $args) = $query->assemble();
+		}
+
+		$key = hash('whirlpool', serialize(array($query, $args)));
+
+		$cached = $this->_cache($resource->getName(), $key);
 
 		if($cached !== false) {
 			return $cached;
 		}
 
-		if($query instanceof Query\Database)  {
-			$stmt = $query->assemble();
-		} elseif(is_string($query)) {
-			$stmt = $this->_conn->prepare($query);
-		}
+		$stmt = $this->_conn->prepare($query);
 
-		if($stmt->execute() === true) {
+		if($stmt->execute($args) === true) {
 			$return = $stmt->fetchAll(\PDO::FETCH_OBJ);
-			$this->_cache($resource->getName(), $query, $return);
+			$this->_cache($resource->getName(), $key, $return);
 			return $return;
 		} else {
 			$error = $stmt->errorInfo();
@@ -274,9 +276,9 @@ class Database extends DataSource {
 	 */
 	public function update($name, $data, \Gacela\Criteria $where)
 	{
-		$query = $this->getQuery($where)->update($name, $data)->assemble();
+		list($query, $args) = $this->getQuery($where)->update($name, $data)->assemble();
 		
-		if($query->execute()) {
+		if($query->execute($args)) {
 			$this->_incrementCache($name);
 			return true;
 		} else {
