@@ -82,7 +82,7 @@ class Gacela {
 	 * @param null $object
 	 * @return object|bool
 	 */
-	public function cache($key, $object = null)
+	public function cache($key, $object = null, $replace = false)
 	{
 		if(!$this->_memcacheEnabled) {
 			if(is_null($object)) {
@@ -100,7 +100,11 @@ class Gacela {
 			if(is_null($object)) {
 				return $this->_memcache->get($key);
 			} else {
-				return $this->_memcache->set($key, $object);
+				if($replace) {
+					return $this->_memcache->replace($key, $object);
+				} else {
+					return $this->_memcache->set($key, $object);
+				}
 			}
 		}
 	}

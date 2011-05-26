@@ -59,7 +59,7 @@ interface iDataSource {
 	 * @param  string|Query $query A valid representation of a query for the DataSource
 	 * @return array 
 	 */
-	public function query($query);
+	public function query(\Gacela\DataSource\Resource $resource, $query);
 
 	/**
 	 * @abstract

@@ -44,8 +44,36 @@ class Database extends DataSource {
 						
 			$query->join($relation['meta']->refTable, $on, array('*'), 'left');
 		}
-
+		
 		return $query;
+	}
+
+	protected function _cache($name, $query, $data = null)
+	{
+		$query = hash('whirlpool', serialize($query));
+
+		$instance = \Gacela::instance();
+		
+		$version = $instance->cache($name.'_version');
+
+		if($version === false) {
+			$version = 0;
+			$instance->cache($name.'_version', $version);
+		}
+
+		$key = 'query_'.$version.'_'.$query;
+
+		$cached = $instance->cache($key);
+
+		if(is_null($data)) {
+			return $cached;
+		} else {
+			if($cached === false) {
+				$instance->cache($key, $data);
+			} else {
+				$instance->cache($key, $data, true);
+			}
+		}
 	}
 
 	protected function _driver()
@@ -57,6 +85,23 @@ class Database extends DataSource {
 		}
 
 		return $this->_driver;
+	}
+
+	protected function _incrementCache($name)
+	{
+		$instance = \Gacela::instance();
+
+		if(!$instance->memcacheEnabled()) {
+			return;
+		}
+
+		$cached = $instance->cache($name.'_ns');
+
+		if(!$cached)  {
+			return;
+		}
+
+		$instance->incrementCache($name.'_ns');
 	}
 
 	public function __construct(array $config)
@@ -99,7 +144,10 @@ class Database extends DataSource {
 			$query->where($resource->getName().'.'.$key.' = :'.$key, array(':'.$key => $val));
 		}
 
-		return $this->query($this->_buildFinder($query, $resource, $inherits, $dependents));
+		return $this->query(
+					$resource,
+					$this->_buildFinder($query, $resource, $inherits, $dependents)
+				);
 	}
 
 	/**
@@ -112,6 +160,7 @@ class Database extends DataSource {
 	public function findAll(\Gacela\Criteria $criteria = null, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		return 	$this->query(
+					$resource,
 					$this->_buildFinder(
 						$this->getQuery($criteria),
 						$resource,
@@ -154,7 +203,10 @@ class Database extends DataSource {
 			);
 		}
 
-		return $this->query($this->_buildFinder($query, $resource, $inherits, $dependents));
+		return $this->query(
+					$resource,
+					$this->_buildFinder($query, $resource, $inherits, $dependents)
+				);
 	}
 	
 	/**
@@ -162,7 +214,7 @@ class Database extends DataSource {
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		return new Query\Database(array_merge((array) $this->_config, array('db' => $this->_conn, 'criteria' => $criteria)));
+		return new Query\Database(array_merge((array) $this->_config, array('dataSource' => $this->_config->name, 'criteria' => $criteria)));
 	}
 
 	/**
@@ -171,17 +223,25 @@ class Database extends DataSource {
 	public function insert($name, $data)
 	{
 		if($this->getQuery()->insert($name, $data)->assemble()->execute()) {
+			$this->_incrementCache($name);
+			
 			return $this->_conn->lastInsertId();
 		} else {
-			throw new \Exception('Insert failed with errors: '.\Util::debug($query->errorInfo()));
+			throw new \Exception('Insert failed with errors: <pre>'.print_($query->errorInfo(), true).'</pre>');
 		}
 	}
 
 	/**
 	 * @see Gacela\DataSource\iDataSource::query()
 	 */
-	public function query($query)
+	public function query(\Gacela\DataSource\Resource $resource, $query)
 	{
+		$cached = $this->_cache($resource->getName(), $query);
+
+		if($cached !== false) {
+			return $cached;
+		}
+
 		if($query instanceof Query\Database)  {
 			$stmt = $query->assemble();
 		} elseif(is_string($query)) {
@@ -189,7 +249,9 @@ class Database extends DataSource {
 		}
 
 		if($stmt->execute() === true) {
-			return $stmt->fetchAll(\PDO::FETCH_OBJ);
+			$return = $stmt->fetchAll(\PDO::FETCH_OBJ);
+			$this->_cache($resource->getName(), $query, $return);
+			return $return;
 		} else {
 			$error = $stmt->errorInfo();
 			$error = $error[2];
@@ -215,6 +277,7 @@ class Database extends DataSource {
 		$query = $this->getQuery($where)->update($name, $data)->assemble();
 		
 		if($query->execute()) {
+			$this->_incrementCache($name);
 			return true;
 		} else {
 			throw new \Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');

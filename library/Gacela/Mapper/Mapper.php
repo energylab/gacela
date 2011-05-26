@@ -258,24 +258,7 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _load(\stdClass $data)
 	{
-		$primary = $this->_primaryKey($this->_primaryKey, $data);
-
-		if(is_null($primary)) {
-			return new $this->_modelName($data);
-		}
-
-		$key = join('-', array_values($primary));
-
-		$key = 'model_'.$this->_resourceName.'_'.$key;
-
-		$cached = \Gacela::instance()->cache($key);
-
-		if($cached === false) {
-			$cached = new $this->_modelName($data);
-			\Gacela::instance()->cache($key, $cached);
-		}
-		
-		return $cached;
+		return new $this->_modelName($data);
 	}
 
 	/**
@@ -349,6 +332,25 @@ abstract class Mapper implements iMapper {
 		return new 	\Gacela\Collection(
 						$this,
 						$this->_source()->findAll($criteria, $this->_resource, $this->_inherits, $this->_dependents)
+					);
+	}
+
+	/**
+	 * @param  $relation
+	 * @param array $data
+	 * @return \Gacela\Collection
+	 */
+	public function findAllByAssociation($relation, array $data)
+	{
+		return new 	\Gacela\Collection(
+						$this,
+						$this->_source()->findAllByAssociation(
+							$this->_resource,
+							$this->_associations[$relation],
+							$data,
+							$this->_inherits,
+							$this->_dependents
+						)
 					);
 	}
 
@@ -432,25 +434,6 @@ abstract class Mapper implements iMapper {
 		}
 
 		return $relations;
-	}
-
-	/**
-	 * @param  $relation
-	 * @param array $data
-	 * @return \Gacela\Collection
-	 */
-	public function findAllByAssociation($relation, array $data)
-	{
-		return new 	\Gacela\Collection(
-						$this,
-						$this->_source()->findAllByAssociation(
-							$this->_resource,
-							$this->_associations[$relation],
-							$data,
-							$this->_inherits,
-							$this->_dependents
-						)
-					);
 	}
 
 	public function init()
