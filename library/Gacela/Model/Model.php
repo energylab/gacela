@@ -154,6 +154,11 @@ abstract class Model implements iModel {
 		}
 	}
 
+	public function delete()
+	{
+		return $this->_mapper()->delete($this->_data);
+	}
+
 	/**
 	 * @brief Called at the end of __construct.
 	 * Allows developers to add additional stuff to the setup process without

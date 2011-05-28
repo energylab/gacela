@@ -9,12 +9,18 @@
 require '_init.php';
 
 $errors = '';
+$message = '';
 
 if(isset($_GET['id']) || isset($_POST['id'])) {
 	$id = isset($_GET['id']) ? $_GET['id'] : $_POST['id'];
 	$model = Gacela::instance()->loadMapper('teacher')->find($id);
 } else {
 	$model = new \App\Model\Teacher;
+}
+
+if(isset($_GET['action']) && $_GET['action'] == 'delete') {
+	$model->delete();
+	$message = 'Model deleted<br/>';
 }
 
 if(count($_POST)) {
@@ -25,6 +31,8 @@ if(count($_POST)) {
 		foreach($model->errors as $key => $val) {
 			$errors .= 'Field: '.$key.' ErrorCode: '.$val.'<br/>';
 		}
+	} else {
+		$message = 'Model saved<br/>';
 	}
 }
 
@@ -37,6 +45,7 @@ if(!isset($_GET['action']) || $_GET['action'] != 'edit') {
  
 <h3>Single Table Inheritance</h3>
 
+<p><?= $message ?></p>
 <p><?= $errors ?></p>
 <form action="/single-table-inheritance.php" method="post">
 	<input type="hidden" name="id" value="<?= isset($model) ? $model->wizardId : null ?>" />
@@ -80,7 +89,7 @@ foreach($wizards as $wiz) {
 				<td>'.get_class($wiz).'</td>
 				<td>
 					<a href="/single-table-inheritance.php?id='.$wiz->wizardId.'&action=edit">Edit</a>
-					<a href="/single-table-inheritance.php?id='.$wiz->wizardId.'">Delete</a>
+					<a href="/single-table-inheritance.php?id='.$wiz->wizardId.'&action=delete">Delete</a>
 				</td>
 			</tr>';
 }

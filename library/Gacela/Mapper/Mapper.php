@@ -396,11 +396,26 @@ abstract class Mapper implements iMapper {
 	{
 		$where = new \Gacela\Criteria();
 
-		foreach($this->_primaryKey as $key) {
-			$where->equals($key, $data[$key]);
+		$primary = $this->_primaryKey($this->_resource->getPrimaryKey(), $data);
+
+		foreach($primary as $key => $value) {
+			$where->equals($key, $value);
 		}
 
-		return $this->_source()->delete($this->_resource->getName(), $where);
+		$this->_source()->delete($this->_resource->getName(), $where);
+
+		foreach($this->_inherits as $inherits) {
+			exit(debug($inherits));
+			$where = new \Gacela\Criteria();
+
+			$primary = $this->_primaryKey($this->_resource->getPrimaryKey(), $data);
+
+			foreach($primary as $key => $value) {
+				$where->equals($key, $value);
+			}
+
+			$this->_source()->delete($this->_resource->getName(), $where);
+		}
 	}
 
 	/**
@@ -468,7 +483,7 @@ abstract class Mapper implements iMapper {
 
 			$primary = $this->_primaryKey($dependent['resource']->getPrimaryKey(), $data);
 
-			if(is_null($primary)) {
+			if(is_null($primary)){
 				$rs = $this->_source()->insert($dependent['resource']->getName(), $save);
 
 				// Handle a failed insertion.

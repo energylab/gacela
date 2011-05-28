@@ -93,13 +93,13 @@ class Database extends DataSource {
 			return;
 		}
 
-		$cached = $instance->cache($name.'_ns');
+		$cached = $instance->cache($name.'_version');
 
-		if(!$cached)  {
+		if($cached === false) {
 			return;
 		}
 
-		$instance->incrementCache($name.'_ns');
+		$instance->incrementCache($name.'_version');
 	}
 
 	public function __construct(array $config)
@@ -123,6 +123,7 @@ class Database extends DataSource {
 		list($query, $args) = $this->getQuery($where)->delete($name)->assemble();
 		
 		if($this->_conn->prepare($query)->execute($args)) {
+			$this->_incrementCache($name);
 			return true;
 		} else {
 			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));

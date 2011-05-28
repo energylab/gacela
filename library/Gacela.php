@@ -38,6 +38,19 @@ class Gacela {
     }
 
 	/**
+	 * @static
+	 * @return Gacela
+	 */
+	public static function instance()
+	{
+		if(is_null(self::$_instance)) {
+			self::$_instance = new Gacela();
+		}
+
+		return self::$_instance;
+	}
+
+	/**
 	 * @param  string $class
 	 * @return bool|string
 	 */
@@ -144,17 +157,13 @@ class Gacela {
 		return $this->_sources[$name];
 	}
 
-	/**
-	 * @static
-	 * @return Gacela
-	 */
-	public static function instance()
+	public function incrementCache($key)
 	{
-		if(is_null(self::$_instance)) {
-			self::$_instance = new Gacela();
+		if(!$this->memcacheEnabled()) {
+			$this->_cache[$key]++;
+		} else {
+			$this->_memcache->increment($key);
 		}
-
-		return self::$_instance;
 	}
 
 	/**
