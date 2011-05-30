@@ -177,7 +177,7 @@ abstract class Model implements iModel {
 			return false;
 		}
 
-		$data = $this->_mapper()->save($this->_changed, $this->_data);
+		$data = $this->_mapper()->save($this->_changed, $this->_data, $this->_originalData);
 
 		if($data === false) {
 			return false;

@@ -67,17 +67,55 @@ abstract class Mapper implements iMapper {
 	 */
 	protected $_source = 'db';
 
-	protected function _fields(\Gacela\DataSource\Resource $resource, $data, $changed)
+	protected function _dataToSave(\Gacela\DataSource\Resource $resource, $changed, $new)
 	{
-		$data = array_intersect_key((array) $data, $resource->getFields(), $changed);
-		
+		$data = array_intersect_key((array) $new, $resource->getFields(), $changed);
+
 		foreach($data as $key => $val) {
 			$data[$key] = $fields[$key]->transform($val);
 		}
-		
+
 		return $data;
 	}
-	
+
+	protected function _deleteResource($resource, $data)
+	{
+		$where = new \Gacela\Criteria();
+
+		$primary = $this->_primaryKey($resource->getPrimaryKey(), $data);
+
+		if(is_null($primary)) {
+			return false;
+		}
+
+		foreach($primary as $key => $value) {
+			$where->equals($key, $value);
+		}
+
+		$this->_source()->delete($resource->getName(), $where);
+
+		return true;
+	}
+
+	protected function _doUpdate($resource, $data)
+	{
+		$primary = $resource->getPrimaryKey($data);
+
+		if(is_null($primary)) {
+			return false;
+		} elseif(count($resource->getPrimaryKey()) != 1 || current($resource->getPrimaryKey())->sequenced === false) {
+			$rs = $this->_source()->find($primary, $resource);
+
+			if(count($rs)) {
+				return true;
+			} else {
+				return true;
+			}
+		}
+		
+		return true;
+	}
+
 	protected function _findAssociation($name, $data)
 	{
 		return \Gacela::instance()
@@ -283,6 +321,39 @@ abstract class Mapper implements iMapper {
 		return $primary;
 	}
 
+	protected function _saveResource($resource, $changed, $new, $old)
+	{
+		$data = $this->_dataToSave($resource, $changed, $new);
+
+		if(empty($data)) {
+			return false;
+		}
+
+		if($this->_doUpdate($resource, $old) === false) {
+			$rs = $this->_source()->insert($resource->getName, $data);
+
+			if(count($resource->getPrimaryKey()) == 1 && current($resource->getPrimaryKey())->sequenced === true) {
+				$new->{current($resource->getPrimaryKey())} = $rs;
+			}
+		} else {
+			$primary = $this->_primaryKey($resource, $data);
+
+			if(is_null($primary)) {
+				throw new \Exception('oops!');
+			}
+
+			$where = new \Gacela\Criteria;
+
+			foreach($primary as $k => $v) {
+				$where->equals($k, $v);
+			}
+
+			$this->_source()->update($resource->getName(), $data, $where);
+		}
+
+		return $new;
+	}
+
 	protected function _source()
 	{
 		return \Gacela::instance()->getDataSource($this->_source);
@@ -291,6 +362,28 @@ abstract class Mapper implements iMapper {
 	public function __construct()
 	{
 		$this->init();
+	}
+
+	/**
+	 * @brief Called by the Model to delete the record represented by the identity field
+	 * @param stdClass - The data from the Model
+	 * @return true on success, false on failure
+	 */
+	public function delete(\stdClass $data)
+	{
+		if(!$this->_deleteResource($this->_resource, $data)) {
+			return;
+		}
+
+		foreach($this->_inherits as $inherits) {
+			$this->_deleteResource($inherits['resource'], $data);
+		}
+
+		foreach($this->_dependents as $dep) {
+			$this->_deleteResource($dep['resource'], $data);
+		}
+
+		return true;
 	}
 
 	/**
@@ -388,37 +481,6 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief Called by the Model to delete the record represented by the identity field
-	 * @param stdClass - The data from the Model
-	 * @return true on success, false on failure
-	 */
-	public function delete(\stdClass $data)
-	{
-		$where = new \Gacela\Criteria();
-
-		$primary = $this->_primaryKey($this->_resource->getPrimaryKey(), $data);
-
-		foreach($primary as $key => $value) {
-			$where->equals($key, $value);
-		}
-
-		$this->_source()->delete($this->_resource->getName(), $where);
-
-		foreach($this->_inherits as $inherits) {
-			exit(debug($inherits));
-			$where = new \Gacela\Criteria();
-
-			$primary = $this->_primaryKey($this->_resource->getPrimaryKey(), $data);
-
-			foreach($primary as $key => $value) {
-				$where->equals($key, $value);
-			}
-
-			$this->_source()->delete($this->_resource->getName(), $where);
-		}
-	}
-
-	/**
 	 * @brief Used by Model to get all of the fields available from mapper.
 	 * @return A merged array of all fields from $_resource, $_inherits, $_dependents
 	 */
@@ -472,93 +534,18 @@ abstract class Mapper implements iMapper {
 	 * @param \stdClass $data - The data from the Model
 	 * @return bool
 	 */
-	public function save(array $changed, \stdClass $data)
+	public function save(array $changed, \stdClass $new, array $old)
 	{
 		foreach($this->_dependents as $dependent) {
-			$save = $this->_fields($dependent['resource'], $data, $changed);
-
-			if(empty($save)) {
-				continue;
-			}
-
-			$primary = $this->_primaryKey($dependent['resource']->getPrimaryKey(), $data);
-
-			if(is_null($primary)){
-				$rs = $this->_source()->insert($dependent['resource']->getName(), $save);
-
-				// Handle a failed insertion.
-
-				$data->{current($this->_primaryKey)} = $rs;
-			} else {
-				$where = new \Gacela\Criteria();
-
-				foreach($dependent['resource']->getPrimaryKey() as $key) {
-					$where->equals($key, $data->$key);
-				}
-
-				$this->_source()->update($dependent['resource']->getName(), $save, $where);
-
-				// Handle a failed update.
-			}
+			$new = $this->_saveResource($dependent['resource'], $changed, $new, $old);
 		}
 
 		foreach($this->_inherits as $name => $parent) {
-			$save = $this->_fields($parent['resource'], $data);
-
-			$primary = $this->_primaryKey($parent['resource']->getPrimaryKey(), $data);
-
-			if(!isset($this->_models[$primary])) {
-				$rs = $this->_source()->insert($parent['resource']->getName(), $save);
-
-				// Handle a failed insertion.
-
-				$data->{current($this->_primaryKey)} = $rs;
-			} else {
-				$where = new \Gacela\Criteria();
-
-				foreach($this->_primaryKey as $key) {
-					$where->equals($key, $data->$key);
-				}
-
-				$this->_source()->update($parent['resource']->getName(), $save, $where);
-
-				// Handle a failed update.
-			}
+			$new = $this->_saveResource($parent['resource'], $changed, $new, $old);
 		}
 
-		$primary = $this->_primaryKey($this->_primaryKey, $data);
+		$new = $this->_saveResource($this->_resource, $changed, $new, $old);
 
-		if(is_array($primary)) {
-			$primary = join('-', array_values($primary));
-		}
-
-		$save = $this->_fields($this->_resource, $data);
-		$fields = $this->_resource->getFields();
-
-		if(!isset($this->_models[$primary])) {
-			$rs = $this->_source()->insert($this->_resourceName, $save);
-
-			if($rs === false) {
-				return false;
-			}
-
-			if(count($this->_primaryKey) == 1) {
-				if($fields[$this->_primaryKey[0]]->sequenced == true) {
-					$data->{$this->_primaryKey[0]} = $rs;
-				}
-			}
-
-			$this->_load($data);
-		} else {
-			$where = new \Gacela\Criteria();
-
-			foreach($this->_primaryKey as $key) {
-				$where->equals($key, $data->$key);
-			}
-
-			$this->_source()->update($this->_resourceName, $save, $where);
-		}
-
-		return $data;
+		return $new;
 	}
 }

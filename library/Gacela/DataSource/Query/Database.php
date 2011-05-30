@@ -267,7 +267,7 @@ class Database extends Query {
 	}
 
 	/**
-	 * @return \PdoStatement
+	 * @return array - String for the query, array of parameters to be bound
 	 */
 	public function assemble()
 	{

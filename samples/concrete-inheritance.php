@@ -8,11 +8,19 @@
 
 require '_init.php';
 
+$errors = '';
+$message = '';
+
 $houses = Gacela::instance()->loadMapper('house')->findAll();
 
 if(isset($_GET['id']) || isset($_POST['id'])) {
 	$id = isset($_GET['id']) ? $_GET['id'] : $_POST['id'];
 	$student = Gacela::instance()->loadMapper('student')->find($id);
+}
+
+if(isset($_GET['action']) && $_GET['action'] == 'delete') {
+	$student->delete();
+	$message = 'Student deleted<br/>';
 }
 
 if(count($_POST)) {
@@ -26,6 +34,8 @@ if(count($_POST)) {
 
 	if(!$student->save()) {
 		exit(debug($student->errors));
+	} else {
+		$message = 'Student saved<br/>';
 	}
 }
 
@@ -36,6 +46,8 @@ if(!isset($_GET['action']) || $_GET['action'] != 'edit') {
 ?>
 <h3>Concrete Table Inheritance</h3>
 
+<?//= $message ?>
+<?//= $errors ?>
 <form action="/concrete-inheritance.php" method="post">
 	<input type="hidden" name="id" value="<?= isset($student) ? $student->wizardId : null ?>" />
 	<label>Student Name</label>

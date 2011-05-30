@@ -121,12 +121,14 @@ class Database extends DataSource {
 	public function delete($name, \Gacela\Criteria $where)
 	{
 		list($query, $args) = $this->getQuery($where)->delete($name)->assemble();
-		
-		if($this->_conn->prepare($query)->execute($args)) {
+
+		$query = $this->_conn->prepare($query);
+
+		if($query->execute($args)) {
 			$this->_incrementCache($name);
 			return true;
 		} else {
-			throw new \Exception('Update failed with errors: '.\Util::debug($query->errorInfo()));
+			throw new \Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');
 		}
 	}
 
@@ -137,7 +139,7 @@ class Database extends DataSource {
 	 * @param array $dependents
 	 * @return 
 	 */
-	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
+	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
 	{
 		$query = $this->getQuery();
 
