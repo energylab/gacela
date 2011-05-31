@@ -225,7 +225,9 @@ class Database extends DataSource {
 	 */
 	public function insert($name, $data)
 	{
-		if($this->getQuery()->insert($name, $data)->assemble()->execute()) {
+		list($query, $binds) = $this->getQuery()->insert($name, $data)->assemble();
+		
+		if($this->_conn->prepare($query)->execute($binds)) {
 			$this->_incrementCache($name);
 			
 			return $this->_conn->lastInsertId();

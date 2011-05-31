@@ -69,8 +69,9 @@ abstract class Mapper implements iMapper {
 
 	protected function _dataToSave(\Gacela\DataSource\Resource $resource, $changed, $new)
 	{
-		$data = array_intersect_key((array) $new, $resource->getFields(), $changed);
-
+		$fields = $resource->getFields();
+		$data = array_intersect_key((array) $new, $fields, array_flip($changed));
+		
 		foreach($data as $key => $val) {
 			$data[$key] = $fields[$key]->transform($val);
 		}
@@ -99,11 +100,12 @@ abstract class Mapper implements iMapper {
 
 	protected function _doUpdate($resource, $data)
 	{
-		$primary = $resource->getPrimaryKey($data);
-
+		$primary = $this->_primaryKey($resource->getPrimaryKey(), $data);
+		$fields = $resource->getFields();
+		
 		if(is_null($primary)) {
 			return false;
-		} elseif(count($resource->getPrimaryKey()) != 1 || current($resource->getPrimaryKey())->sequenced === false) {
+		} elseif(count($primary) != 1 || $fields[key($primary)]->sequenced === false) {
 			$rs = $this->_source()->find($primary, $resource);
 
 			if(count($rs)) {
@@ -330,9 +332,11 @@ abstract class Mapper implements iMapper {
 		}
 
 		if($this->_doUpdate($resource, $old) === false) {
-			$rs = $this->_source()->insert($resource->getName, $data);
+			$rs = $this->_source()->insert($resource->getName(), $data);
 
-			if(count($resource->getPrimaryKey()) == 1 && current($resource->getPrimaryKey())->sequenced === true) {
+			$fields = $resource->getFields();
+			
+			if(count($resource->getPrimaryKey()) == 1 && $fields[current($resource->getPrimaryKey())]->sequenced === true) {
 				$new->{current($resource->getPrimaryKey())} = $rs;
 			}
 		} else {
@@ -537,14 +541,28 @@ abstract class Mapper implements iMapper {
 	public function save(array $changed, \stdClass $new, array $old)
 	{
 		foreach($this->_dependents as $dependent) {
-			$new = $this->_saveResource($dependent['resource'], $changed, $new, $old);
+			$rs = $this->_saveResource($dependent['resource'], $changed, $new, $old);
+
+			if($rs !== false) {
+				$new = $rs;
+			}
 		}
 
 		foreach($this->_inherits as $name => $parent) {
-			$new = $this->_saveResource($parent['resource'], $changed, $new, $old);
+			$rs = $this->_saveResource($parent['resource'], $changed, $new, $old);
+
+			if($rs !== false) {
+				$new = $rs;
+			}
 		}
 
-		$new = $this->_saveResource($this->_resource, $changed, $new, $old);
+		$rs = $this->_saveResource($this->_resource, $changed, $new, $old);
+
+		if($rs !== false) {
+			$new = $rs;
+		} else {
+			return false;
+		}
 
 		return $new;
 	}

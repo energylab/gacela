@@ -129,16 +129,14 @@ class Database extends Query {
 		// Removes the trailing comma created above.
 		$sql = substr($sql, 0, strlen($sql) - 1);
 
-		$stmt = $this->_config->db->prepare($sql);
-
 		// Binding the params per row
 		foreach($data as $index => $row) {
 			foreach($row as $key => $field) {
-				$stmt->bindValue($key.$index, $field);
+				$this->_binds[$key.$index] = $field;
 			}
 		}
 
-		return $stmt;
+		return array($sql, $this->_binds);
 	}
 
 	private function _join()

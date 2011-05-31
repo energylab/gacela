@@ -71,7 +71,7 @@ abstract class Model implements iModel {
 			$this->_data = new \stdClass;
 			
 			foreach($this->_fields as $field => $meta) {
-				$this->$field = $meta->default;
+				$this->_data->$field = $meta->default;
 			}
 		} else {
 			$this->_data = new \stdClass;
@@ -176,7 +176,7 @@ abstract class Model implements iModel {
 		if(!$this->validate($data)) {
 			return false;
 		}
-
+		
 		$data = $this->_mapper()->save($this->_changed, $this->_data, $this->_originalData);
 
 		if($data === false) {
