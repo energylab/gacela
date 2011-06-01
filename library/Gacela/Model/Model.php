@@ -71,7 +71,7 @@ abstract class Model implements iModel {
 			$this->_data = new \stdClass;
 			
 			foreach($this->_fields as $field => $meta) {
-				$this->_data->$field = $meta->default;
+				$this->_data->$field = $meta->transform($meta->default, false);
 			}
 		} else {
 			$this->_data = new \stdClass;
@@ -203,7 +203,7 @@ abstract class Model implements iModel {
 				$this->$key = $val;
 			}
 		}
-
+		
 		foreach((array) $this->_data as $key => $val) {
 			if($this->_fields[$key]->validate($val) === false) {
 				$this->_errors[$key] = $this->_fields[$key]->errorCode;

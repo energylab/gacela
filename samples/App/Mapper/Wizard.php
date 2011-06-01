@@ -16,26 +16,22 @@ class Wizard extends M {
 	
 	protected function _load(\stdClass $data)
 	{
-		$primary = $this->_primaryKey($this->_primaryKey, $data);
-		
-		if(!property_exists($data, 'role') || is_null($data->role) || is_null($primary)) {
-			return parent::_load($data);
-		} elseif($data->role == 'student' && get_class($this) != 'App\Mapper\Student') {
+		if(!empty($data->role) && $data->role == 'student' && get_class($this) != 'App\Mapper\Student') {
 
 			// Because students load from their mapper that allows them to inherit
 			// from the wizards resource
 			return \Gacela::instance()->loadMapper('student')->load($data);
 		}
-		
-		$primary = join('-', array_values($primary));
 
-		if(!isset($this->_models[$primary])) {
-			$model = '\\App\\Model\\'.ucfirst($data->role);
-			
-			$this->_models[$primary] = new $model($data);
+		if(!empty($data->role)) {
+			$model = ucfirst($data->role);
+		} else {
+			$model = 'Wizard';
 		}
 
-		return $this->_models[$primary];
+		$model = '\\App\\Model\\'.$model;
+
+		return new $model($data);
 	}
 
 	public function findAllWithAddress($criteria = null)

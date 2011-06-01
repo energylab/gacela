@@ -46,8 +46,8 @@ if(!isset($_GET['action']) || $_GET['action'] != 'edit') {
 ?>
 <h3>Concrete Table Inheritance</h3>
 
-<?//= $message ?>
-<?//= $errors ?>
+<?= $message ?>
+<?= $errors ?>
 <form action="/concrete-inheritance.php" method="post">
 	<input type="hidden" name="id" value="<?= isset($student) ? $student->wizardId : null ?>" />
 	<label>Student Name</label>

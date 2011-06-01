@@ -323,7 +323,7 @@ abstract class Mapper implements iMapper {
 		return $primary;
 	}
 
-	protected function _saveResource($resource, $changed, $new, $old)
+	protected function _saveResource($resource, &$changed, &$new, $old)
 	{
 		$data = $this->_dataToSave($resource, $changed, $new);
 
@@ -338,6 +338,7 @@ abstract class Mapper implements iMapper {
 			
 			if(count($resource->getPrimaryKey()) == 1 && $fields[current($resource->getPrimaryKey())]->sequenced === true) {
 				$new->{current($resource->getPrimaryKey())} = $rs;
+				$changed[] = current($resource->getPrimaryKey());
 			}
 		} else {
 			$primary = $this->_primaryKey($resource, $data);
@@ -355,7 +356,7 @@ abstract class Mapper implements iMapper {
 			$this->_source()->update($resource->getName(), $data, $where);
 		}
 
-		return $new;
+		return true;
 	}
 
 	protected function _source()
@@ -535,35 +536,26 @@ abstract class Mapper implements iMapper {
 	/**
 	 * @brief Save is called by Model, the Mapper is responsible for knowing whether to call insert() or update() on the DataSource for $_resource, $_inherits, and $_dependents.
 	 * @param array $changed - An array of the changed fields
-	 * @param \stdClass $data - The data from the Model
-	 * @return bool
+	 * @param \stdClass $new - The data from the Model
+	 * @param array $old - The original data from the Model
+	 * @return bool|\stdClass - FALSE on failure, the modified $data on success.
 	 */
 	public function save(array $changed, \stdClass $new, array $old)
 	{
 		foreach($this->_dependents as $dependent) {
-			$rs = $this->_saveResource($dependent['resource'], $changed, $new, $old);
-
-			if($rs !== false) {
-				$new = $rs;
-			}
+			$this->_saveResource($dependent['resource'], $changed, $new, $old);
 		}
 
-		foreach($this->_inherits as $name => $parent) {
-			$rs = $this->_saveResource($parent['resource'], $changed, $new, $old);
-
-			if($rs !== false) {
-				$new = $rs;
-			}
+		foreach($this->_inherits as $parent) {
+			$this->_saveResource($parent['resource'], $changed, $new, $old);
 		}
-
+		
 		$rs = $this->_saveResource($this->_resource, $changed, $new, $old);
 
-		if($rs !== false) {
-			$new = $rs;
-		} else {
+		if($rs === false) {
 			return false;
 		}
 
-		return $new;
+		return (object) $new;
 	}
 }

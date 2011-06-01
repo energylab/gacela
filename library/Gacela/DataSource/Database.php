@@ -226,13 +226,15 @@ class Database extends DataSource {
 	public function insert($name, $data)
 	{
 		list($query, $binds) = $this->getQuery()->insert($name, $data)->assemble();
-		
-		if($this->_conn->prepare($query)->execute($binds)) {
+
+		$query = $this->_conn->prepare($query);
+
+		if($query->execute($binds)) {
 			$this->_incrementCache($name);
 			
 			return $this->_conn->lastInsertId();
 		} else {
-			throw new \Exception('Insert failed with errors: <pre>'.print_($query->errorInfo(), true).'</pre>');
+			throw new \Exception('Insert failed with errors: <pre>'.print_r($query->errorInfo(), true).'</pre>');
 		}
 	}
 
@@ -246,7 +248,7 @@ class Database extends DataSource {
 		}
 
 		$key = hash('whirlpool', serialize(array($query, $args)));
-
+		
 		$cached = $this->_cache($resource->getName(), $key);
 
 		if($cached !== false) {
