@@ -8,9 +8,13 @@
 
 require '_init.php';
 
-if(isset($_GET['id']) || isset($_POST['id'])) {
+if(!empty($_GET['id']) || !empty($_POST['id'])) {
 	$id = isset($_GET['id']) ? $_GET['id'] : $_POST['id'];
 	$model = \Gacela::instance()->loadMapper('wizard')->find($id);
+}
+
+if(isset($_GET['action']) && $_GET['action'] == 'delete') {
+	$wizard->delete();
 }
 
 If(count($_POST)) {
@@ -29,12 +33,12 @@ If(count($_POST)) {
 
 		$model = new $model;
 	}
-
+	
 	unset($_POST['id']);
 	unset($_POST['save']);
 	
 	if(!$model->save($_POST)) {
-		exit(debug($model->errors));
+		exit('Errors: '.debug($model->errors));
 	}
 }
 
@@ -69,6 +73,7 @@ $wizards = \Gacela::instance()->loadMapper('wizard')->findAll();
 		<th>Name</th>
 		<th>Class</th>
 		<th>Location</th>
+		<th>Options</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -79,6 +84,10 @@ foreach($wizards as $wiz) {
 				<td>'.$wiz->fullName.'</td>
 				<td>'.get_class($wiz).'</td>
 				<td>'.$wiz->locationName.'</td>
+				<td>
+					<a href="dependents.php?id='.$wiz->wizardId.'">Edit</a>&nbsp;
+					<a href="dependents.php?id='.$wiz->wizardId.'&action=delete">Delete</a>
+				</td>
 			</tr>';
 }
 ?>

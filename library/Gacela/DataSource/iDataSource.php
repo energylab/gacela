@@ -42,9 +42,10 @@ interface iDataSource {
 	 * @throws \Exception
 	 * @param  string $name Resource Name to use
 	 * @param  array $data Can be a multi-dimensional array to insert many records or a single array to insert one record
+	 * @param string - 'begin', 'commit'
 	 * @return int|bool Last insert id (if supported by the DataSource and Resource) otherwise a boolean true
 	 */
-	public function insert($name, $data);
+	public function insert($name, array $data);
 
 	/**
 	 * @abstract
@@ -66,6 +67,7 @@ interface iDataSource {
 	 * @param  string $name
 	 * @param  array $data
 	 * @param \Gacela\Criteria $where
+	 * @param string - 'begin', 'commit'
 	 * @return bool 
 	 */
 	public function update($name, $data, \Gacela\Criteria $where);

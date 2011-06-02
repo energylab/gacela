@@ -13,7 +13,17 @@ abstract class DataSource implements iDataSource {
 	protected $_config = array();
 
 	abstract protected function _driver();
-	
+
+	public function beginTransaction()
+	{
+		return false;
+	}
+
+	public function commitTransaction()
+	{
+		return false;
+	}
+
 	/**
 	 * @see \Gacela\DataSource\iDataSource::loadResource()
 	 */
@@ -28,6 +38,11 @@ abstract class DataSource implements iDataSource {
 		}
 		
 		return $cached;
+	}
+
+	public function rollbackTransaction()
+	{
+		return false;
 	}
 }
 

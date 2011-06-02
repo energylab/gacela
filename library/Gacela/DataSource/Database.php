@@ -111,6 +111,16 @@ class Database extends DataSource {
 		$this->_conn = new \PDO($dsn, $this->_config->user, $this->_config->password);
 	}
 
+	public function beginTransaction()
+	{
+		return $this->_conn->beginTransaction();
+	}
+
+	public function commitTransaction()
+	{
+		return $this->_conn->commit();
+	}
+
 	/**
 	 * @see Gacela\DataSource\iDataSource::delete()
 	 * @throws \Exception
@@ -223,19 +233,32 @@ class Database extends DataSource {
 	/**
 	 * @see Gacela\DataSource\iDataSource::insert()
 	 */
-	public function insert($name, $data)
+	public function insert($name, array $data, $transaction = null)
 	{
 		list($query, $binds) = $this->getQuery()->insert($name, $data)->assemble();
 
 		$query = $this->_conn->prepare($query);
 
-		if($query->execute($binds)) {
-			$this->_incrementCache($name);
-			
-			return $this->_conn->lastInsertId();
-		} else {
-			throw new \Exception('Insert failed with errors: <pre>'.print_r($query->errorInfo(), true).'</pre>');
+		try {
+			if($query->execute($binds)) {
+				$this->_incrementCache($name);
+
+				return $this->_conn->lastInsertId();
+			} else {
+				if($this->_conn->inTransaction()) {
+					$this->rollbackTransaction();
+				}
+
+				throw new \Exception('Insert failed with errors: <pre>'.print_r($query->errorInfo(), true).'</pre>');
+			}
+		} catch (PDOException $e) {
+			if($this->_conn->inTransaction()) {
+				$this->rollbackTransaction();
+			}
+
+			throw $e;
 		}
+
 	}
 
 	/**
@@ -273,6 +296,11 @@ class Database extends DataSource {
 		return $this->_conn->quote($var, $type);
 	}
 
+	public function rollbackTransaction()
+	{
+		return $this->_conn->rollBack();
+	}
+
 	/**
 	 * @see Gacela\DataSource\iDataSource::update()
 	 * @throws \Exception
@@ -281,17 +309,29 @@ class Database extends DataSource {
 	 * @param \Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function update($name, $data, \Gacela\Criteria $where)
+	public function update($name, $data, \Gacela\Criteria $where, $transaction = null)
 	{
 		list($query, $args) = $this->getQuery($where)->update($name, $data)->assemble();
 
 		$query = $this->_conn->prepare($query);
 
-		if($query->execute($args)) {
-			$this->_incrementCache($name);
-			return true;
-		} else {
-			throw new \Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');
+		try {
+			if($query->execute($args)) {
+				$this->_incrementCache($name);
+				return true;
+			} else {
+				if($this->_conn->inTransaction()) {
+					$this->rollbackTransaction();
+				}
+
+				throw new \Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');
+			}
+		} catch (PDOException $e) {
+			if($this->_conn->inTransaction()) {
+				$this->rollbackTransaction();
+			}
+
+			throw $e;
 		}
 	}
 }

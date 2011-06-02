@@ -326,7 +326,7 @@ abstract class Mapper implements iMapper {
 	protected function _saveResource($resource, &$changed, &$new, $old)
 	{
 		$data = $this->_dataToSave($resource, $changed, $new);
-
+		echo debug($data);
 		if(empty($data)) {
 			return false;
 		}
@@ -378,18 +378,29 @@ abstract class Mapper implements iMapper {
 	 */
 	public function delete(\stdClass $data)
 	{
+		$this->_source()->beginTransaction();
+		
 		if(!$this->_deleteResource($this->_resource, $data)) {
-			return;
+			$this->_source()->rollbackTransaction();
+			return false;
 		}
 
 		foreach($this->_inherits as $inherits) {
-			$this->_deleteResource($inherits['resource'], $data);
+			if(!$this->_deleteResource($inherits['resource'], $data)) {
+				$this->_source()->rollbackTransaction();
+				return false;
+			}
 		}
 
 		foreach($this->_dependents as $dep) {
-			$this->_deleteResource($dep['resource'], $data);
+			if(!$this->_deleteResource($dep['resource'], $data)) {
+				$this->_source()->rollbackTransaction();
+				return false;
+			}
 		}
 
+		$this->_source()->commitTransaction();
+		
 		return true;
 	}
 
@@ -424,8 +435,8 @@ abstract class Mapper implements iMapper {
 
 	/**
 	 * @brief Returns a Collection of Model objects based on the Criteria specified
-	 * @param Criteria|null $criteria
-	 * @return Collection
+	 * @param \Gacela\Criteria|null $criteria
+	 * @return \Gacela\Collection
 	 */
 	public function findAll(\Gacela\Criteria $criteria = null)
 	{
@@ -525,7 +536,6 @@ abstract class Mapper implements iMapper {
 		$this->_init();
 	}
 
-
 	/**
 	 * @brief Loads a new instance of $_modelName from the $data provided.
 	 * @param \stdClass $data
@@ -545,6 +555,8 @@ abstract class Mapper implements iMapper {
 	 */
 	public function save(array $changed, \stdClass $new, array $old)
 	{
+		$this->_source()->beginTransaction();
+		
 		foreach($this->_dependents as $dependent) {
 			$this->_saveResource($dependent['resource'], $changed, $new, $old);
 		}
@@ -556,9 +568,12 @@ abstract class Mapper implements iMapper {
 		$rs = $this->_saveResource($this->_resource, $changed, $new, $old);
 
 		if($rs === false) {
+			$this->_source()->rollbackTransaction();
 			return false;
 		}
 
+		$this->_source()->commitTransaction();
+		
 		return (object) $new;
 	}
 }
