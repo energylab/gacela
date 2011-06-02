@@ -100,7 +100,7 @@ abstract class Mapper implements iMapper {
 
 	protected function _doUpdate($resource, $data)
 	{
-		$primary = $this->_primaryKey($resource->getPrimaryKey(), $data);
+		$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $data);
 		$fields = $resource->getFields();
 		
 		if(is_null($primary)) {
@@ -305,7 +305,7 @@ abstract class Mapper implements iMapper {
 	 * @param  $data
 	 * @return null|string
 	 */
-	protected function _primaryKey($primaryKey, $data)
+	protected function _primaryKey($primaryKey, \stdClass $data)
 	{
 		$primary = array();
 		foreach($primaryKey as $k) {
@@ -316,7 +316,7 @@ abstract class Mapper implements iMapper {
 			$primary[$k] = $data->$k;
 		}
 		
-		if(!count($primary) || count($primary) != count($this->_primaryKey)) {
+		if(!count($primary) || count($primary) != count($primaryKey)) {
 			$primary = null;
 		}
 		
@@ -331,7 +331,9 @@ abstract class Mapper implements iMapper {
 			return false;
 		}
 
-		if($this->_doUpdate($resource, $old) === false) {
+		$test = array_merge((array) $new, $old);
+		
+		if($this->_doUpdate($resource, $test) === false) {
 			$rs = $this->_source()->insert($resource->getName(), $data);
 
 			$fields = $resource->getFields();
@@ -341,8 +343,8 @@ abstract class Mapper implements iMapper {
 				$changed[] = current($resource->getPrimaryKey());
 			}
 		} else {
-			$primary = $this->_primaryKey($resource, $data);
-
+			$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $test);
+			
 			if(is_null($primary)) {
 				throw new \Exception('oops!');
 			}
@@ -523,10 +525,11 @@ abstract class Mapper implements iMapper {
 		$this->_init();
 	}
 
+
 	/**
 	 * @brief Loads a new instance of $_modelName from the $data provided.
-	 * @param stdClass $data 
-	 * @returns Model
+	 * @param \stdClass $data
+	 * @return Model
 	 */
 	public function load(\stdClass $data)
 	{

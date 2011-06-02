@@ -8,13 +8,14 @@
 
 require '_init.php';
 
-if(isset($_GET['id'])) {
-	$model = Gacela::instance()->loadMapper('house')->find($_GET['id']);
+if(isset($_GET['id']) || isset($_POST['id'])) {
+	$id = isset($_GET['id']) ? $_GET['id'] : $_POST['id'];
+	
+	$model = Gacela::instance()->loadMapper('house')->find($id);
+}
 
-	if($_GET['action'] == 'edit') {
-		$house = $model->houseName;
-		$id = $model->houseId;
-	}
+if(isset($_GET['action']) && $_GET['action'] == 'delete') {
+	$model->delete();
 }
 
 if(count($_POST)) {
@@ -25,8 +26,9 @@ if(count($_POST)) {
 	$model->houseName = $_POST['house'];
 
 	if(!$model->save()) {
-		$house = $_POST['house'];
 		$error = 'House Name is not valid';
+	} else {
+		unset($model);
 	}
 }
 
@@ -38,8 +40,8 @@ $houses = \Gacela::instance()->loadMapper('house')->findAll();
 <?= isset($error) ? '<h3>'.$error.'</h3>' : null ?>
 <form action="<?= $_SERVER['PHP_SELF'] ?>" method="post" enctype="multipart/form-data">
 	<label for="house">House Name</label>
-	<input type="hidden" name='houseId' value="<?= isset($id) ? $id : null ?>" />
-	<input type="text" name="house" value="<?= isset($house) ? $house : null ?>"/>
+	<input type="hidden" name='id' value="<?= isset($model) ? $model->houseId : null ?>" />
+	<input type="text" name="house" value="<?= isset($model) ? $model->houseName : null ?>"/>
 	<input type="submit" name="addHouse" />
 </form>
 

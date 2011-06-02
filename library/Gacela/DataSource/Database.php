@@ -284,7 +284,9 @@ class Database extends DataSource {
 	public function update($name, $data, \Gacela\Criteria $where)
 	{
 		list($query, $args) = $this->getQuery($where)->update($name, $data)->assemble();
-		
+
+		$query = $this->_conn->prepare($query);
+
 		if($query->execute($args)) {
 			$this->_incrementCache($name);
 			return true;
