@@ -33,15 +33,4 @@ class Wizard extends M {
 
 		return new $model($data);
 	}
-
-	public function findAllWithAddress($criteria = null)
-	{
-		if(is_null($criteria)) {
-			$criteria = new \Gacela\Criteria;
-		}
-
-		$criteria->isNotNull('wizards.addressId');
-
-		return $this->findAll($criteria);
-	}
 }

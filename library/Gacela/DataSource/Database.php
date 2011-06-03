@@ -15,6 +15,8 @@ class Database extends DataSource {
 
 	protected $_driver;
 
+	protected $_lastQuery = array();
+
 	protected $_resources = array();
 
 	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
@@ -261,16 +263,21 @@ class Database extends DataSource {
 
 	}
 
+	public function lastQuery()
+	{
+		return $this->_lastQuery;
+	}
+
 	/**
 	 * @see Gacela\DataSource\iDataSource::query()
 	 */
 	public function query(\Gacela\DataSource\Resource $resource, $query, $args = null)
 	{
 		if($query instanceof Query\Database)  {
-			list($query, $args) = $query->assemble();
+			list($this->_lastQuery['query'], $this->_lastQuery['args']) = $query->assemble();
 		}
-
-		$key = hash('whirlpool', serialize(array($query, $args)));
+		
+		$key = hash('whirlpool', serialize(array($this->_lastQuery['query'], $this->_lastQuery['args'])));
 		
 		$cached = $this->_cache($resource->getName(), $key);
 
@@ -278,9 +285,9 @@ class Database extends DataSource {
 			return $cached;
 		}
 
-		$stmt = $this->_conn->prepare($query);
+		$stmt = $this->_conn->prepare($this->_lastQuery['query']);
 
-		if($stmt->execute($args) === true) {
+		if($stmt->execute($this->_lastQuery['args']) === true) {
 			$return = $stmt->fetchAll(\PDO::FETCH_OBJ);
 			$this->_cache($resource->getName(), $key, $return);
 			return $return;

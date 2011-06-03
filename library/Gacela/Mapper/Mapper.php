@@ -371,6 +371,24 @@ abstract class Mapper implements iMapper {
 		$this->init();
 	}
 
+	public function debug($return = true)
+	{
+		$array = array(
+			'associations' => array_keys($this->_associations),
+			'dependents' => array_keys($this->_dependents),
+			'inherits' => array_keys($this->_inherits),
+			'otherRelations' => array_keys($this->_foreignKeys),
+			'lastDataSourceQuery' => $this->_source()->lastQuery()
+		);
+
+		if($return) {
+			return $array;
+		} else {
+			echo '<pre>'.print_r($array, true).'</pre>';
+			return;
+		}
+	}
+
 	/**
 	 * @brief Called by the Model to delete the record represented by the identity field
 	 * @param stdClass - The data from the Model

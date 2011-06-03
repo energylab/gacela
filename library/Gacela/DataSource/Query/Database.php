@@ -74,7 +74,7 @@ class Database extends Query {
 				$this->where("{$field} ".self::$_operators[$stmt[0]]." {$toBind}", $bind);
 			} elseif(in_array($stmt[0], array('in', 'notIn'))) {
 
-			} elseif($stmt[0] == 'notNull') {
+			} elseif($stmt[0] == 'notNull' || $stmt[0] == 'null') {
 				$this->where("{$field} ".self::$_operators[$stmt[0]]);
 			}
 		}
