@@ -99,6 +99,23 @@ class Database extends Query {
 		return join(', ', $_from)."\n";
 	}
 
+	private function _group()
+	{
+		if(!count($this->_groupBy)) {
+			return '';
+		}
+
+		$sql = 'GROUP BY ';
+
+		foreach($this->_groupBy as $field) {
+			$sql .= $this->_quoteIdentifier($field).',';
+		}
+
+		$sql = substr($sql, 0, strlen($sql-1));
+
+		return $sql;
+	}
+
 	private function _insert()
 	{
 		if(!isset($this->_insert[0])) {
@@ -165,6 +182,23 @@ class Database extends Query {
 		}
 		
 		return $_join;
+	}
+
+	private function _order()
+	{
+		if(!count($this->_orderBy)) {
+			return '';
+		}
+
+		$sql = 'ORDER BY ';
+
+		foreach($this->_orderBy as $field => $dir) {
+			$sql .= $this->_quoteIdentifier($field).' '.$dir.',';
+		}
+
+		$sql = substr($sql, 0, strlen($sql-1));
+
+		return $sql;
 	}
 
 	private function _quoteIdentifier($identifier)
@@ -306,18 +340,15 @@ class Database extends Query {
 				$sql .= "FROM {$from}\n";
 			}
 		}
-		
-		$where = $this->_where();
-		$join = $this->_join();
 
-		if(!empty($join)) {
-			$sql .= $join;
-		}
-
-		if(!empty($where)) {
-			$sql .= $where;
-		}
+		$sql .= $this->_join();
 		
+		$sql .= $this->_where();
+		
+		$sql .= $this->_group();
+
+		$sql .= $this->_order();
+
 		$this->_sql = $sql;
 
 		return array($this->_sql, $this->_binds);
@@ -361,8 +392,16 @@ class Database extends Query {
 		return $this;
 	}
 
+	/**
+	 * @param  string $column
+	 * @return Query\Database
+	 */
 	public function groupBy($column)
 	{
+		if(!in_array($column, $this->_groupBy)) {
+			$this->_groupBy[] = $column;
+		}
+
 		return $this;
 	}
 
@@ -370,6 +409,7 @@ class Database extends Query {
 	{
 		return $this;
 	}
+	
 	public function insert($tableName, $data)
 	{
 		$this->_insert = array($tableName, $data);
@@ -396,10 +436,13 @@ class Database extends Query {
 	}
 
 	/**
-	 *
+	 * @param string
+	 * @param string
+	 * @return Query\Database
 	 */
 	public function orderBy($column, $direction = 'ASC')
 	{
+		$this->_orderBy[$column] = $direction;
 		return $this;
 	}
 
