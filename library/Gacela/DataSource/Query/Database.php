@@ -67,10 +67,15 @@ class Database extends Query {
 			$toBind = '';
 			if(isset($stmt[2])) {
 				$toBind = ":{$stmt[1]}";
+
+				if(in_array($stmt[0], array('like', 'notLike'))) {
+					$stmt[2] = '%'.$stmt[2].'%';
+				}
+				
 				$bind = array($toBind => $stmt[2]);
 			}
 
-			if(in_array($stmt[0], array('equals', 'notEquals', 'lessThan', 'greaterThan'))) {
+			if(in_array($stmt[0], array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
 				$this->where("{$field} ".self::$_operators[$stmt[0]]." {$toBind}", $bind);
 			} elseif(in_array($stmt[0], array('in', 'notIn'))) {
 
@@ -164,9 +169,13 @@ class Database extends Query {
 
 	private function _quoteIdentifier($identifier)
 	{
-		if(is_array($identifier)) exit(debug($identifier));
+		if(is_array($identifier)) {
+			throw new \Exception('Identifier in _quoteIdentifier is an array');
+		}
 		
 		if(strpos($identifier, '*') !== false) {
+			return $identifier;
+		} elseif(strpos($identifier, '(') && strpos($identifier, ')')) {
 			return $identifier;
 		} elseif(strpos($identifier, '.') !== false) {
 			$identifier = explode('.', $identifier);
@@ -231,9 +240,9 @@ class Database extends Query {
 		if(!count($this->_where)) {
 			return $_where;
 		}
-
+		
 		foreach($this->_where as $where) {
-
+			
 			if(empty($_where)) {
 				$_where = "WHERE ({$where[0]})";
 			} else {
@@ -251,7 +260,7 @@ class Database extends Query {
 				}
 			}
 		}
-
+		
 		return $_where;
 	}
 	

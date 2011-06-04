@@ -161,6 +161,8 @@ abstract class Mapper implements iMapper {
 
 				if($test == count($resource->getPrimaryKey())) {
 					$this->_associations[$name] = $foreign;
+
+					unset($this->_foreignKeys[$name]);
 				}
 			}
 		}
@@ -204,6 +206,15 @@ abstract class Mapper implements iMapper {
 
 	protected function _initForeignKeys($relations)
 	{
+		$plural = \Gacela\Inflector::pluralize($this->_resourceName);
+		$single = \Gacela\Inflector::singularize($this->_resourceName);
+
+		if(in_array($plural, array_keys($relations))) {
+			unset($relations[$plural]);
+		} elseif(in_array($single, array_keys($relations))) {
+			unset($relations[$single]);
+		}
+
 		$this->_foreignKeys = array_merge($relations, $this->_foreignKeys);
 
 		foreach($this->_foreignKeys as $relation => $meta) {
@@ -233,11 +244,12 @@ abstract class Mapper implements iMapper {
 				$refPrimary = $stuff['resource']->getPrimaryKey();
 				
 				if($refPrimary[0] == $stuff['meta']->refColumn && count($this->_primaryKey) == 1 && $this->_primaryKey[0] == $stuff['meta']->keyColumn) {
-					$this->_inherits[$stuff['resource']->getName()] = $stuff;
+					$this->_inherits[$name] = $stuff;
 					
 					$relations = $stuff['resource']->getRelations();
 
 					unset($relations[\Gacela\Inflector::singularize($this->_resourceName)]);
+					unset($this->_foreignKeys[$name]);
 					
 					$this->_initForeignKeys($stuff['resource']->getRelations());
 				}
@@ -377,7 +389,7 @@ abstract class Mapper implements iMapper {
 			'associations' => array_keys($this->_associations),
 			'dependents' => array_keys($this->_dependents),
 			'inherits' => array_keys($this->_inherits),
-			'otherRelations' => array_keys($this->_foreignKeys),
+			'other' => array_keys($this->_foreignKeys),
 			'lastDataSourceQuery' => $this->_source()->lastQuery()
 		);
 

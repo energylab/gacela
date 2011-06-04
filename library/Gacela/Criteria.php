@@ -74,7 +74,8 @@ class Criteria implements \IteratorAggregate {
 
 	public function notLike($field, $value)
 	{
-
+		$this->_addCriterion('notLike', func_get_args());
+		
 		return $this;
 	}
 
