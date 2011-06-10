@@ -86,6 +86,11 @@ class Mysql implements iAdapter {
 				case 'timestamp':
 					$meta['type'] = 'date';
 					break;
+				case 'decimal':
+				case 'float':
+				case 'double':
+					$meta['type'] = 'float';
+					break;
 			}
 
 			$field = "\\Gacela\\Field\\".ucfirst($meta['type']);
