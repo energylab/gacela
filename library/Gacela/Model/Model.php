@@ -171,7 +171,7 @@ abstract class Model implements iModel {
 	 * @param \stdClass|null $data
 	 * @return bool
 	 */
-	public function save(array $data = null)
+	public function save($data = null)
 	{
 		if(!$this->validate($data)) {
 			return false;

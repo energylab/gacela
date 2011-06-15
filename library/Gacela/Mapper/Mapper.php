@@ -338,7 +338,7 @@ abstract class Mapper implements iMapper {
 	protected function _saveResource($resource, &$changed, &$new, $old)
 	{
 		$data = $this->_dataToSave($resource, $changed, $new);
-		echo debug($data);
+		
 		if(empty($data)) {
 			return false;
 		}
