@@ -72,7 +72,7 @@ class Gacela {
         } else {
             $namespaces = array_reverse($self->_namespaces);
             foreach ($namespaces as $ns => $path) {
-                $file = $path.$ns.str_replace("\\", "/", $class).'.php';
+                $file = $path.str_replace("\\", "/", $class).'.php';
 
                 if($self->_findFile($file)) {
                 	$class = $ns.$class;
