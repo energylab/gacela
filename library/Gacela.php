@@ -58,12 +58,17 @@ class Gacela {
     {
         $parts = explode("\\", $class);
 		$self = self::instance();
-		
+
         if(isset($self->_namespaces[$parts[0]])) {
         	if(class_exists($class)) {
 				return $class;
 			} else {
-				$file = $self->_namespaces[$parts[0]].str_replace("\\", "/", $class).'.php';
+				$path = $parts;
+				unset($path[0]);
+
+				$path = join('/', $path);
+
+				$file = $self->_namespaces[$parts[0]].$path.'.php';
 				if($self->_findFile($file)) {
 					require $file;
 					return $class;
