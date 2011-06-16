@@ -91,7 +91,7 @@ class Database extends DataSource {
 	{
 		$instance = \Gacela::instance();
 
-		if(!$instance->memcacheEnabled()) {
+		if(!$instance->cacheEnabled()) {
 			return;
 		}
 

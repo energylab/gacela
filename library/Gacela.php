@@ -11,15 +11,15 @@ class Gacela {
 
 	protected static $_instance;
 
-	protected $_memcache = null;
+	protected $_cache = null;
 
-	protected $_memcacheEnabled = false;
+	protected $_cacheEnabled = false;
 
 	protected $_namespaces = array();
 
 	protected $_sources = array();
 
-	protected $_cache = array();
+	protected $_cached = array();
 
     protected function __construct()
     {
@@ -97,26 +97,26 @@ class Gacela {
 	 */
 	public function cache($key, $object = null, $replace = false)
 	{
-		if(!$this->_memcacheEnabled) {
+		if(!$this->_cacheEnabled) {
 			if(is_null($object)) {
-				if(isset($this->_cache[$key])) {
-					return $this->_cache[$key];
+				if(isset($this->_cached[$key])) {
+					return $this->_cached[$key];
 				}
 
 				return false;
 			} else {
-				$this->_cache[$key] = $object;
+				$this->_cached[$key] = $object;
 
 				return true;
 			}
 		} else {
 			if(is_null($object)) {
-				return $this->_memcache->get($key);
+				return $this->_cache->get($key);
 			} else {
 				if($replace) {
-					return $this->_memcache->replace($key, $object);
+					return $this->_cache->replace($key, $object);
 				} else {
-					return $this->_memcache->set($key, $object);
+					return $this->_cache->set($key, $object);
 				}
 			}
 		}
@@ -126,19 +126,19 @@ class Gacela {
 	 * @param  Memcache|array $servers
 	 * @return Gacela
 	 */
-	public function enableMemcache($servers)
+	public function enableCache($servers)
 	{
 		if($servers instanceof Memcache) {
-			$this->_memcache = $servers;
+			$this->_cache = $servers;
 		} elseif(is_array($servers)) {
-			$this->_memcache = new Memcache;
+			$this->_cache = new Memcache;
 
 			foreach($servers as $server) {
-				$this->_memcache->addServer($server[0], $server[1]);
+				$this->_cache->addServer($server[0], $server[1]);
 			}
 		}
 
-		$this->_memcacheEnabled = true;
+		$this->_cacheEnabled = true;
 
 		return $this;
 	}
@@ -159,10 +159,10 @@ class Gacela {
 
 	public function incrementCache($key)
 	{
-		if(!$this->memcacheEnabled()) {
-			$this->_cache[$key]++;
+		if(!$this->cacheEnabled()) {
+			$this->_cached[$key]++;
 		} else {
-			$this->_memcache->increment($key);
+			$this->_cache->increment($key);
 		}
 	}
 
@@ -193,9 +193,9 @@ class Gacela {
 		return $cached;
 	}
 
-	public function memcacheEnabled()
+	public function cacheEnabled()
 	{
-		return $this->_memcacheEnabled;
+		return $this->_cacheEnabled;
 	}
 
 	/**
