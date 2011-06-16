@@ -25,7 +25,7 @@ class Gacela {
     {
         spl_autoload_register(array($this, 'autoload'));
 
-        $this->registerNamespace('Gacela', __DIR__);
+        $this->registerNamespace('Gacela', __DIR__.'/Gacela');
     }
 
 	/**
@@ -77,11 +77,17 @@ class Gacela {
         } else {
             $namespaces = array_reverse($self->_namespaces);
             foreach ($namespaces as $ns => $path) {
-                $file = $path.str_replace("\\", "/", $class).'.php';
+            	if(substr($class, 0, 1) == '\\') {
+            		$tmp = substr($class, 1);
+            	} else {
+					$tmp = $class;
+            	}
+
+                $file = $path.str_replace("\\", "/", $tmp).'.php';
 
                 if($self->_findFile($file)) {
                 	$class = $ns.$class;
-                	
+					echo debug('found<br/>');
                 	if(class_exists($class)) {
                 		return $class;
                 	} else {
@@ -213,9 +219,9 @@ class Gacela {
 	{
 		$config['name'] = $name;
 		$config['type'] = $type;
-		
-		$class = self::instance()->autoload("\\DataSource\\".ucfirst($type));
 
+		$class = self::instance()->autoload("\\DataSource\\".ucfirst($type));
+		
 		$this->_sources[$name] = new $class($config);
 		
 		return $this;

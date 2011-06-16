@@ -9,7 +9,7 @@
 require_once '../library/Gacela.php';
 
 $gacela = Gacela::instance();
- 
+
 $gacela->registerNamespace('App', __DIR__.'/App');
 
 $gacela->registerDataSource(
