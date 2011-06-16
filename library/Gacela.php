@@ -87,7 +87,7 @@ class Gacela {
 
                 if($self->_findFile($file)) {
                 	$class = $ns.$class;
-					echo debug('found<br/>');
+					
                 	if(class_exists($class)) {
                 		return $class;
                 	} else {
