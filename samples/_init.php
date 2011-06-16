@@ -28,7 +28,7 @@ $memcache = new Memcache;
 
 $memcache->addServer('127.0.0.1', 11211);
 
-$gacela->enableMemcache($memcache);
+$gacela->enableCache($memcache);
 
 function debug($value)
 {
