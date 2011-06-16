@@ -50,32 +50,6 @@ class Database extends DataSource {
 		return $query;
 	}
 
-	protected function _cache($name, $key, $data = null)
-	{
-		$instance = \Gacela::instance();
-		
-		$version = $instance->cache($name.'_version');
-
-		if($version === false) {
-			$version = 0;
-			$instance->cache($name.'_version', $version);
-		}
-
-		$key = 'query_'.$version.'_'.$key;
-
-		$cached = $instance->cache($key);
-
-		if(is_null($data)) {
-			return $cached;
-		} else {
-			if($cached === false) {
-				$instance->cache($key, $data);
-			} else {
-				$instance->cache($key, $data, true);
-			}
-		}
-	}
-
 	protected function _driver()
 	{
 		if(empty($this->_driver)) {
@@ -89,7 +63,7 @@ class Database extends DataSource {
 
 	protected function _incrementCache($name)
 	{
-		$instance = \Gacela::instance();
+		$instance = $this->_singleton();
 
 		if(!$instance->cacheEnabled()) {
 			return;

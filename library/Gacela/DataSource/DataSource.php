@@ -14,6 +14,37 @@ abstract class DataSource implements iDataSource {
 
 	abstract protected function _driver();
 
+	protected function _cache($name, $key, $data = null)
+	{
+		$instance = $this->_singleton();
+
+		$version = $instance->cache($name . '_version');
+
+		if ($version === false) {
+			$version = 0;
+			$instance->cache($name . '_version', $version);
+		}
+
+		$key = 'query_' . $version . '_' . $key;
+
+		$cached = $instance->cache($key);
+
+		if (is_null($data)) {
+			return $cached;
+		} else {
+			if ($cached === false) {
+				$instance->cache($key, $data);
+			} else {
+				$instance->cache($key, $data, true);
+			}
+		}
+	}
+
+	protected function _singleton()
+	{
+		return \Gacela::instance();
+	}
+
 	public function beginTransaction()
 	{
 		return false;
@@ -29,12 +60,12 @@ abstract class DataSource implements iDataSource {
 	 */
 	public function loadResource($name)
 	{
-		$cached = \Gacela::instance()->cache('resource_'.$name);
+		$cached = $this->_singleton()->cache('resource_'.$name);
 
 		if($cached === false)  {
 			$cached = new Resource($this->_driver()->load($this->_conn, $name, $this->_config->schema));
 
-			\Gacela::instance()->cache('resource_'.$name, $cached);
+			$this->_singleton()->cache('resource_'.$name, $cached);
 		}
 		
 		return $cached;
