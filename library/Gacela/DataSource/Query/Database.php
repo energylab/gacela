@@ -61,25 +61,33 @@ class Database extends Query {
 	private function _buildFromCriteria($criteria)
 	{
 		foreach($criteria as $stmt) {
+			$op = $stmt[0];
 			$field = $stmt[1];
+			$args = $stmt[2];
 
 			$bind = array();
 			$toBind = '';
-			if(isset($stmt[2])) {
-				$toBind = ":{$stmt[1]}";
+			if(!empty($args)) {
+				if(in_array($op, array('in', 'notIn'))) {
+					for($i=0;$i<count($args);$i++) {
+						$bind[':'.$field.$i] = $args[$i];
+					}
+				} else {
+					$toBind = ":{$field}";
 
-				if(in_array($stmt[0], array('like', 'notLike'))) {
-					$stmt[2] = '%'.$stmt[2].'%';
+					if(in_array($op, array('like', 'notLike'))) {
+						$args = '%'.$args.'%';
+					}
+
+					$bind = array($toBind => $args);
 				}
-				
-				$bind = array($toBind => $stmt[2]);
 			}
 
-			if(in_array($stmt[0], array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
-				$this->where("{$field} ".self::$_operators[$stmt[0]]." {$toBind}", $bind);
-			} elseif(in_array($stmt[0], array('in', 'notIn'))) {
-
-			} elseif($stmt[0] == 'notNull' || $stmt[0] == 'null') {
+			if(in_array($op, array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
+				$this->where("{$field} ".self::$_operators[$op]." {$toBind}", $bind);
+			} elseif(in_array($op, array('in', 'notIn'))) {
+				$this->where("{$field} ".self::$_operators[$stmt[0]]." (".implode(', ', array_keys($bind)).")", $bind);
+			} elseif(in_array($op, array('notNull', 'null'))) {
 				$this->where("{$field} ".self::$_operators[$stmt[0]]);
 			}
 		}
@@ -276,7 +284,6 @@ class Database extends Query {
 		}
 		
 		foreach($this->_where as $where) {
-			
 			if(empty($_where)) {
 				$_where = "WHERE ({$where[0]})";
 			} else {
@@ -350,7 +357,7 @@ class Database extends Query {
 		$sql .= $this->_order();
 
 		$this->_sql = $sql;
-
+		
 		return array($this->_sql, $this->_binds);
 	}
 
