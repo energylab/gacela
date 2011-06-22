@@ -390,7 +390,8 @@ abstract class Mapper implements iMapper {
 			'dependents' => array_keys($this->_dependents),
 			'inherits' => array_keys($this->_inherits),
 			'other' => array_keys($this->_foreignKeys),
-			'lastDataSourceQuery' => $this->_source()->lastQuery()
+			'fields' => array_keys($this->getFields()),
+			'lastDataSourceQuery' => $this->_source()->lastQuery(),
 		);
 
 		if($return) {
@@ -459,7 +460,7 @@ abstract class Mapper implements iMapper {
 		if(!isset($data) || empty($data)) {
 			$data = new \stdClass();
 		}
-
+		
 		return $this->_load($data);
 	}
 

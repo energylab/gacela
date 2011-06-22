@@ -32,7 +32,9 @@ class Database extends DataSource {
 					.'.'
 					.$relation['meta']->refColumn;
 
-			$query->join($relation['meta']->refTable, $on, array('*'));
+			$cols = array_diff(array_keys($relation['resource']->getFields()), $relation['resource']->getPrimaryKey());
+
+			$query->join($relation['meta']->refTable, $on, $cols);
 		}
 
 		foreach($dependents as $relation) {
@@ -43,8 +45,10 @@ class Database extends DataSource {
 					$relation['meta']->refTable
 					.'.'
 					.$relation['meta']->refColumn;
-						
-			$query->join($relation['meta']->refTable, $on, array('*'), 'left');
+
+			$cols = array_diff(array_keys($relation['resource']->getFields()), $relation['resource']->getPrimaryKey());
+			
+			$query->join($relation['meta']->refTable, $on, $cols, 'left');
 		}
 		
 		return $query;
