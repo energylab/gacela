@@ -338,6 +338,20 @@ abstract class Mapper implements iMapper {
 
 	protected function _saveResource($resource, &$changed, &$new, $old)
 	{
+		/*$rkey = $dependent['meta']->keyColumn;
+		   $lkey = $dependent['meta']->refColumn;
+		   $data = array('old' => array(), 'new' => array(), 'changed' => array());
+
+		   if(isset($old[$rkey])) {
+			   $data['old'][$lkey] = $old[$rkey];
+		   }
+
+		   if(!isset($data['old'][$lkey]) || $data['old'][$lkey] != $new->$rkey) {
+			   $data['changed'][] = $lkey;
+			   $data['new'][$lkey] = $new->$rkey;
+		   }
+		   exit(\Debug::vars($data));*/
+		   
 		$data = $this->_dataToSave($resource, $changed, $new);
 		
 		if(empty($data)) {
@@ -590,19 +604,6 @@ abstract class Mapper implements iMapper {
 		$this->_source()->beginTransaction();
 		
 		foreach($this->_dependents as $dependent) {
-			/*$rkey = $dependent['meta']->keyColumn;
-			$lkey = $dependent['meta']->refColumn;
-			$data = array('old' => array(), 'new' => array(), 'changed' => array());
-
-			if(isset($old[$rkey])) {
-				$data['old'][$lkey] = $old[$rkey];
-			}
-			
-			if(!isset($data['old'][$lkey]) || $data['old'][$lkey] != $new->$rkey) {
-				$data['changed'][] = $lkey;
-				$data['new'][$lkey] = $new->$rkey;
-			}
-			exit(\Debug::vars($data));*/
 			$this->_saveResource($dependent['resource'], $data['changed'], (object) $data['new'], $data['old']);
 		}
 
