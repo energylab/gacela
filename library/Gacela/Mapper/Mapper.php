@@ -70,8 +70,9 @@ abstract class Mapper implements iMapper {
 	protected function _dataToSave(\Gacela\DataSource\Resource $resource, $changed, $new)
 	{
 		$fields = $resource->getFields();
+
 		$data = array_intersect_key((array) $new, $fields, array_flip($changed));
-		
+
 		foreach($data as $key => $val) {
 			$data[$key] = $fields[$key]->transform($val);
 		}
@@ -358,7 +359,7 @@ abstract class Mapper implements iMapper {
 			$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $test);
 			
 			if(is_null($primary)) {
-				throw new \Exception('oops!');
+				throw new \Exception('oops! primary key is null');
 			}
 
 			$where = new \Gacela\Criteria;
@@ -589,7 +590,20 @@ abstract class Mapper implements iMapper {
 		$this->_source()->beginTransaction();
 		
 		foreach($this->_dependents as $dependent) {
-			$this->_saveResource($dependent['resource'], $changed, $new, $old);
+			/*$rkey = $dependent['meta']->keyColumn;
+			$lkey = $dependent['meta']->refColumn;
+			$data = array('old' => array(), 'new' => array(), 'changed' => array());
+
+			if(isset($old[$rkey])) {
+				$data['old'][$lkey] = $old[$rkey];
+			}
+			
+			if(!isset($data['old'][$lkey]) || $data['old'][$lkey] != $new->$rkey) {
+				$data['changed'][] = $lkey;
+				$data['new'][$lkey] = $new->$rkey;
+			}
+			exit(\Debug::vars($data));*/
+			$this->_saveResource($dependent['resource'], $data['changed'], (object) $data['new'], $data['old']);
 		}
 
 		foreach($this->_inherits as $parent) {
