@@ -336,22 +336,8 @@ abstract class Mapper implements iMapper {
 		return $primary;
 	}
 
-	protected function _saveResource($resource, &$changed, &$new, $old)
+	protected function _saveResource($resource, $changed, $new, $old)
 	{
-		/*$rkey = $dependent['meta']->keyColumn;
-		   $lkey = $dependent['meta']->refColumn;
-		   $data = array('old' => array(), 'new' => array(), 'changed' => array());
-
-		   if(isset($old[$rkey])) {
-			   $data['old'][$lkey] = $old[$rkey];
-		   }
-
-		   if(!isset($data['old'][$lkey]) || $data['old'][$lkey] != $new->$rkey) {
-			   $data['changed'][] = $lkey;
-			   $data['new'][$lkey] = $new->$rkey;
-		   }
-		   exit(\Debug::vars($data));*/
-		   
 		$data = $this->_dataToSave($resource, $changed, $new);
 		
 		if(empty($data)) {
@@ -385,7 +371,7 @@ abstract class Mapper implements iMapper {
 			$this->_source()->update($resource->getName(), $data, $where);
 		}
 
-		return true;
+		return array($changed, $new);
 	}
 
 	protected function _source()
@@ -604,11 +590,42 @@ abstract class Mapper implements iMapper {
 		$this->_source()->beginTransaction();
 		
 		foreach($this->_dependents as $dependent) {
-			$this->_saveResource($dependent['resource'], $data['changed'], (object) $data['new'], $data['old']);
+
+			// This all looks like a nasty hack. Here's to hoping to some more brilliant minds to provide input. -- ndg
+			$resKey = $dependent['meta']->keyColumn;
+			$depKey = $dependent['meta']->refColumn;
+			$data = array('old' => array(), 'new' => array(), 'changed' => array());
+
+			if (!empty($old[$resKey])) {
+				$data['old'][$depKey] = $old[$resKey];
+			}
+
+			if (isset($new->$resKey) && (!isset($data['old'][$depKey]) || $data['old'][$depKey] != $new->$resKey)) {
+				$data['changed'][] = $depKey;
+				$data['new'][$depKey] = $new->$resKey;
+			}
+
+			foreach($dependent['resource']->getFields() as $name => $field) {
+				if(in_array($name, $changed)) {
+					$data['new'][$name] = $new->$name;
+					$data['changed'][] = $name;
+				}
+			}
+
+			$rs = $this->_saveResource($dependent['resource'], $data['changed'], (object) $data['new'], $data['old']);
+
+			if (is_array($rs)) {
+				$changed[] = $resKey;
+				$new->$resKey = $rs[1]->$depKey;
+			}
 		}
 
 		foreach($this->_inherits as $parent) {
-			$this->_saveResource($parent['resource'], $changed, $new, $old);
+			$rs = $this->_saveResource($parent['resource'], $changed, $new, $old);
+
+			if(is_array($rs)) {
+				list($changed, $new) = $rs;
+			}
 		}
 		
 		$rs = $this->_saveResource($this->_resource, $changed, $new, $old);
@@ -617,6 +634,8 @@ abstract class Mapper implements iMapper {
 			$this->_source()->rollbackTransaction();
 			return false;
 		}
+
+		list($changed, $new) = $rs;
 
 		$this->_source()->commitTransaction();
 		
