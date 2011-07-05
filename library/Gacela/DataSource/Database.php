@@ -251,14 +251,18 @@ class Database extends DataSource {
 	 */
 	public function query(\Gacela\DataSource\Resource $resource, $query, $args = null)
 	{
-		if($query instanceof Query\Database)  {
+		if($query instanceof Query)  {
+			// Using the _lastQuery variable so that we can see the query when debugging
 			list($this->_lastQuery['query'], $this->_lastQuery['args']) = $query->assemble();
+		} else {
+			$this->_lastQuery = array('query' => $query, 'args' => $args);
 		}
 		
 		$key = hash('whirlpool', serialize(array($this->_lastQuery['query'], $this->_lastQuery['args'])));
 		
 		$cached = $this->_cache($resource->getName(), $key);
 
+		// If the query is cached, return the cached data
 		if($cached !== false) {
 			return $cached;
 		}
