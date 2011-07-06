@@ -254,7 +254,7 @@ class Database extends DataSource {
 		if($query instanceof Query\Query)  {
 			// Using the _lastQuery variable so that we can see the query when debugging
 			list($this->_lastQuery['query'], $this->_lastQuery['args']) = $query->assemble();
-		} else {exit(\Debug::vars(
+		} else {
 			$this->_lastQuery = array('query' => $query, 'args' => $args);
 		}
 		
