@@ -63,8 +63,11 @@ class Database extends Query {
 		foreach($criteria as $stmt) {
 			$op = $stmt[0];
 			$field = $stmt[1];
-			$args = $stmt[2];
 
+			if(isset($stmt[2])) {
+				$args = $stmt[2];
+			}
+			
 			$bind = array();
 			$toBind = '';
 			if(!empty($args)) {
