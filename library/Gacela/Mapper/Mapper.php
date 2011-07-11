@@ -106,13 +106,13 @@ abstract class Mapper implements iMapper {
 		
 		if(is_null($primary)) {
 			return false;
-		} elseif(count($primary) != 1 || $fields[key($primary)]->sequenced === false) {
+		} elseif($fields[key($primary)]->sequenced === false) {
 			$rs = $this->_source()->find($primary, $resource);
 
 			if(count($rs)) {
 				return true;
 			} else {
-				return true;
+				return false;
 			}
 		}
 		
@@ -348,7 +348,7 @@ abstract class Mapper implements iMapper {
 		
 		if($this->_doUpdate($resource, $test) === false) {
 			$rs = $this->_source()->insert($resource->getName(), $data);
-
+			
 			$fields = $resource->getFields();
 			
 			if(count($resource->getPrimaryKey()) == 1 && $fields[current($resource->getPrimaryKey())]->sequenced === true) {
@@ -359,7 +359,7 @@ abstract class Mapper implements iMapper {
 			$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $test);
 			
 			if(is_null($primary)) {
-				throw new \Exception('oops! primary key is null');
+				throw new \Exception('Oops! primary key is null');
 			}
 
 			$where = new \Gacela\Criteria;
@@ -370,7 +370,7 @@ abstract class Mapper implements iMapper {
 
 			$this->_source()->update($resource->getName(), $data, $where);
 		}
-
+		
 		return array($changed, $new);
 	}
 
@@ -629,12 +629,12 @@ abstract class Mapper implements iMapper {
 		}
 		
 		$rs = $this->_saveResource($this->_resource, $changed, $new, $old);
-
+		
 		if($rs === false) {
 			$this->_source()->rollbackTransaction();
 			return false;
 		}
-
+		
 		list($changed, $new) = $rs;
 
 		$this->_source()->commitTransaction();
