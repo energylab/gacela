@@ -305,6 +305,11 @@ abstract class Mapper implements iMapper {
 		return $this;
 	}
 
+	protected function _singleton()
+	{
+		return \Gacela::instance();
+	}
+
 	/**
 	 * @param \stdClass $data
 	 * @return Model
@@ -472,7 +477,9 @@ abstract class Mapper implements iMapper {
 	 */
 	public function findAll(\Gacela\Criteria $criteria = null)
 	{
-		return new 	\Gacela\Collection(
+		$coll = $this->_singleton()->autoload('\\Collection');
+
+		return new 	$coll(
 						$this,
 						$this->_source()->findAll($criteria, $this->_resource, $this->_inherits, $this->_dependents)
 					);
@@ -485,7 +492,9 @@ abstract class Mapper implements iMapper {
 	 */
 	public function findAllByAssociation($relation, array $data)
 	{
-		return new 	\Gacela\Collection(
+		$coll = $this->_singleton()->autoload('\\Collection');
+
+		return new	 $coll(
 						$this,
 						$this->_source()->findAllByAssociation(
 							$this->_resource,
@@ -511,14 +520,14 @@ abstract class Mapper implements iMapper {
 			return $this->_findAssociation($name, $data);
 		} else {
 			$relation = $this->_foreignKeys[$name];
-
+			
 			if($relation['meta']->type == 'hasMany') {
 				$name = \Gacela\Inflector::singularize($name);
 			}
 			
 			$criteria = new \Gacela\Criteria();
 
-			$criteria->equals($relation['meta']->refColumn, $data->{$relation['meta']->keyColumn});
+			$criteria->equals($relation['meta']->refTable.'.'.$relation['meta']->refColumn, $data->{$relation['meta']->keyColumn});
 			
 			$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
 

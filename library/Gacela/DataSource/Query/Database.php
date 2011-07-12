@@ -76,7 +76,13 @@ class Database extends Query {
 						$bind[':'.$field.$i] = $args[$i];
 					}
 				} else {
-					$toBind = ":{$field}";
+					if(strstr($field, '.')) {
+						$toBind = str_replace('.', '_', $field);
+						$toBind = ":{$toBind}";
+					} else {
+						$toBind = ":{$field}";
+					}
+
 
 					if(in_array($op, array('like', 'notLike'))) {
 						$args = '%'.$args.'%';
@@ -85,7 +91,7 @@ class Database extends Query {
 					$bind = array($toBind => $args);
 				}
 			}
-
+			
 			if(in_array($op, array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
 				$this->where("{$field} ".self::$_operators[$op]." {$toBind}", $bind);
 			} elseif(in_array($op, array('in', 'notIn'))) {

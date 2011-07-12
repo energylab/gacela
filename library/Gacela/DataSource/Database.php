@@ -266,9 +266,9 @@ class Database extends DataSource {
 		if($cached !== false) {
 			return $cached;
 		}
-
+		
 		$stmt = $this->_conn->prepare($this->_lastQuery['query']);
-
+		
 		if($stmt->execute($this->_lastQuery['args']) === true) {
 			$return = $stmt->fetchAll(\PDO::FETCH_OBJ);
 			$this->_cache($resource->getName(), $key, $return);

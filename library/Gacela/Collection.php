@@ -26,6 +26,27 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 		$this->_count = count($data);
 	}
 
+	public function asArray()
+	{
+		if(func_num_args() < 1)
+		{
+			throw new Exception('Invalid number of args passed to \\Gacela\\Collection::asArray().');
+		}
+
+		$array = array();
+		foreach($this as $row) {
+			$data = array();
+
+			foreach(func_get_args() as $field) {
+				$data[$field] = $row->$field;
+			}
+
+			$array[] = $data;
+		}
+		
+		return $array;
+	}
+
     /**
      * Returns the number of elements in the collection.
      *
