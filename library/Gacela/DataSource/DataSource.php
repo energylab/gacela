@@ -20,7 +20,7 @@ abstract class DataSource implements iDataSource {
 
 		$version = $instance->cache($name . '_version');
 
-		if ($version === false) {
+		if (is_null($version) || $version === false) {
 			$version = 0;
 			$instance->cache($name . '_version', $version);
 		}
@@ -62,7 +62,7 @@ abstract class DataSource implements iDataSource {
 	{
 		$cached = $this->_singleton()->cache('resource_'.$name);
 
-		if($cached === false)  {
+		if($cached === false || is_null($cached))  {
 			$cached = new Resource($this->_driver()->load($this->_conn, $name, $this->_config->schema));
 
 			$this->_singleton()->cache('resource_'.$name, $cached);

@@ -263,7 +263,7 @@ class Database extends DataSource {
 		$cached = $this->_cache($resource->getName(), $key);
 
 		// If the query is cached, return the cached data
-		if($cached !== false) {
+		if($cached !== false AND !is_null($cached)) {
 			return $cached;
 		}
 		
