@@ -43,6 +43,12 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 
 			$array[] = $data;
 		}
+
+		if(func_num_args() == 1) {
+			$arg = func_get_arg(0);
+
+			array_walk($array, function(&$val) use($arg) { $val = $val[$arg]; });
+		}
 		
 		return $array;
 	}

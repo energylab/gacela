@@ -398,9 +398,9 @@ abstract class Mapper implements iMapper {
 		$this->init();
 	}
 
-	public function addAssociation($association, $delete = false)
+	public function addAssociation($name, $association, $delete = false)
 	{
-		exit(\Debug::vars($this->_associations));
+		exit(\Debug::vars($association));
 	}
 
 	public function debug($return = true)
@@ -605,7 +605,7 @@ abstract class Mapper implements iMapper {
 		return $this->_load($data);
 	}
 
-	public function removeAssociation($association)
+	public function removeAssociation($name, $association)
 	{
 		exit(\Debug::vars($this->_associations));
 	}
