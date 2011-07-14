@@ -188,7 +188,7 @@ class Gacela {
 
 		$cached = $this->cache('mapper_'.$name);
 
-		if ($cached === false) {
+		if ($cached === false || is_null($cached)) {
 			$class = "\\Mapper\\" . $name;
 			$class = self::instance()->autoload($class);
 
