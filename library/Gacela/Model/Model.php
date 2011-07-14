@@ -154,6 +154,11 @@ abstract class Model implements iModel {
 		}
 	}
 
+	public function add($association, $delete = false)
+	{
+		return $this->_mapper()->addAssociation($association, $delete);
+	}
+
 	public function delete()
 	{
 		return $this->_mapper()->delete($this->_data);
@@ -166,6 +171,11 @@ abstract class Model implements iModel {
 	 * 
 	 */
 	public function init() {}
+
+	public function remove($association)
+	{
+		return $this->_mapper()->removeAssociation($association);
+	}
 
 	/**
 	 * @param \stdClass|null $data

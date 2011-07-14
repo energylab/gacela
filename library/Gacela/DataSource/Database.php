@@ -184,7 +184,7 @@ class Database extends DataSource {
 						.'.'
 						.$relation['meta']->refColumn
 					);
-
+		
 		foreach($data as $primary => $value) {
 			$query->where(
 				$relation['meta']->refTable
@@ -195,7 +195,7 @@ class Database extends DataSource {
 				array(':'.$primary => $value)
 			);
 		}
-
+		
 		return $this->query(
 					$resource,
 					$this->_buildFinder($query, $resource, $inherits, $dependents)

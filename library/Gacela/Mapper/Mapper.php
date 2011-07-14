@@ -121,9 +121,18 @@ abstract class Mapper implements iMapper {
 
 	protected function _findAssociation($name, $data)
 	{
+		$data = $this->_primaryKey($this->_primaryKey, $data);
+
+		if(is_array($data)) {
+			$data[$this->_associations[$name]['meta']->refColumn] = $data[$this->_associations[$name]['meta']->keyColumn];
+			unset($data[$this->_associations[$name]['meta']->keyColumn]);
+		} else {
+			$data[$this->_associations[$name]['meta']->refColumn] = 0;
+		}
+
 		return \Gacela::instance()
 					->loadMapper(\Gacela\Inflector::singularize($name))
-					->findAllByAssociation($this->_resource->getName(), $this->_primaryKey($this->_primaryKey, $data));
+					->findAllByAssociation($this->_resource->getName(), $data);
 
 	}
 
@@ -384,6 +393,11 @@ abstract class Mapper implements iMapper {
 		$this->init();
 	}
 
+	public function addAssociation($association, $delete = false)
+	{
+		exit(\Debug::vars($this->_associations));
+	}
+
 	public function debug($return = true)
 	{
 		$array = array(
@@ -560,6 +574,10 @@ abstract class Mapper implements iMapper {
 			$relations[$key] = $array['meta']->keyColumn;
 		}
 
+		foreach($this->_associations as $key => $array) {
+			$relations[$key] = $array['meta']->keyColumn;
+		}
+
 		return $relations;
 	}
 
@@ -576,6 +594,11 @@ abstract class Mapper implements iMapper {
 	public function load(\stdClass $data)
 	{
 		return $this->_load($data);
+	}
+
+	public function removeAssociation($association)
+	{
+		exit(\Debug::vars($this->_associations));
 	}
 
 	/**
