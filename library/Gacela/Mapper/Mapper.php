@@ -398,9 +398,11 @@ abstract class Mapper implements iMapper {
 		$this->init();
 	}
 
-	public function addAssociation($name, $association, $delete = false)
+	public function addAssociation($association, $delete = false)
 	{
-		exit(\Debug::vars($association));
+		if($association instanceof \Gacela\Collection) {
+			
+		}
 	}
 
 	public function debug($return = true)
@@ -605,7 +607,7 @@ abstract class Mapper implements iMapper {
 		return $this->_load($data);
 	}
 
-	public function removeAssociation($name, $association)
+	public function removeAssociation($association)
 	{
 		exit(\Debug::vars($this->_associations));
 	}
