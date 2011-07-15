@@ -156,7 +156,7 @@ abstract class Model implements iModel {
 
 	public function add($association, $delete = false)
 	{
-		return $this->_mapper()->addAssociation($association, $delete);
+		return $this->_mapper()->addAssociation($association, $this->_data, $delete);
 	}
 
 	public function delete()
@@ -174,7 +174,7 @@ abstract class Model implements iModel {
 
 	public function remove($association)
 	{
-		return $this->_mapper()->removeAssociation($association);
+		return $this->_mapper()->removeAssociation($association, $this->_data);
 	}
 
 	/**

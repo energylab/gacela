@@ -398,11 +398,48 @@ abstract class Mapper implements iMapper {
 		$this->init();
 	}
 
-	public function addAssociation($association, $delete = false)
+	/**
+	 * @brief - Not Yet Implemented
+	 * @param $association
+	 * @param $data
+	 * @param bool $delete
+	 * @return bool
+	 */
+	public function addAssociation($association, $data, $delete = false)
 	{
+		return false;
+		
 		if($association instanceof \Gacela\Collection) {
-			
+			$model = $association->current();
+		} else {
+			$model = $association;
+			$association = array($model);
 		}
+
+		$name = explode('\\', get_class($model));
+		$name = end($name);
+		$name = \Gacela\Inflector::pluralize($name);
+		$name[0] = strtolower($name[0]);
+
+		if(!isset($this->_associations[$name])) {
+			return false;
+		}
+
+		$association = $this->_associations[$name];
+		$resource = $association['meta']->refTable;
+
+
+		if($delete) {
+			$criteria = new \Gacela\Criteria();
+
+			foreach($this->_primaryKey($this->_primaryKey, $data) as $val) {
+				$criteria->where($association['meta']->refColumn, $val);
+			}
+
+			$this->_source()->delete($resource, $criteria);
+		}
+
+		$myKey = $association['meta']->refColumn;
 	}
 
 	public function debug($return = true)
@@ -607,9 +644,15 @@ abstract class Mapper implements iMapper {
 		return $this->_load($data);
 	}
 
-	public function removeAssociation($association)
+	/**
+	 * @brief - Not Yet Implemented
+	 * @param $association
+	 * @param $data
+	 * @return bool
+	 */
+	public function removeAssociation($association, $data)
 	{
-		exit(\Debug::vars($this->_associations));
+		return false;
 	}
 
 	/**
