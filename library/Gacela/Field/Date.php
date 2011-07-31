@@ -14,11 +14,11 @@ class Date extends Field {
 	{
 		unset($this->errorCode);
 		
-		if(empty($value) && $this->_meta->null) {
+		if(empty($value) && $this->null) {
 			return true;
 		}
 
-		if(empty($value) && !$this->_meta->null) {
+		if(empty($value) && !$this->null) {
 			$this->errorCode = self::NULL_CODE;
 			return false;
 		}
