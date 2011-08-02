@@ -711,8 +711,10 @@ abstract class Mapper implements iMapper {
 			$rs = $this->_saveResource($dependent['resource'], $data['changed'], (object) $data['new'], $data['old']);
 
 			if (is_array($rs)) {
-				$changed[] = $resKey;
-				$new->$resKey = $rs[1]->$depKey;
+				foreach($dependent['meta']->keys as $key => $ref) {
+					$changed[] = $key;
+					$new->$key = $rs[1]->$ref;
+				}
 			}
 		}
 
