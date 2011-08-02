@@ -123,11 +123,19 @@ abstract class Mapper implements iMapper {
 	{
 		$data = $this->_primaryKey($this->_primaryKey, $data);
 
-		if(is_array($data)) {
-			$data[$this->_associations[$name]['meta']->refColumn] = $data[$this->_associations[$name]['meta']->keyColumn];
-			unset($data[$this->_associations[$name]['meta']->keyColumn]);
+		if(!is_array($data)) {
+			$refs = array_values($this->_associations[$name]['meta']->keys);
+
+			foreach($refs as $key) {
+				$data[$key] = null;
+			}
 		} else {
-			$data[$this->_associations[$name]['meta']->refColumn] = 0;
+			foreach($this->_associations[$name]['meta']->keys as $key => $ref) {
+				if($key != $ref) {
+					$data[$ref] = $data[$key];
+					unset($data[$key]);
+				}
+			}
 		}
 
 		return \Gacela::instance()
@@ -159,17 +167,21 @@ abstract class Mapper implements iMapper {
 			$resource = $foreign['resource'];
 
 			if(count($resource->getFields()) == count($resource->getPrimaryKey())) {
-				$test = 0;
+				$primary = $resource->getPrimaryKey();
 				
-				foreach($resource->getPrimaryKey() as $key) {
-					foreach($resource->getRelations() as $relation) {
-						if($relation->keyColumn == $key && $relation->type == 'belongsTo') {
-							$test++;
+				foreach($resource->getRelations() as $relation) {
+					$keys = array_keys($relation->keys);
+
+					foreach($keys as $key) {
+						$i = array_search($key, $primary);
+
+						if($i !== false) {
+							unset($primary[$i]);
 						}
 					}
 				}
 
-				if($test == count($resource->getPrimaryKey())) {
+				if(!count($primary)) {
 					$this->_associations[$name] = $foreign;
 
 					unset($this->_foreignKeys[$name]);
@@ -192,13 +204,20 @@ abstract class Mapper implements iMapper {
 			$dependent = $this->_foreignKeys[$name];
 
 			unset($this->_foreignKeys[$name]);
-		
+			
 			/**
 			 * If the keyColumn of the primary resource is nullable, then all fields in the dependent relationship need to
 			 * appear nullable.
 			 */
-			if($fields[$dependent['meta']->keyColumn]->null) {
+			$nullable = false;
+			foreach(array_keys($dependent['meta']->keys) as $key) {
+				if($fields[$key]->null) {
+					$nullable = true;
+					break;
+				}
+			}
 
+			if($nullable) {
 				foreach($dependent['resource']->getFields() as $key => $val) {
 					if(in_array($key, $this->_primaryKey)) {
 						continue;
@@ -251,9 +270,7 @@ abstract class Mapper implements iMapper {
 					continue;
 				}
 
-				$refPrimary = $stuff['resource']->getPrimaryKey();
-				
-				if($refPrimary[0] == $stuff['meta']->refColumn && count($this->_primaryKey) == 1 && $this->_primaryKey[0] == $stuff['meta']->keyColumn) {
+				if($this->_resource->getPrimaryKey() === $stuff['resource']->getPrimaryKey() && array_keys($stuff['meta']->keys) === $stuff['resource']->getPrimaryKey()) {
 					$this->_inherits[$name] = $stuff;
 					
 					$relations = $stuff['resource']->getRelations();
@@ -580,7 +597,9 @@ abstract class Mapper implements iMapper {
 			
 			$criteria = new \Gacela\Criteria();
 
-			$criteria->equals($relation['meta']->refTable.'.'.$relation['meta']->refColumn, $data->{$relation['meta']->keyColumn});
+			foreach($relation['meta']->keys as $key => $ref) {
+				$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
+			}
 			
 			$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
 
@@ -619,11 +638,11 @@ abstract class Mapper implements iMapper {
 	{
 		$relations = array();
 		foreach($this->_foreignKeys as $key => $array) {
-			$relations[$key] = $array['meta']->keyColumn;
+			$relations[$key] = $array['meta']->keys;
 		}
 
 		foreach($this->_associations as $key => $array) {
-			$relations[$key] = $array['meta']->keyColumn;
+			$relations[$key] = $array['meta']->keys;
 		}
 
 		return $relations;

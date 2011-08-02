@@ -18,40 +18,33 @@ class Database extends DataSource {
 	protected $_lastQuery = array();
 
 	protected $_resources = array();
-
+	
 	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		$query->from($resource->getName());
 
 		foreach($inherits as $relation) {
-			$on = 	$relation['meta']->keyTable
-					.'.'
-					.$relation['meta']->keyColumn
-					." = "
-					.$relation['meta']->refTable
-					.'.'
-					.$relation['meta']->refColumn;
-
-			$cols = array_diff(array_keys($relation['resource']->getFields()), $relation['resource']->getPrimaryKey());
-
-			$query->join($relation['meta']->refTable, $on, $cols);
+			$this->_buildJoin($relation, $query);
 		}
 
 		foreach($dependents as $relation) {
-			$on = 	$relation['meta']->keyTable
-					.'.'
-					.$relation['meta']->keyColumn
-					." = ".
-					$relation['meta']->refTable
-					.'.'
-					.$relation['meta']->refColumn;
-
-			$cols = array_diff(array_keys($relation['resource']->getFields()), $relation['resource']->getPrimaryKey());
-			
-			$query->join($relation['meta']->refTable, $on, $cols, 'left');
+			$this->_buildJoin($relation, $query, 'left');
 		}
 		
 		return $query;
+	}
+
+	protected function _buildJoin(array $relation, &$query, $type = null)
+	{
+		$on = 	array();
+
+		foreach($relation['meta']->keys as $key => $ref) {
+			$on[$relation['meta']->keyTable.'.'.$key] = $relation['meta']->refTable.'.'.$ref;
+		}
+
+		$cols = array_diff(array_keys($relation['resource']->getFields()), $relation['resource']->getPrimaryKey());
+
+		$query->join($relation['meta']->refTable, $on, $cols, $type);
 	}
 
 	protected function _driver()
@@ -152,7 +145,7 @@ class Database extends DataSource {
 	 */
 	public function findAll(\Gacela\Criteria $criteria = null, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
-		return 	$this->query(
+		return $this->query(
 					$resource,
 					$this->_buildFinder(
 						$this->getQuery($criteria),
@@ -173,17 +166,9 @@ class Database extends DataSource {
 	 */
 	public function findAllByAssociation(\Gacela\DataSource\Resource $resource, array $relation, array $data, array $inherits, array $dependents)
 	{
-		$query = $this->getQuery()
-					->join(
-						$relation['meta']->refTable,
-						$resource->getName()
-						.'.'
-						.$relation['meta']->keyColumn
-						.' = '
-						.$relation['meta']->refTable
-						.'.'
-						.$relation['meta']->refColumn
-					);
+		$query = $this->getQuery();
+
+		$this->_buildJoin($relation, $query);
 		
 		foreach($data as $primary => $value) {
 			$query->where(
