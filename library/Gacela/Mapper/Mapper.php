@@ -444,8 +444,7 @@ abstract class Mapper implements iMapper {
 
 		$association = $this->_associations[$name];
 		$resource = $association['meta']->refTable;
-
-
+		
 		if($delete) {
 			$criteria = new \Gacela\Criteria();
 
@@ -688,17 +687,18 @@ abstract class Mapper implements iMapper {
 		foreach($this->_dependents as $dependent) {
 
 			// This all looks like a nasty hack. Here's to hoping to some more brilliant minds to provide input. -- ndg
-			$resKey = $dependent['meta']->keyColumn;
-			$depKey = $dependent['meta']->refColumn;
 			$data = array('old' => array(), 'new' => array(), 'changed' => array());
 
-			if (!empty($old[$resKey])) {
-				$data['old'][$depKey] = $old[$resKey];
-			}
+			// Setup for differing key names
+			foreach($dependent['meta']->keys as $key => $ref) {
+				if(!empty($old[$key])) {
+					$data['old'][$ref] = $old[$key];
+				}
 
-			if (isset($new->$resKey) && (!isset($data['old'][$depKey]) || $data['old'][$depKey] != $new->$resKey)) {
-				$data['changed'][] = $depKey;
-				$data['new'][$depKey] = $new->$resKey;
+				if(isset($new->$key) && (!isset($data['old'][$ref]) || $data['old'][$ref] != $new->$key)) {
+					$data['changed'][] = $ref;
+					$data['new'][$ref] = $new->$key;
+				}
 			}
 
 			foreach($dependent['resource']->getFields() as $name => $field) {
