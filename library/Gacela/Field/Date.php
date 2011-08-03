@@ -29,11 +29,21 @@ class Date extends Field {
 	public function transform($value, $in = true)
 	{
 		if($in && ctype_digit($value)) {
-			return date($value, 'c');
-		} elseif($in && ctype_alnum($value)) {
+			return date('c', $value);
+		} elseif($in && !ctype_digit($value)) {
 			return $value;
-		} elseif(!$in && ctype_alnum($value)) {
-			return strtotime($value);
+		} elseif(!$in && !ctype_digit($value)) {
+			if(stripos($value, 'current') !== false || (stripos($this->default, 'current') !== false && empty($value))) {
+				return time();
+			}
+
+			$rs = strtotime($value);
+
+			if($rs === false) {
+				return null;
+			}
+
+			return $rs;
 		} elseif(!$in && ctype_digit($value)) {
 			return $value;
 		}
