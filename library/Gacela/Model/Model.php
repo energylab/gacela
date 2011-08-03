@@ -121,10 +121,12 @@ abstract class Model implements iModel {
 			if($relation instanceof \Gacela\Collection) {
 				return count($relation) > 0;
 			} else {
-				if(!is_array($this->_relations[$key])) {
-					return isset($relation->{$this->_relations[$key]});
-				} else {
-					// Need to support multi-field key relations
+				foreach($this->_relations[$key] as $key => $ref) {
+					if(!isset($relation->$ref)) {
+						return false;
+					}
+
+					return true;
 				}
 			}
 		}
