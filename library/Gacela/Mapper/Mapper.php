@@ -424,15 +424,13 @@ abstract class Mapper implements iMapper {
 	 */
 	public function addAssociation($association, $data, $delete = false)
 	{
-		return false;
-		
 		if($association instanceof \Gacela\Collection) {
 			$model = $association->current();
 		} else {
 			$model = $association;
 			$association = array($model);
 		}
-
+		
 		$name = explode('\\', get_class($model));
 		$name = end($name);
 		$name = \Gacela\Inflector::pluralize($name);
@@ -442,20 +440,41 @@ abstract class Mapper implements iMapper {
 			return false;
 		}
 
-		$association = $this->_associations[$name];
-		$resource = $association['meta']->refTable;
-		
+		$assoc = $this->_associations[$name];
+
 		if($delete) {
 			$criteria = new \Gacela\Criteria();
 
-			foreach($this->_primaryKey($this->_primaryKey, $data) as $val) {
-				$criteria->where($association['meta']->refColumn, $val);
+			foreach($assoc['meta']->keys as $key => $ref) {
+				$criteria->equals($ref, $data->$key);
 			}
 
-			$this->_source()->delete($resource, $criteria);
+			$this->_source()->delete($assoc['meta']->refTable, $criteria);
 		}
 
-		$myKey = $association['meta']->refColumn;
+		$toInsert = array();
+
+		$me = array();
+
+		foreach($assoc['meta']->keys as $key => $ref) {
+			$me[$ref] = $data->$key;
+		}
+
+		foreach($association as $model) {
+			$array = $me;
+
+			foreach($assoc['resource']->getRelations() as $relation) {
+				foreach($relation->keys as $key => $ref) {
+					if(array_search($key, $assoc['meta']->keys) === false) {
+						$array[$key] = $model->$ref;
+					}
+				}
+			}
+			
+			$toInsert[] = $array;
+		}
+
+		return $this->_source()->insert($assoc['meta']->refTable, $toInsert);
 	}
 
 	public function debug($return = true)
@@ -670,7 +689,39 @@ abstract class Mapper implements iMapper {
 	 */
 	public function removeAssociation($association, $data)
 	{
-		return false;
+		if($association instanceof \Gacela\Collection) {
+			$model = $association->current();
+		} else {
+			$model = $association;
+			$association = array($model);
+		}
+
+		$name = explode('\\', get_class($model));
+		$name = end($name);
+		$name = \Gacela\Inflector::pluralize($name);
+		$name[0] = strtolower($name[0]);
+
+		if(!isset($this->_associations[$name])) {
+			return false;
+		}
+
+		$assoc = $this->_associations[$name];
+
+		$array = array();
+		foreach($association as $model) {
+			foreach($assoc['resource']->getRelations() as $relation) {
+				foreach($relation->keys as $key => $ref) {
+					if(array_search($key, $assoc['meta']->keys) === false) {
+						$array[$key] = $model->$ref;
+					}
+				}
+			}
+		}
+
+		foreach($assoc['meta']->keys as $key => $ref) {
+			$me[$ref] = $data->$key;
+		}
+		exit(\Debug::vars($toInsert));
 	}
 
 	/**
