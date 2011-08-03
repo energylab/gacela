@@ -195,7 +195,22 @@ class Database extends Query {
 				$join[0] = $this->_quoteIdentifier($join[0]);
 			}
 
-			$_join .= "{$type} JOIN {$join[0]} ON {$join[1]}\n";
+			if(is_array($join[1])) {
+				$joins = $join[1];
+				$on = '';
+
+				foreach($joins as $key => $val) {
+					if(!empty($on)) {
+						$on .= ' AND ';
+					}
+
+					$on .= $this->_quoteIdentifier($key). ' = ' . $this->_quoteIdentifier($val);
+				}
+			} else {
+				$on = $join[1];
+			}
+
+			$_join .= "{$type} JOIN {$join[0]} ON {$on}\n";
 		}
 		
 		return $_join;
@@ -442,6 +457,10 @@ class Database extends Query {
 	 */
 	public function join($table, $on, array $columns = array(), $type = 'inner')
 	{
+		if(is_null($type)) {
+			$type = 'inner';
+		}
+
 		if($table instanceof $this) {
 			$table = $table->assemble();
 		}

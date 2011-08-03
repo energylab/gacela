@@ -123,6 +123,19 @@ class Mysql implements iAdapter {
 				$key = $key[1];
 
 				$row->type = 'belongsTo';
+
+				$keys = explode(',', $row->keyColumns);
+				$refs = explode(',', $row->refColumns);
+
+				$row->keys = array();
+
+				foreach($keys as $k => $v) {
+					$row->keys[$v] = $refs[$k];
+				}
+
+				unset($row->keyColumns);
+				unset($row->refColumns);
+
 				$_meta['relations'][$key] = $row;
 			}
 		}
@@ -140,6 +153,19 @@ class Mysql implements iAdapter {
 				$key = $key[2];
 
 				$row->type = 'hasMany';
+
+				$keys = explode(',', $row->keyColumns);
+				$refs = explode(',', $row->refColumns);
+
+				$row->keys = array();
+
+				foreach($keys as $k => $v) {
+					$row->keys[$v] = $refs[$k];
+				}
+
+				unset($row->keyColumns);
+				unset($row->refColumns);
+				
 				$_meta['relations'][$key] = $row;
 			}
 		}
