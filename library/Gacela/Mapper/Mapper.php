@@ -707,21 +707,29 @@ abstract class Mapper implements iMapper {
 
 		$assoc = $this->_associations[$name];
 
-		$array = array();
+		$main = new \Gacela\Criteria;
+		
+		$me = new \Gacela\Criteria;
+
+		foreach($assoc['meta']->keys as $key => $ref) {
+			$me->equals($ref, $data->$key);
+		}
+
 		foreach($association as $model) {
+			$sub = $me;
+
 			foreach($assoc['resource']->getRelations() as $relation) {
 				foreach($relation->keys as $key => $ref) {
 					if(array_search($key, $assoc['meta']->keys) === false) {
-						$array[$key] = $model->$ref;
+						$sub->equals($key, $model->$ref);
 					}
 				}
 			}
+
+			$main->criteria($sub, 'OR');
 		}
 
-		foreach($assoc['meta']->keys as $key => $ref) {
-			$me[$ref] = $data->$key;
-		}
-		exit(\Debug::vars($toInsert));
+		exit(\Debug::vars($main));
 	}
 
 	/**

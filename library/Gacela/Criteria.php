@@ -17,6 +17,11 @@ class Criteria implements \IteratorAggregate {
 		$this->_criteria[] = array_merge(array($operator), $args);
 	}
 
+	public function criteria(\Gacela\Criteria $criteria, $joiner = 'AND')
+	{
+		$this->_addCriterion($criteria, $joiner);
+	}
+
 	/**
 	 * @return Criteria
 	 */
