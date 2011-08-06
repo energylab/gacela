@@ -93,8 +93,16 @@ class Database extends Query {
 			}
 			
 			if(in_array($op, array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
+				if(is_null($bind)) {
+					continue;
+				}
+				
 				$this->where("{$field} ".self::$_operators[$op]." {$toBind}", $bind);
 			} elseif(in_array($op, array('in', 'notIn'))) {
+				if(!count($bind)) {
+					continue;
+				}
+				
 				$this->where("{$field} ".self::$_operators[$stmt[0]]." (".implode(', ', array_keys($bind)).")", $bind);
 			} elseif(in_array($op, array('notNull', 'null'))) {
 				$this->where("{$field} ".self::$_operators[$stmt[0]]);

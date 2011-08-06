@@ -616,6 +616,11 @@ abstract class Mapper implements iMapper {
 			$criteria = new \Gacela\Criteria();
 
 			foreach($relation['meta']->keys as $key => $ref) {
+				if(empty($data->$key)) {
+					$criteria = new \Gacela\Criteria;
+					break;
+				}
+
 				$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
 			}
 			

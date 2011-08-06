@@ -47,6 +47,8 @@ class Criteria implements \IteratorAggregate {
 	public function greaterThan($field, $value)
 	{
 		$this->_addCriterion('greaterThan', func_get_args());
+
+		return $this;
 	}
 
 	public function lessThan($field, $value)

@@ -261,7 +261,7 @@ class Database extends DataSource {
 		} else {
 			$error = $stmt->errorInfo();
 			$error = $error[2];
-			throw new \Exception("Code ({$stmt->errorCode()}) Error: ".$error);
+			throw new \Exception("Code ({$stmt->errorCode()}) Error: ".$error."<br/>Query: ".$this->_lastQuery['query']."\nArgs: ".print_r($this->_lastQuery['args'], true));
 		}
 	}
 
