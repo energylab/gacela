@@ -12,6 +12,8 @@ abstract class DataSource implements iDataSource {
 
 	protected $_config = array();
 
+	protected $_resources = array();
+
 	abstract protected function _driver();
 
 	protected function _cache($name, $key, $data = null)
@@ -31,13 +33,26 @@ abstract class DataSource implements iDataSource {
 
 		if (is_null($data)) {
 			return $cached;
-		} else {
-			if ($cached === false) {
-				$instance->cache($key, $data);
-			} else {
-				$instance->cache($key, $data, true);
-			}
 		}
+
+		if ($cached === false) {
+			$instance->cache($key, $data);
+		} else {
+			$instance->cache($key, $data, true);
+		}
+	}
+
+	protected function _incrementCache($name)
+	{
+		$instance = $this->_singleton();
+
+		$cached = $instance->cache($name.'_version');
+
+		if($cached === false) {
+			return;
+		}
+
+		$instance->incrementCache($name.'_version');
 	}
 
 	protected function _singleton()

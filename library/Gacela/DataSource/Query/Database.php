@@ -35,6 +35,8 @@ class Database extends Query {
 
 	protected $_insert = array();
 
+	protected $_limit = array();
+
 	protected $_join = array();
 
 	protected $_orderBy = array();
@@ -61,8 +63,26 @@ class Database extends Query {
 	private function _buildFromCriteria($criteria)
 	{
 		foreach($criteria as $stmt) {
+			if($stmt[0] instanceof \Gacela\Criteria) {
+				$query = new \Gacela\DataSource\Query\Database($this->_schema, $stmt[0]);
+
+				$query = $query->assemble();
+
+				$this->where($query[0], $query[1], $stmt[1]);
+
+				// Move along, nothing more to see here
+				continue;
+			}
+
 			$op = $stmt[0];
 			$field = $stmt[1];
+
+			if($op == 'limit') {
+				$this->limit($stmt[1], $stmt[2]);
+				
+				// Move on, this one is all done.
+				continue;
+			}
 
 			if(isset($stmt[2])) {
 				$args = $stmt[2];
@@ -70,6 +90,7 @@ class Database extends Query {
 			
 			$bind = array();
 			$toBind = '';
+
 			if(!empty($args)) {
 				if(in_array($op, array('in', 'notIn'))) {
 					for($i=0;$i<count($args);$i++) {
@@ -317,7 +338,7 @@ class Database extends Query {
 		
 		foreach($this->_where as $where) {
 			if(empty($_where)) {
-				$_where = "WHERE ({$where[0]})";
+				$_where = "({$where[0]})";
 			} else {
 				// Check for OR statements
 				if($where[2]) {
@@ -367,8 +388,8 @@ class Database extends Query {
 		}
 
 		if(empty($sql)) {
-			$select = $this->_select();
-			$from = $this->_from();
+			$select = trim($this->_select());
+			$from = trim($this->_from());
 			$sql = '';
 
 			if(!empty($select)) {
@@ -381,12 +402,22 @@ class Database extends Query {
 		}
 
 		$sql .= $this->_join();
+
+		$where = $this->_where();
+
+		if(!empty($sql) && !empty($where)) {
+			$sql .= 'WHERE ';
+		}
 		
-		$sql .= $this->_where();
+		$sql .= $where;
 		
 		$sql .= $this->_group();
 
 		$sql .= $this->_order();
+
+		if(!empty($this->_limit)) {
+			$sql .= 'LIMIT '.(int) $this->_limit[0].', '.(int) $this->_limit[1];
+		}
 
 		$this->_sql = $sql;
 		
@@ -476,6 +507,11 @@ class Database extends Query {
 		$this->_join[] = array($table, $on, $columns, $type);
 
 		return $this;
+	}
+
+	public function limit($start, $count)
+	{
+		$this->_limit = array($start, $count);
 	}
 
 	/**

@@ -11,14 +11,10 @@ class Database extends DataSource {
 
 	protected $_conn;
 
-	protected $_config = array();
-
 	protected $_driver;
 
 	protected $_lastQuery = array();
 
-	protected $_resources = array();
-	
 	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		$query->from($resource->getName());
@@ -56,23 +52,6 @@ class Database extends DataSource {
 		}
 
 		return $this->_driver;
-	}
-
-	protected function _incrementCache($name)
-	{
-		$instance = $this->_singleton();
-
-		if(!$instance->cacheEnabled()) {
-			return;
-		}
-
-		$cached = $instance->cache($name.'_version');
-
-		if($cached === false) {
-			return;
-		}
-
-		$instance->incrementCache($name.'_version');
 	}
 
 	public function __construct(array $config)
@@ -182,7 +161,7 @@ class Database extends DataSource {
 		}
 		
 		return $this->query(
-					$resource,
+					$relation['resource'],
 					$this->_buildFinder($query, $resource, $inherits, $dependents)
 				);
 	}
@@ -207,7 +186,7 @@ class Database extends DataSource {
 		try {
 			if($query->execute($binds)) {
 				$this->_incrementCache($name);
-
+				
 				return $this->_conn->lastInsertId();
 			} else {
 				if($this->_conn->inTransaction()) {

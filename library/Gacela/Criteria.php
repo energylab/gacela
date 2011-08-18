@@ -15,11 +15,13 @@ class Criteria implements \IteratorAggregate {
 	protected function _addCriterion($operator, array $args)
 	{
 		$this->_criteria[] = array_merge(array($operator), $args);
+
+		return $this;
 	}
 
-	public function criteria(\Gacela\Criteria $criteria, $joiner = 'AND')
+	public function criteria(\Gacela\Criteria $criteria, $or = false)
 	{
-		$this->_addCriterion($criteria, $joiner);
+		return $this->_addCriterion($criteria, array($or));
 	}
 
 	/**
@@ -27,16 +29,7 @@ class Criteria implements \IteratorAggregate {
 	 */
 	public function equals($field, $value)
 	{
-		$this->_addCriterion('equals', func_get_args());
-
-		return $this;
-	}
-
-	public function notEquals($field, $value)
-	{
-		$this->_addCriterion('notEquals', func_get_args());
-
-		return $this;
+		return $this->_addCriterion('equals', func_get_args());
 	}
 
 	public function getIterator()
@@ -46,56 +39,53 @@ class Criteria implements \IteratorAggregate {
 
 	public function greaterThan($field, $value)
 	{
-		$this->_addCriterion('greaterThan', func_get_args());
-
-		return $this;
-	}
-
-	public function lessThan($field, $value)
-	{
-		$this->_addCriterion('lessThan', func_get_args());
-
-		return $this;
+		return $this->_addCriterion('greaterThan', func_get_args());
 	}
 
 	public function in($field, array $value)
 	{
-		$this->_addCriterion('in', func_get_args());
-
-		return $this;
-	}
-
-	public function notIn($field, array $value)
-	{
-		$this->_addCriterion('notIn', func_get_args());
-
-		return $this;
-	}
-
-	public function like($field, $value)
-	{
-		$this->_addCriterion('like', func_get_args());
-
-		return $this;
-	}
-
-	public function notLike($field, $value)
-	{
-		$this->_addCriterion('notLike', func_get_args());
-		
-		return $this;
+		return $this->_addCriterion('in', func_get_args());
 	}
 
 	public function isNull($field)
 	{
-		$this->_addCriterion('null', func_get_args());
-		return $this;
+		return $this->_addCriterion('null', func_get_args());
 	}
 
 	public function isNotNull($field)
 	{
-
-		$this->_addCriterion('notNull', func_get_args());
-		return $this;
+		return $this->_addCriterion('notNull', func_get_args());
 	}
+
+	public function lessThan($field, $value)
+	{
+		return $this->_addCriterion('lessThan', func_get_args());
+	}
+
+	public function like($field, $value)
+	{
+		return $this->_addCriterion('like', func_get_args());
+	}
+
+	public function limit($start, $count)
+	{
+		return $this->_addCriterion('limit', func_get_args());
+	}
+
+	public function notEquals($field, $value)
+	{
+		return $this->_addCriterion('notEquals', func_get_args());
+	}
+
+	public function notIn($field, array $value)
+	{
+		return $this->_addCriterion('notIn', func_get_args());
+	}
+
+	public function notLike($field, $value)
+	{
+		return $this->_addCriterion('notLike', func_get_args());
+	}
+
+
 }

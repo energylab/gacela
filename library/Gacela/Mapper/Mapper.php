@@ -705,13 +705,13 @@ abstract class Mapper implements iMapper {
 		$name = end($name);
 		$name = \Gacela\Inflector::pluralize($name);
 		$name[0] = strtolower($name[0]);
-
+		
 		if(!isset($this->_associations[$name])) {
 			return false;
 		}
 
 		$assoc = $this->_associations[$name];
-
+		
 		$main = new \Gacela\Criteria;
 		
 		$me = new \Gacela\Criteria;
@@ -731,10 +731,10 @@ abstract class Mapper implements iMapper {
 				}
 			}
 
-			$main->criteria($sub, 'OR');
+			$main->criteria($sub, true);
 		}
 
-		exit(\Debug::vars($main));
+		$this->_source()->delete($assoc['meta']->refTable, $main);
 	}
 
 	/**
