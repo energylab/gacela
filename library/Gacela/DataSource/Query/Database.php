@@ -87,11 +87,11 @@ class Database extends Query {
 			if(isset($stmt[2])) {
 				$args = $stmt[2];
 			}
-			
+
 			$bind = array();
 			$toBind = '';
 
-			if(!empty($args)) {
+			if(isset($args)) {
 				if(in_array($op, array('in', 'notIn'))) {
 					for($i=0;$i<count($args);$i++) {
 						$bind[':'.$field.$i] = $args[$i];
