@@ -15,11 +15,11 @@
 	</tr>
 	</thead>
 	<tbody>
-<? foreach($students as $student): ?>
+<? foreach($this->students as $student): ?>
 	<tr>
-		<td><?= $student->full_name ?></td>
+		<td><?= $student->fullName ?></td>
 		<td>
-			<span><a href="/associations/student/<?= $student->id ?>">View Courses</a></span>
+			<span><a href="/associations/student/<?= $student->wizardId ?>">View Courses</a></span>
 		</td>
 	</tr>
 <? endforeach ?>

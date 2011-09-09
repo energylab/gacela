@@ -11,7 +11,7 @@
 <html>
 <head>
 	<link rel="stylesheet" href="/site.css" type="text/css" media="screen" />
-	<title>Kacela Sample: <?= $title ?></title>
+	<title>Gacela Sample: <?= $title ?></title>
 </head>
 <body>
 	<div id="header">

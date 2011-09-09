@@ -8,8 +8,19 @@
 
 class Controller {
 
-	protected function _render($template, $title)
+	public $template;
+	public $title;
+
+	public function render()
 	{
+		ob_start();
 		
+		require('views/'.$this->template.'.php');
+
+		$content = ob_get_contents();
+
+		ob_end_clean();
+
+		return array($content, $this->title);
 	}
 }

@@ -8,7 +8,7 @@
 
 require '_init.php';
  
-$args = explode('//', $_GET['script']);
+$args = explode('/', $_GET['script']);
 
 if(empty($args[0])) {
 	$args[0] = 'index';
@@ -19,14 +19,15 @@ if(empty($args[1])) {
 }
 
 $controller = ucfirst(array_shift($args));
+$method = array_shift($args);
 
-require 'controllers//Controller.php';
-require 'controllers//'.$controller.'.php';
+require 'controllers/Controller.php';
+require 'controllers/'.$controller.'.php';
 
 $controller = new $controller;
 
-$method = array_shift($args);
+call_user_func_array(array($controller, $method), $args);
 
-list($content, $title) = call_user_func_array(array($controller, $method), $args);
+list($content, $title) = $controller->render();
 
 require 'views/template.php';
