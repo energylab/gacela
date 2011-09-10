@@ -11,6 +11,12 @@ class Controller {
 	public $template;
 	public $title;
 
+	protected function _redirect($url)
+	{
+		header("Location: $url");
+		exit;
+	}
+
 	public function render()
 	{
 		ob_start();

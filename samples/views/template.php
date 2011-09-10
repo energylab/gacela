@@ -24,8 +24,8 @@
 		<li><a href="/crud">CRUD</a></li>
 		<li><a href="/belongsto">Belongs To</a></li>
 		<li><a href="/hasmany">Has Many</a></li>
-		<li><a href="/inheritance_single">Single Table Inheritance</a></li>
-		<li><a href="/inheritance_concrete">Concrete Table Inheritance</a></li>
+		<li><a href="/singleInheritance">Single Table Inheritance</a></li>
+		<li><a href="/concreteInheritance">Concrete Table Inheritance</a></li>
 		<li><a href="/dependents">Dependent Relationships</a></li>
 		<li><a href="/associations">Associations</a></li>
 		<li><a href="/criteria">Criteria vs Query</a></li>
