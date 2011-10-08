@@ -1,0 +1,121 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 14px;
+}
+
+a {
+	color: #65a2fe;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+body #header {
+    background-color: tan;
+}
+
+body #header h1 {
+    color: brown;
+}
+
+body #navigation {
+    background-color: black;
+    list-style-type: none;
+    height: 60px;
+    margin: auto;
+}
+
+body #navigation li {
+    float: left;
+}
+
+body #navigation li a {
+    background-position: right;
+    padding-right: 10px;
+    padding-left: 10px;
+    display: block;
+    line-height: 60px;
+    text-decoration: none;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 15px;
+    color: white;
+}
+
+body #navigation li a:hover {
+    color: tan;
+}
+
+body #content {
+    margin:  auto;
+    width: 960px;
+    padding: 20px 0px 25px 0px;
+}
+
+div.left {
+    float: left;
+}
+
+div.right {
+    float: left;
+}
+
+div.clear {
+    clear: both;
+}
+
+table {
+	width: 100%;
+}
+
+table th {
+	text-align: left;
+}
+
+table td {
+	padding: 2px 10px 2px 2px;
+	border-bottom: 1px solid #ddd;
+}
+
+table td:last-child {
+	padding-right: 2px;
+}
+
+table tr:last-child td {
+	border: none;
+}
+
+form p.field {
+	margin: 1em 0;
+	clear: both;
+}
+
+form span.label {
+	text-transform: capitalize;
+	float: left;
+	width: 100px;
+	display: block;
+	padding: 5px 0;
+}
+
+form input.input {
+	border: 1px solid #ddd;
+	padding: 5px;
+	width: 400px;
+}
+
+.error-message {
+	color: red;
+	font-size: 10px;
+	margin-left: 10px;
+}
+
+p.error input.input {
+	border: 1px solid red;
+}
