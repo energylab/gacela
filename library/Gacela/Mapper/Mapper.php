@@ -12,7 +12,6 @@ abstract class Mapper implements iMapper {
 	protected static $_deletedField = 'isDeleted';
 
 	/**
-	 * 
 	 * @brief Contains the names of resources that are associations to Mapper::$_resource
 	 * <a href="http://martinfowler.com/eaaCatalog/associationTableMapping.html">Association Table Mapping</a>
 	 */
@@ -56,7 +55,7 @@ abstract class Mapper implements iMapper {
 	protected $_foreignKeys = array();
 
 	/**
-	 * @brief 
+	 * @brief The main Gacela\DataSource\Resource object represented by the Mapper
 	 */
 	protected $_resource = null;
 

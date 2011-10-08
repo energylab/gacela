@@ -8,14 +8,34 @@
 
 namespace Gacela\DataSource\Adapter;
 
-class Mysql implements iAdapter {
+class Mysql extends Adapter implements iAdapter {
 
 	public static $_separator = "_";
 	
 	public function load($conn, $name, $schema)
 	{
 		$_meta = array('name' => $name);
+
+		// Pull from the config file if enabled
+		$config = $this->_singleton()->loadConfig($name);
 		
+		if(!is_null($config)) {
+			$_meta = array_merge($_meta, $config);
+
+			foreach($_meta['columns'] as $key => $array) {
+				$field = $this->_field($array['type']);
+				
+				$_meta['columns'][$key] = new $field($array);
+			}
+
+			foreach($_meta['relations'] as $k => $relation) {
+				$_meta['relations'][$k] = (object) $relation;
+			}
+
+			return $_meta;
+		}
+
+		// Set it up from the database
 		$_meta['columns'] = array();
 		$_meta['relations'] = array();
 		$_meta['primary'] = array();
@@ -93,7 +113,7 @@ class Mysql implements iAdapter {
 					break;
 			}
 
-			$field = "\\Gacela\\Field\\".ucfirst($meta['type']);
+			$field = $this->_field($meta['type']);
 
 			$_meta['columns'][$column->Field] = new $field($meta);
 
@@ -171,5 +191,10 @@ class Mysql implements iAdapter {
 		}
 
 		return $_meta;
+	}
+
+	private function _field($field)
+	{
+		return "\\Gacela\\Field\\".ucfirst($field);
 	}
 }

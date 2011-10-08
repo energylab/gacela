@@ -6,7 +6,9 @@
  * 
  */
  ?>
- 
+
+<a href="/crud/form">Add House</a>
+
 <table>
 	<thead>
 	<tr>

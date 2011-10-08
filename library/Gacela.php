@@ -13,13 +13,15 @@ class Gacela {
 
 	protected $_cache = null;
 
+	protected $_cached = array();
+
 	protected $_cacheEnabled = false;
 
+	protected $_config = null;
+	
 	protected $_namespaces = array();
 
 	protected $_sources = array();
-
-	protected $_cached = array();
 
     protected function __construct()
     {
@@ -134,6 +136,28 @@ class Gacela {
 	}
 
 	/**
+	 * @throws Exception
+	 * @param null $path
+	 * @return string|null
+	 */
+	public function configPath($path = null)
+	{
+		if(!is_null($path)) {
+			if(!is_readable($path) || !is_dir($path)) {
+				throw new Exception('Config path ('.$path.') must be a readable directory!');
+			}
+
+			if(substr($path, -1, 1) != '/') {
+				$path .= '/';
+			}
+
+			$this->_config = $path;
+		}
+
+		return $this->_config;
+	}
+
+	/**
 	 * @param  Memcache|array $servers
 	 * @return Gacela
 	 */
@@ -175,6 +199,28 @@ class Gacela {
 		} else {
 			$this->_cache->increment($key);
 		}
+	}
+
+	public function loadConfig($name)
+	{
+		if(is_null($this->_config))
+		{
+			return null;
+		}
+
+		$path = $this->_config.$name.'.php';
+
+		if(!file_exists($path)) {
+			return null;
+		}
+
+		$array = include $path;
+
+		if(empty($array)) {
+			throw new Exception('Config array is empty for resource ('.$name.')! ');
+		}
+
+		return $array;
 	}
 
 	/**

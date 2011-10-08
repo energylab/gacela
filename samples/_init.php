@@ -28,7 +28,10 @@ $memcache = new Memcache;
 
 $memcache->addServer('127.0.0.1', 11211);
 
-$gacela->enableCache($memcache);
+//$gacela->enableCache($memcache);
+
+// Comment out to avoid using the config files and use the dynamic version instead
+$gacela->configPath(__DIR__.'/config');
 
 function debug($value)
 {

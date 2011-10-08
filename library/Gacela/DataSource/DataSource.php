@@ -82,7 +82,7 @@ abstract class DataSource implements iDataSource {
 
 			$this->_singleton()->cache('resource_'.$name, $cached);
 		}
-		
+
 		return $cached;
 	}
 

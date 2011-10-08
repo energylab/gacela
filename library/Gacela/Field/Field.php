@@ -19,14 +19,24 @@ abstract class Field {
 
 	public function __construct(array $meta)
 	{
-		$this->_meta = $meta;
+		$this->_meta = array_merge(
+						array(
+							'length' => null,
+							'unsigned' => false,
+							'sequenced' => false,
+							'primary' => false,
+							'default' => null,
+							'values' => array()
+						),
+						$meta
+					);
 	}
 
 	public function __get($key)
 	{
 		if(!array_key_exists($key, $this->_meta)) {
-				throw new \Exception("Specified key ({$key}) does not exist in field metadata!");
-			}
+			throw new \Exception("Specified key ({$key}) does not exist in field metadata!");
+		}
 
 		return $this->_meta[$key];
 	}

@@ -7,8 +7,13 @@
  */
 
 require '_init.php';
- 
-$args = explode('/', $_GET['script']);
+
+if(isset($_GET['script'])) {
+	$args = explode('/', $_GET['script']);
+} else {
+	$args = array();
+}
+
 
 if(empty($args[0])) {
 	$args[0] = 'index';
