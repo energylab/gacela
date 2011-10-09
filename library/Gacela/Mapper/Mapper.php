@@ -66,6 +66,12 @@ abstract class Mapper implements iMapper {
 	 */
 	protected $_source = 'db';
 
+	/**
+	 * @param \Gacela\DataSource\Resource $resource
+	 * @param $changed
+	 * @param $new
+	 * @return array
+	 */
 	protected function _dataToSave(\Gacela\DataSource\Resource $resource, $changed, $new)
 	{
 		$fields = $resource->getFields();
@@ -79,7 +85,12 @@ abstract class Mapper implements iMapper {
 		return $data;
 	}
 
-	protected function _deleteResource($resource, $data)
+	/**
+	 * @param \Gacela\DataSource\Resource $resource
+	 * @param \stdClass $data
+	 * @return bool
+	 */
+	protected function _deleteResource(\Gacela\DataSource\Resource $resource, \stdClass $data)
 	{
 		$where = new \Gacela\Criteria();
 
@@ -98,7 +109,12 @@ abstract class Mapper implements iMapper {
 		return true;
 	}
 
-	protected function _doUpdate($resource, $data)
+	/**
+	 * @param \Gacela\DataSource\Resource $resource
+	 * @param array|stdClass $data
+	 * @return bool
+	 */
+	protected function _doUpdate(\Gacela\DataSource\Resource $resource, $data)
 	{
 		$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $data);
 		$fields = $resource->getFields();
@@ -118,7 +134,12 @@ abstract class Mapper implements iMapper {
 		return true;
 	}
 
-	protected function _findAssociation($name, $data)
+	/**
+	 * @param string $name
+	 * @param \stdClass $data
+	 * @return \Gacela\Collection
+	 */
+	protected function _findAssociation($name, \stdClass $data)
 	{
 		$data = $this->_primaryKey($this->_primaryKey, $data);
 
@@ -686,7 +707,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief - Not Yet Implemented
+	 * @brief - Removes an association between two different Models
 	 * @param $association
 	 * @param $data
 	 * @return bool
