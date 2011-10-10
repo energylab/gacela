@@ -754,7 +754,7 @@ abstract class Mapper implements iMapper {
 			$main->criteria($sub, true);
 		}
 
-		$this->_source()->delete($assoc['meta']->refTable, $main);
+		return $this->_source()->delete($assoc['meta']->refTable, $main);
 	}
 
 	/**

@@ -26,7 +26,8 @@ abstract class Field {
 							'sequenced' => false,
 							'primary' => false,
 							'default' => null,
-							'values' => array()
+							'values' => array(),
+							'null' => false
 						),
 						$meta
 					);

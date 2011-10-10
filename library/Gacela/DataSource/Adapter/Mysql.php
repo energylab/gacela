@@ -137,7 +137,7 @@ class Mysql extends Adapter implements iAdapter {
 			$sp->execute(array(':schema' => $schema, ':table' => $name));
 
 			$rs = $sp->fetchAll(\PDO::FETCH_OBJ);
-
+			
 			foreach($rs as $row) {
 				$key = explode(self::$_separator, $row->constraintName);
 				$key = $key[1];
