@@ -191,32 +191,42 @@ abstract class Mapper implements iMapper {
 
 	protected function _initAssociations()
 	{
-		foreach($this->_foreignKeys as $name => $foreign) {
-			$resource = $foreign['resource'];
+		if(empty($this->_associations)) {
+			foreach($this->_foreignKeys as $name => $foreign) {
+				$resource = $foreign['resource'];
 
-			if(count($resource->getFields()) == count($resource->getPrimaryKey())) {
-				$primary = $resource->getPrimaryKey();
-				
-				foreach($resource->getRelations() as $relation) {
-					$keys = array_keys($relation->keys);
+				if(count($resource->getFields()) == count($resource->getPrimaryKey())) {
+					$primary = $resource->getPrimaryKey();
 
-					foreach($keys as $key) {
-						$i = array_search($key, $primary);
+					foreach($resource->getRelations() as $relation) {
+						$keys = array_keys($relation->keys);
 
-						if($i !== false) {
-							unset($primary[$i]);
+						foreach($keys as $key) {
+							$i = array_search($key, $primary);
+
+							if($i !== false) {
+								unset($primary[$i]);
+							}
 						}
 					}
+
+					if(!count($primary)) {
+						$this->_associations[$name] = $foreign;
+
+						unset($this->_foreignKeys[$name]);
+					}
 				}
+			}
+		} else {
+			foreach($this->_associations as $name => $assoc) {
+				$this->_associations[$name] = $this->_getRelationArray($assoc);
 
-				if(!count($primary)) {
-					$this->_associations[$name] = $foreign;
-
+				if(isset($this->_foreignKeys[$name])) {
 					unset($this->_foreignKeys[$name]);
 				}
 			}
 		}
-		
+
 		return $this;
 	}
 
