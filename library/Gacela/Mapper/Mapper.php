@@ -164,6 +164,14 @@ abstract class Mapper implements iMapper {
 
 	}
 
+	protected function _getRelationArray($array)
+	{
+		return array(
+					'meta' => (object) $array['meta'],
+					'resource' => $this->_source()->loadResource($array['resource'])
+				);
+	}
+
 	/**
 	 * @return Mapper
 	 */
@@ -220,10 +228,21 @@ abstract class Mapper implements iMapper {
 
 		$fields = $this->getFields();
 
-		foreach($_dependents as $name) {
-			$dependent = $this->_foreignKeys[$name];
+		foreach($_dependents as $key => $name) {
+			if(is_array($name)) {
+				$dependent = $name;
+				$name = $key;
 
-			unset($this->_foreignKeys[$name]);
+				$dependent = $this->_getRelationArray($dependent);
+				
+			} else {
+				$dependent = $this->_foreignKeys[$name];
+			}
+
+			if(isset($this->_foreignKeys[$name])) {
+				unset($this->_foreignKeys[$name]);
+			}
+
 			
 			/**
 			 * If the keyColumn of the primary resource is nullable, then all fields in the dependent relationship need to
@@ -298,11 +317,23 @@ abstract class Mapper implements iMapper {
 					unset($relations[\Gacela\Inflector::singularize($this->_resourceName)]);
 					unset($this->_foreignKeys[$name]);
 					
-					$this->_initForeignKeys($stuff['resource']->getRelations());
+					$this->_initForeignKeys($relations);
 				}
 			}
 		} else {
-			throw new \Exception('Not Implemented Yet');
+			foreach($this->_inherits as $name => $inherit) {
+				$this->_inherits[$name] = $this->_getRelationArray($inherit);
+
+				$relations = $this->_inherits[$name]['resource']->getRelations();
+
+				unset($relations[\Gacela\Inflector::singularize($this->_resourceName)]);
+
+				$this->_initForeignKeys($relations);
+
+				if(isset($this->_foreignKeys[$name])) {
+					unset($this->_foreignKeys[$name]);
+				}
+			}
 		}
 		
 		return $this;
