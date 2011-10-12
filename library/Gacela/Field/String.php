@@ -21,7 +21,7 @@ class String extends Field {
 
 			return $this->null;
 		}
-
+		
 		if(strlen($value) <= $this->length) {
 			return true;
 		} else {

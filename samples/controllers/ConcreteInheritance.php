@@ -11,37 +11,39 @@ class ConcreteInheritance extends Controller {
 	public function index()
 	{
 		$this->students = Gacela::instance()->loadMapper('student')->findAll();
-		exit(debug(\Gacela::instance()->loadMapper('student')));
+		
 		$this->template = 'concrete-inheritance_index';
 		$this->title = 'Concrete Inheritance';
 	}
 
-	public function form($id)
+	public function form($id = null)
 	{
 		$this->houses = Gacela::instance()->loadMapper('house')->findAll();
 		$this->student = Gacela::instance()->loadMapper('student')->find($id);
+		$this->message = '';
 
 		if(count($_POST)) {
-			if(!isset($student)) {
-				$student = new \App\Model\Student;
-			}
+			$this->student->fullName = $_POST['fullName'];
+			$this->student->role = 'student';
+			$this->student->houseId = $_POST['houseId'];
 
-			$student->fullName = $_POST['fullName'];
-			$student->role = 'student';
-			$student->houseId = $_POST['houseId'];
-
-			if(!$student->save()) {
-				exit(debug($student->errors));
+			if(!$this->student->save()) {
+				$this->message = debug($this->student->errors);
 			} else {
-				$message = 'Student saved<br/>';
+				$this->message = 'Student saved<br/>';
 			}
 		}
+
+		$this->template = 'concrete-inheritance_form';
+		$this->title = 'Concrete Inheritance';
 	}
 
 	public function delete($id)
 	{
 		$student = Gacela::instance()->loadMapper('student')->find($id);
 		$student->delete();
+
+		$this->_redirect('/concreteInheritance');
 	}
 }
 

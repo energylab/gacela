@@ -7,17 +7,16 @@
  */
  ?>
  
-<?= $message ?>
-<?= $errors ?>
-<form action="/concrete-inheritance.php" method="post">
-	<input type="hidden" name="id" value="<?= isset($student) ? $student->wizardId : null ?>" />
+<?= $this->message ?>
+<form action="/concreteInheritance/form/<?= $this->student->wizardId ?>" method="post">
+	<input type="hidden" name="id" value="<?= $this->student->wizardId ?>" />
 	<label>Student Name</label>
-	<input type="text" name="fullName"  value="<?= isset($student) ? $student->fullName : null ?>" /><br/>
+	<input type="text" name="fullName"  value="<?= $this->student->fullName ?>" /><br/>
 
 	<label>House</label>
 	<select name="houseId">
-	<? foreach($houses as $house): ?>
-		<option value="<?= $house->houseId ?>"><?= $house->houseName ?></option>
+	<? foreach($this->houses as $house): ?>
+		<option value="<?= $house->houseId ?>" <?= $this->student->houseId == $house->houseId ? 'selected="selected"' : '' ?>><?= $house->houseName ?></option>
 	<? endforeach; ?>
 	</select><br/>
 

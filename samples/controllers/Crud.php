@@ -16,7 +16,7 @@ class Crud extends Controller {
 		$this->title = 'CRUD Example';
 	}
 
-	public function form($id)
+	public function form($id = null)
 	{
 		$this->house = Gacela::instance()->loadMapper('house')->find($id);
 

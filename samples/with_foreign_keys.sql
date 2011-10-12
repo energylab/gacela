@@ -89,7 +89,7 @@ INSERT INTO students VALUES
 CREATE TABLE courses (
     courseId INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
     wizardId INT UNSIGNED NOT NULL,
-    subject VARCHAR(255) NULL,
+    subject VARCHAR(255) NOT NULL,
     CONSTRAINT fk_teacher_courses
         FOREIGN KEY (wizardId)
         REFERENCES wizards(wizardId)

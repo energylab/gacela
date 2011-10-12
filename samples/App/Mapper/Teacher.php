@@ -11,6 +11,17 @@ class Teacher extends Wizard {
 
 	protected $_resourceName = 'wizards';
 
+	public function findAll(\Gacela\Criteria $criteria = null)
+	{
+		if(is_null($criteria)) {
+			$criteria = new \Gacela\Criteria;
+		}
+
+		$criteria->equals('role', 'teacher');
+
+		return parent::findAll($criteria);
+	}
+
 	public function findAllWithCourse(\Gacela\Criteria $criteria = null)
 	{
 		$query = $this->_source()->getQuery($criteria)

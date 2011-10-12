@@ -87,6 +87,10 @@ class Database extends DataSource {
 		$query = $this->_conn->prepare($query);
 
 		if($query->execute($args)) {
+			if($query->rowCount() == 0) {
+				return false;
+			}
+
 			$this->_incrementCache($name);
 			return true;
 		} else {
@@ -185,6 +189,10 @@ class Database extends DataSource {
 
 		try {
 			if($query->execute($binds)) {
+				if($query->rowCount() == 0) {
+					return false;
+				}
+				
 				$this->_incrementCache($name);
 				
 				return $this->_conn->lastInsertId();
@@ -270,6 +278,10 @@ class Database extends DataSource {
 
 		try {
 			if($query->execute($args)) {
+				if($query->rowCount() == 0) {
+					return false;
+				}
+				
 				$this->_incrementCache($name);
 				return true;
 			} else {

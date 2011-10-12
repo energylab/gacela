@@ -97,16 +97,14 @@ abstract class Mapper implements iMapper {
 		$primary = $this->_primaryKey($resource->getPrimaryKey(), $data);
 
 		if(is_null($primary)) {
-			return false;
+			return true;
 		}
 
 		foreach($primary as $key => $value) {
 			$where->equals($key, $value);
 		}
 
-		$this->_source()->delete($resource->getName(), $where);
-
-		return true;
+		return $this->_source()->delete($resource->getName(), $where);
 	}
 
 	/**
@@ -584,7 +582,7 @@ abstract class Mapper implements iMapper {
 				return false;
 			}
 		}
-
+		
 		$this->_source()->commitTransaction();
 		
 		return true;
@@ -667,32 +665,34 @@ abstract class Mapper implements iMapper {
 	{
 		if(isset($this->_associations[$name])) {
 			return $this->_findAssociation($name, $data);
-		} else {
-			$relation = $this->_foreignKeys[$name];
-			
-			if($relation['meta']->type == 'hasMany') {
-				$name = \Gacela\Inflector::singularize($name);
-			}
-			
-			$criteria = new \Gacela\Criteria();
-
-			foreach($relation['meta']->keys as $key => $ref) {
-				if(empty($data->$key)) {
-					$criteria = new \Gacela\Criteria;
-					break;
-				}
-
-				$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
-			}
-			
-			$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
-
-			if ($relation['meta']->type == 'belongsTo') {
-				return $result->current();
-			} elseif ($relation['meta']->type == 'hasMany') {
-				return $result;
-			}
 		}
+
+		$relation = $this->_foreignKeys[$name];
+
+		if($relation['meta']->type == 'hasMany') {
+			$name = \Gacela\Inflector::singularize($name);
+		}
+
+		$criteria = new \Gacela\Criteria();
+
+		foreach($relation['meta']->keys as $key => $ref) {
+			if(empty($data->$key)) {
+				$criteria = new \Gacela\Criteria;
+				break;
+			}
+
+			$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
+		}
+
+		$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
+
+		if ($relation['meta']->type == 'belongsTo') {
+			return $result->current();
+		} elseif ($relation['meta']->type == 'hasMany') {
+			return $result;
+		}
+
+		throw new Exception('Invalid Relationship Type!');
 	}
 
 	/**
