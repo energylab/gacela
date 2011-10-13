@@ -28,8 +28,13 @@ class Teacher extends Wizard {
 					->from('wizards')
 					->where('role = :role', array(':role' => 'teacher'))
 					->where('EXISTS (SELECT * FROM courses WHERE courses.wizardId = wizards.wizardId)');
+
+		$coll = $this->_singleton()->autoload('\\Collection');
 		
-		return $this->_source()->query($this->_resource, $query);
+		return new $coll(
+						$this,
+						$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
+					);
 	}
 
 	public function findAllWithoutCourse(\Gacela\Criteria $criteria = null)
@@ -44,6 +49,11 @@ class Teacher extends Wizard {
 					->where('role = :role', array(':role' =>  'teacher'))
 					->where("NOT EXISTS ({$existsQuery[0]})");
 
-		return $this->_source()->query($this->_resource, $query);
+				$coll = $this->_singleton()->autoload('\\Collection');
+
+		return new $coll(
+						$this,
+						$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
+					);
 	}
 }

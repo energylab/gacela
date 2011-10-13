@@ -10,7 +10,7 @@ class Hasmany extends Controller {
 
 	public function index()
 	{
-		$this->teachers = Gacela::instance()->loadMapper('teacher')->findAllWithCourses();
+		$this->teachers = Gacela::instance()->loadMapper('teacher')->findAllWithCourse();
 		
 		$this->template = 'hasmany_index';
 		$this->title = 'Has Many Relationships - Teachers with Courses';
@@ -22,10 +22,5 @@ class Hasmany extends Controller {
 
 		$this->template = 'hasmany_form';
 		$this->title = 'Has Many Relationships - Teacher Courses';
-	}
-
-	public function delete($id)
-	{
-		
 	}
 }

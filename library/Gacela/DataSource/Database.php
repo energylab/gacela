@@ -80,9 +80,9 @@ class Database extends DataSource {
 	 * @param Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function delete($name, \Gacela\Criteria $where)
+	public function delete($name, \Gacela\DataSource\Query\Query $where)
 	{
-		list($query, $args) = $this->getQuery($where)->delete($name)->assemble();
+		list($query, $args) = $where->delete($name)->assemble();
 
 		$query = $this->_conn->prepare($query);
 
@@ -126,12 +126,12 @@ class Database extends DataSource {
 	 * @param array $dependents
 	 * @return
 	 */
-	public function findAll(\Gacela\Criteria $criteria = null, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
+	public function findAll(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		return $this->query(
 					$resource,
 					$this->_buildFinder(
-						$this->getQuery($criteria),
+						$query,
 						$resource,
 						$inherits,
 						$dependents
@@ -270,9 +270,9 @@ class Database extends DataSource {
 	 * @param \Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function update($name, $data, \Gacela\Criteria $where, $transaction = null)
+	public function update($name, $data, \Gacela\DataSource\Query\Query $where, $transaction = null)
 	{
-		list($query, $args) = $this->getQuery($where)->update($name, $data)->assemble();
+		list($query, $args) = $where->update($name, $data)->assemble();
 
 		$query = $this->_conn->prepare($query);
 

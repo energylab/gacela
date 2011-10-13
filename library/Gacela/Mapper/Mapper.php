@@ -104,7 +104,7 @@ abstract class Mapper implements iMapper {
 			$where->equals($key, $value);
 		}
 
-		return $this->_source()->delete($resource->getName(), $where);
+		return $this->_source()->delete($resource->getName(), $this->_source()->getQuery($where));
 	}
 
 	/**
@@ -458,7 +458,7 @@ abstract class Mapper implements iMapper {
 				$where->equals($k, $v);
 			}
 
-			$this->_source()->update($resource->getName(), $data, $where);
+			$this->_source()->update($resource->getName(), $data, $this->_source()->getQuery($where));
 		}
 		
 		return array($changed, $new);
@@ -628,7 +628,7 @@ abstract class Mapper implements iMapper {
 
 		return new 	$coll(
 						$this,
-						$this->_source()->findAll($criteria, $this->_resource, $this->_inherits, $this->_dependents)
+						$this->_source()->findAll($this->_source()->getQuery($criteria), $this->_resource, $this->_inherits, $this->_dependents)
 					);
 	}
 

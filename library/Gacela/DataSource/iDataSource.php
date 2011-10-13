@@ -22,11 +22,11 @@ interface iDataSource {
 	 * @param \Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function delete($name, \Gacela\Criteria $where);
+	public function delete($name, \Gacela\DataSource\Query\Query $where);
 
 	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents);
 
-	public function findAll(\Gacela\Criteria $criteria = null, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents);
+	public function findAll(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents);
 
 	public function findAllByAssociation(\Gacela\DataSource\Resource $resource, array $relation, array $data, array $inherits, array $dependents);
 	
@@ -70,5 +70,5 @@ interface iDataSource {
 	 * @param string - 'begin', 'commit'
 	 * @return bool 
 	 */
-	public function update($name, $data, \Gacela\Criteria $where);
+	public function update($name, $data, \Gacela\DataSource\Query\Query $where);
 }
