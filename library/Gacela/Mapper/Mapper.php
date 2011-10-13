@@ -512,7 +512,7 @@ abstract class Mapper implements iMapper {
 				$criteria->equals($ref, $data->$key);
 			}
 
-			$this->_source()->delete($assoc['meta']->refTable, $criteria);
+			$this->_source()->delete($assoc['meta']->refTable, $this->_source()->getQuery($criteria));
 		}
 
 		$toInsert = array();
@@ -536,8 +536,10 @@ abstract class Mapper implements iMapper {
 			
 			$toInsert[] = $array;
 		}
+		
+		$rs = $this->_source()->insert($assoc['meta']->refTable, $toInsert);
 
-		return $this->_source()->insert($assoc['meta']->refTable, $toInsert);
+		return $rs;
 	}
 
 	public function debug($return = true)
@@ -799,7 +801,7 @@ abstract class Mapper implements iMapper {
 			$main->criteria($sub, true);
 		}
 
-		return $this->_source()->delete($assoc['meta']->refTable, $main);
+		return $this->_source()->delete($assoc['meta']->refTable, $this->_source()->getQuery($main));
 	}
 
 	/**

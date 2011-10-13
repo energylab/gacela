@@ -9,7 +9,16 @@
  
 <h2>Courses for: <?= $this->student->fullName ?></h2>
 
-<?//= $this->form->render() ?>
+<form method="post" action="/associations/student/<?= $this->student->wizardId ?>">
+	<label>Subjects:</label>
+	<select name="courseId">
+	<? foreach($this->courses as $course): ?>
+		<option value="<?= $course->courseId ?>"><?= $course->subject ?></option>
+	<? endforeach ?>
+	</select>
+
+	<input type="submit" value="Add" />
+</form>
 
 <table>
 	<thead>

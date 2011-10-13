@@ -184,9 +184,9 @@ class Database extends DataSource {
 	public function insert($name, array $data, $transaction = null)
 	{
 		list($query, $binds) = $this->getQuery()->insert($name, $data)->assemble();
-
+		
 		$query = $this->_conn->prepare($query);
-
+		
 		try {
 			if($query->execute($binds)) {
 				if($query->rowCount() == 0) {

@@ -22,5 +22,30 @@ class Associations extends Controller {
 
 		$this->template = 'student_associations';
 		$this->title = 'Classes: '.$this->student->fullName;
+
+		if(count($_POST)) {
+			$course = Gacela::instance()->loadMapper('course')->find($_POST['courseId']);
+
+			$this->student->add($course);
+		}
+
+		$criteria = new Gacela\Criteria;
+
+		$courses = $this->student->courses->asArray('courseId');
+
+		$criteria->notIn('courseId', $courses);
+
+		$this->courses = Gacela::instance()->loadMapper('course')->findAll($criteria);
+	}
+
+	public function remove($student, $course)
+	{
+		$this->student = Gacela::instance()->loadMapper('student')->find($student);
+
+		$course = Gacela::instance()->loadMapper('course')->find($course);
+
+		$this->student->remove($course);
+
+		$this->_redirect('/associations/student/'.$student);
 	}
 }
