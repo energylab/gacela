@@ -8,11 +8,10 @@
  ?>
  
 <p><?= $this->message ?></p>
-<form action="/singleInheritance" method="post">
-	<input type="hidden" name="id" value="<?= $model->wizardId ?>" />
+<form action="/singleInheritance/form/<?= $this->model->wizardId ?>" method="post">
 
 	<label>Full Name</label>
-	<input type="text" name="fullName" value="<?= $model->fullName ?>" />
+	<input type="text" name="fullName" value="<?= $this->model->fullName ?>" /><br/>
 
 	<input type="submit" />
 </form>

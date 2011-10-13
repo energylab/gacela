@@ -17,13 +17,22 @@ class Dependents extends Controller {
 		$this->title = 'Dependent Mapping';
 	}
 
-	public function form($id)
+	public function form($id = null)
 	{
-		$model = \Gacela::instance()->loadMapper('wizard')->find($id);
-	}
+		$this->model = \Gacela::instance()->loadMapper('wizard')->find($id);
 
-	public function delete()
-	{
-		$wizard->delete();
+		$this->template = 'dependents_form';
+		$this->title = 'Dependent Mapping - Set Wizard Location';
+		$this->message = '';
+
+		if(count($_POST)) {
+			$this->model->locationName = $_POST['locationName'];
+			
+			if(!$this->model->save()) {
+				$this->message = debug($this->model->errors);
+			} else {
+				$this->message = 'Location Saved';
+			}
+		}
 	}
 }

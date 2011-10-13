@@ -21,24 +21,35 @@ class SingleInheritance extends Controller {
 		$this->title = 'Single Table Inheritance - List of Students';
 	}
 
-	public function form($id)
+	public function form($id = null)
 	{
-		$model = Gacela::instance()->loadMapper('teacher')->find($id);
+		$this->model = Gacela::instance()->loadMapper('teacher')->find($id);
 
-		$model->fullName = $_POST['fullName'];
-		$model->role = 'teacher';
+		$this->template = 'single-inheritance_form';
+		$this->title = 'Single Table Inheritance Mapping - Teachers';
+		$this->message = '';
 
-		if(!$model->save()) {
-			foreach($model->errors as $key => $val) {
-				$errors .= 'Field: '.$key.' ErrorCode: '.$val.'<br/>';
+
+		if(count($_POST)) {
+			$this->model->fullName = $_POST['fullName'];
+			$this->model->role = 'teacher';
+
+			if(!$this->model->save()) {
+				foreach($model->errors as $key => $val) {
+					$this->message .= 'Field: '.$key.' ErrorCode: '.$val.'<br/>';
+				}
+			} else {
+				$this->message = 'Model saved<br/>';
 			}
-		} else {
-			$message = 'Model saved<br/>';
 		}
+
 	}
 
 	public function delete($id)
 	{
+		$model = Gacela::instance()->loadMapper('teacher')->find($id);
 		$model->delete();
+
+		$this->_redirect('/singleInheritance');
 	}
 }

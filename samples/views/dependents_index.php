@@ -25,8 +25,7 @@ foreach($this->wizards as $wiz) {
 				<td>'.get_class($wiz).'</td>
 				<td>'.$wiz->locationName.'</td>
 				<td>
-					<a href="dependents/form/'.$wiz->wizardId.'">Edit</a>&nbsp;
-					<a href="dependents/delete/'.$wiz->wizardId.'">Delete</a>
+					<a href="dependents/form/'.$wiz->wizardId.'">Edit</a>
 				</td>
 			</tr>';
 }

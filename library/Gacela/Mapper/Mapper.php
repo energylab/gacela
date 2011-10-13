@@ -431,14 +431,18 @@ abstract class Mapper implements iMapper {
 		$data = $this->_dataToSave($resource, $changed, $new);
 		
 		if(empty($data)) {
-			return false;
+			return array($changed, $new);
 		}
 
 		$test = array_merge((array) $new, $old);
 		
 		if($this->_doUpdate($resource, $test) === false) {
 			$rs = $this->_source()->insert($resource->getName(), $data);
-			
+
+			if($rs === false) {
+				return $rs;
+			}
+
 			$fields = $resource->getFields();
 			
 			if(count($resource->getPrimaryKey()) == 1 && $fields[current($resource->getPrimaryKey())]->sequenced === true) {
@@ -858,8 +862,6 @@ abstract class Mapper implements iMapper {
 			return false;
 		}
 		
-		list($changed, $new) = $rs;
-
 		$this->_source()->commitTransaction();
 		
 		return (object) $new;
