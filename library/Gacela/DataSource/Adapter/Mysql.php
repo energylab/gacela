@@ -100,6 +100,8 @@ class Mysql extends Adapter implements iAdapter {
 				case 'tinyint':
 					if($meta['length'] == 1) {
 						$meta['type'] = 'bool';
+					} else {
+						$meta['type'] = 'int';
 					}
 					break;
 				case 'datetime':
