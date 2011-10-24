@@ -20,8 +20,10 @@ abstract class Field {
 	public function __construct(array $meta)
 	{
 		$this->_meta = array_merge(
-						array(
+							array(
 							'length' => null,
+							'precision' => null,
+							'scale' => null,
 							'unsigned' => false,
 							'sequenced' => false,
 							'primary' => false,

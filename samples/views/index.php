@@ -7,4 +7,6 @@
  */
  ?>
  
-Hello World!
+ <p>This is the GacelaPHP sample application.</p>
+ 
+ <p>Please use it to familiarize yourself with Gacela.</p>

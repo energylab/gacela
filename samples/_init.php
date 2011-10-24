@@ -18,8 +18,8 @@ $gacela->registerDataSource(
 	array(
 		'schema' => 'gacela',
 		'host' => 'localhost',
-		'password' => 'I8Lissa',
-		'user' => 'root',
+		'password' => 'gacela',
+		'user' => 'gacela',
 		'dbtype' => 'mysql'
 	)
 );

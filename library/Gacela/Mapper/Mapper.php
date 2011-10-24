@@ -235,7 +235,7 @@ abstract class Mapper implements iMapper {
 		$this->_dependents = array();
 
 		$fields = $this->getFields();
-
+		
 		foreach($_dependents as $key => $name) {
 			if(is_array($name)) {
 				$dependent = $name;

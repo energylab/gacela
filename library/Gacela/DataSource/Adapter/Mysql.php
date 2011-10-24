@@ -57,62 +57,47 @@ class Mysql extends Adapter implements iAdapter {
 		$columns = $stmt->fetchAll(\PDO::FETCH_OBJ);
 
 		foreach($columns as $column) {
-			preg_match('/(?P<type>\w+)($|\((?P<length>(\d+|(.*)))\))/', $column->Type, $meta);
-
-			$meta = array_merge(
-						array(
-							'length' => null,
-							'unsigned' => false,
-							'sequenced' => false,
-							'primary' => false,
-							'default' => $column->Default,
-							'values' => array()
-						),
-						$meta
+			
+			$meta = array(
+						'type' => null,
+						'length' => null,
+						'precision' => null,
+						'scale' => null,
+						'unsigned' => false,
+						'sequenced' => (bool) (stripos($column->Extra, 'auto_increment') !== false),
+						'primary' => (bool) (strtoupper($column->Key) == 'PRI'),
+						'default' => $column->Default,
+						'values' => array(),
+						'null' => (bool) ($column->Null == 'YES')
 					);
-
-			$column->Null == 'YES' ? $meta['null'] = true : $meta['null'] = false;
-
-			if($column->Key == 'PRI') {
-				$meta['primary'] = true;
-			}
-
-			if(stripos($column->Type, 'unsigned') !== false) {
-				$meta['unsigned'] = true;
-			}
-
-			if(stripos($column->Extra, 'auto_increment') !== false) {
-				$meta['sequenced'] = true;
-			}
-
-			if($meta['type'] == 'enum') {
-				$meta['values'] = explode(',', str_replace("'", "", $meta['length']));
-				$meta['length'] = null;
-			}
-
-			switch($meta['type']) {
-				case 'varchar':
-				case 'char':
-				case 'text':
-				case 'longtext':
-					$meta['type'] = 'string';
-					break;
-				case 'tinyint':
-					if($meta['length'] == 1) {
-						$meta['type'] = 'bool';
-					} else {
-						$meta['type'] = 'int';
-					}
-					break;
-				case 'datetime':
-				case 'timestamp':
-					$meta['type'] = 'date';
-					break;
-				case 'decimal':
-				case 'float':
-				case 'double':
-					$meta['type'] = 'float';
-					break;
+			
+			if (preg_match('/unsigned/', $column->Type)) {
+                $meta['unsigned'] = true;
+            }
+			
+			if (preg_match('/^((?:var)?char)\((\d+)\)/', $column->Type, $matches)) {
+				$meta['type'] = 'string';
+				$meta['length'] = $matches[2];
+			} elseif (preg_match('/^((?:float|decimal|double)\((\d+),(\d+)\))/', $column->Type, $matches)) {
+				$meta['type'] = 'float';
+				$meta['precision'] = $matches[2];
+				$meta['scale'] = $matches[3];
+			} elseif (preg_match('/^(([a-zA-Z]*)int)\((\d+)\)/', $column->Type, $matches)) {
+				// Use $matches[2] to determine size of the field for validation.
+				if($matches[2] == 'tiny' && $matches[3] == 1) {
+					$meta['type'] = 'bool';
+				} else {
+					$meta['type'] = 'int';
+					$meta['length'] = $matches[3];
+				}
+			} elseif(preg_match('/^(([a-zA-Z]*)text)/', $column->Type, $matches)) {
+				// Use $matches[2] to determine size of the field for validation.			
+				$meta['type'] = 'string';
+			} elseif(preg_match('/(enum)\((\'.*?\')\)/', $column->Type, $matches)) {
+				$meta['type'] = 'enum';
+				$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
+			} elseif(preg_match('/(date*|timestamp)/', $column->Type, $matches)) {
+				$meta['type'] = 'date';
 			}
 
 			$field = $this->_field($meta['type']);
@@ -123,7 +108,7 @@ class Mysql extends Adapter implements iAdapter {
 				$_meta['primary'][] = $column->Field;
 			}
 		}
-
+		
 		unset($stmt);
 
 
