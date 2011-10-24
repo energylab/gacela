@@ -78,10 +78,14 @@ class Mysql extends Adapter implements iAdapter {
 			if (preg_match('/^((?:var)?char)\((\d+)\)/', $column->Type, $matches)) {
 				$meta['type'] = 'string';
 				$meta['length'] = $matches[2];
-			} elseif (preg_match('/^((?:float|decimal|double)\((\d+),(\d+)\))/', $column->Type, $matches)) {
+			} elseif (preg_match('/^float|decimal|double(?:\((\d+),(\d+)\))?$/', $column->Type, $matches)) {				
 				$meta['type'] = 'float';
-				$meta['precision'] = $matches[2];
-				$meta['scale'] = $matches[3];
+				
+				if(isset($matches[1])) {
+					$meta['precision'] = $matches[2];
+					$meta['scale'] = $matches[3];
+				}
+				
 			} elseif (preg_match('/^(([a-zA-Z]*)int)\((\d+)\)/', $column->Type, $matches)) {
 				// Use $matches[2] to determine size of the field for validation.
 				if($matches[2] == 'tiny' && $matches[3] == 1) {
@@ -99,7 +103,7 @@ class Mysql extends Adapter implements iAdapter {
 			} elseif(preg_match('/(date*|timestamp)/', $column->Type, $matches)) {
 				$meta['type'] = 'date';
 			}
-
+			
 			$field = $this->_field($meta['type']);
 
 			$_meta['columns'][$column->Field] = new $field($meta);

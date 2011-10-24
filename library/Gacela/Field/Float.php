@@ -24,7 +24,7 @@ class Float extends Field {
 			return $this->null;
 		}
 
-		if(is_float($value) && strlen($value) <= $this->length) {
+		if(is_float($value) && strlen($value) <= $this->precision) {
 			return true;
 		} else {
 			if(!is_float($value)) {

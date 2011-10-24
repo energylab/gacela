@@ -22,7 +22,7 @@ class String extends Field {
 			return $this->null;
 		}
 		
-		if(strlen($value) <= $this->length) {
+		if(strlen($value) <= $this->length || is_null($this->length)) {
 			return true;
 		} else {
 			$this->errorCode = self::LENGTH_CODE;
