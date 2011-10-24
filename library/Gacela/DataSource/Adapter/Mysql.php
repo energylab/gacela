@@ -131,6 +131,11 @@ class Mysql extends Adapter implements iAdapter {
 			
 			foreach($rs as $row) {
 				$key = explode(self::$_separator, $row->constraintName);
+				
+				if(!isset($key[1])) {
+					throw new \Exception('Improper belongs_to definition: '.print_r($row, true));
+				}
+				
 				$key = $key[1];
 
 				$row->type = 'belongsTo';
@@ -161,6 +166,11 @@ class Mysql extends Adapter implements iAdapter {
 
 			foreach($rs as $row) {
 				$key = explode(self::$_separator, $row->constraintName);
+				
+				if(!isset($key[2])) {
+					throw new \Exception('Improper has_many definition: '.print_r($row, true));
+				}
+				
 				$key = $key[2];
 
 				$row->type = 'hasMany';
