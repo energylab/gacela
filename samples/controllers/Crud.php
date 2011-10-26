@@ -10,7 +10,7 @@ class Crud extends Controller {
 
 	public function index()
 	{
-		$this->houses = \Gacela::instance()->loadMapper('house')->findAll();
+		$this->houses = \Gacela::instance()->loadMapper('house')->findNameAsc();
 		
 		$this->template = 'crud_index';
 		$this->title = 'CRUD Example';

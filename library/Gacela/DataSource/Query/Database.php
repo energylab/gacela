@@ -256,8 +256,8 @@ class Database extends Query {
 		foreach($this->_orderBy as $field => $dir) {
 			$sql .= $this->_quoteIdentifier($field).' '.$dir.',';
 		}
-
-		$sql = substr($sql, 0, strlen($sql-1));
+		
+		$sql = substr($sql, 0, strlen($sql)-1);
 
 		return $sql;
 	}
