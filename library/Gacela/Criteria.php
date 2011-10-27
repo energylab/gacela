@@ -87,5 +87,8 @@ class Criteria implements \IteratorAggregate {
 		return $this->_addCriterion('notLike', func_get_args());
 	}
 
-
+	public function sort($field, $dir = 'asc')
+	{
+		return $this->_addCriterion('sort', array($field, $dir));	
+	}
 }

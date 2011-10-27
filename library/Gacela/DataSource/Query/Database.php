@@ -63,8 +63,10 @@ class Database extends Query {
 	private function _buildFromCriteria($criteria)
 	{
 		foreach($criteria as $stmt) {
-			if($stmt[0] instanceof \Gacela\Criteria) {
-				$query = new \Gacela\DataSource\Query\Database($this->_schema, $stmt[0]);
+			$op = $stmt[0];
+			
+			if($op instanceof \Gacela\Criteria) {
+				$query = new \Gacela\DataSource\Query\Database($this->_schema, $op);
 
 				$query = $query->assemble();
 
@@ -73,20 +75,23 @@ class Database extends Query {
 				// Move along, nothing more to see here
 				continue;
 			}
-
-			$op = $stmt[0];
+			
 			$field = $stmt[1];
-
-			if($op == 'limit') {
-				$this->limit($stmt[1], $stmt[2]);
-				
-				// Move on, this one is all done.
-				continue;
-			}
-
+			
 			if(isset($stmt[2])) {
 				$args = $stmt[2];
 			}
+			
+			if($op == 'limit') {
+				$this->limit($field, $args);
+				
+				// Move on, this one is all done.
+				continue;
+			} elseif($op == 'sort') {
+				$this->orderBy($field, $args);
+			}
+
+			
 
 			$bind = array();
 			$toBind = '';

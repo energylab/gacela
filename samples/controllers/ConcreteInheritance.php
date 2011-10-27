@@ -10,7 +10,12 @@ class ConcreteInheritance extends Controller {
 
 	public function index()
 	{
-		$this->students = Gacela::instance()->loadMapper('student')->findAll();
+		$criteria = new \Gacela\Criteria;
+		
+		$criteria->sort('fname')
+				->sort('lname', 'desc');
+				
+		$this->students = Gacela::instance()->loadMapper('student')->findAll($criteria);
 		
 		$this->template = 'concrete-inheritance_index';
 		$this->title = 'Concrete Inheritance';
