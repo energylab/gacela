@@ -26,7 +26,7 @@ class ConcreteInheritance extends Controller {
 		$this->houses = Gacela::instance()->loadMapper('house')->findAll();
 		$this->student = Gacela::instance()->loadMapper('student')->find($id);
 		$this->message = '';
-
+		
 		if(count($_POST)) {
 			$this->student->fullName = $_POST['fullName'];
 			$this->student->role = 'student';

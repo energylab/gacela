@@ -19,7 +19,7 @@ class Hasmany extends Controller {
 	public function teacher($id = null)
 	{
 		$this->teacher = Gacela::instance()->loadMapper('teacher')->find($id);
-
+		
 		$this->template = 'hasmany_teacher';
 		$this->title = 'Has Many Relationships - Teacher Courses';
 	}

@@ -80,6 +80,8 @@ class Database extends Query {
 			
 			if(isset($stmt[2])) {
 				$args = $stmt[2];
+			} else {
+				$args = '';
 			}
 			
 			if($op == 'limit') {
@@ -119,7 +121,7 @@ class Database extends Query {
 			}
 			
 			if(in_array($op, array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
-				if(is_null($bind)) {
+				if(empty($bind)) {
 					continue;
 				}
 				
