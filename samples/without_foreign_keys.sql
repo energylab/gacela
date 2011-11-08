@@ -115,28 +115,26 @@ INSERT INTO enrollments VALUES
 (1, 16),
 (1, 20);
 
-DROP PROCEDURE IF EXISTS gacela.sp_belongs_to;
-DROP PROCEDURE IF EXISTS gacela.sp_has_many;
+DROP PROCEDURE IF EXISTS sp_belongs_to;
+DROP PROCEDURE IF EXISTS sp_has_many;
 
 DELIMITER //
 
-CREATE PROCEDURE gacela.sp_belongs_to (IN schemaName VARCHAR(100), IN tableName VARCHAR(100))
+CREATE PROCEDURE sp_belongs_to (IN schemaName VARCHAR(100), IN tableName VARCHAR(100))
 	BEGIN
 		SELECT TABLE_NAME as keyTable, GROUP_CONCAT(COLUMN_NAME) AS keyColumns, REFERENCED_TABLE_NAME AS refTable, GROUP_CONCAT(REFERENCED_COLUMN_NAME) AS refColumns, CONSTRAINT_NAME AS constraintName
 		FROM INFORMATION_SCHEMA.key_column_usage
-		WHERE TABLE_SCHEMA = schemaName
-		AND TABLE_NAME = tableName
+		WHERE TABLE_SCHEMA = schemaName  COLLATE utf8_general_ci
+		AND TABLE_NAME = tableName  COLLATE utf8_general_ci
 		AND REFERENCED_TABLE_NAME IS NOT NULL
 		GROUP BY constraintName;
 	END //
 
-CREATE PROCEDURE gacela.sp_has_many (IN schemaName VARCHAR(100), IN tableName VARCHAR(100))
+CREATE PROCEDURE sp_has_many (IN schemaName VARCHAR(100), IN tableName VARCHAR(100))
 	BEGIN
 	  SELECT REFERENCED_TABLE_NAME AS keyTable, GROUP_CONCAT(REFERENCED_COLUMN_NAME) AS keyColumns, TABLE_NAME AS refTable, GROUP_CONCAT(COLUMN_NAME) AS refColumns, CONSTRAINT_NAME AS constraintName
 	  FROM INFORMATION_SCHEMA.key_column_usage
-	  WHERE TABLE_SCHEMA = schemaName
-	  AND REFERENCED_TABLE_NAME = tableName
+	  WHERE TABLE_SCHEMA = schemaName COLLATE utf8_general_ci
+	  AND REFERENCED_TABLE_NAME = tableName COLLATE utf8_general_ci
 	  GROUP BY constraintName;
 	END //
-
-DELIMITER ;
