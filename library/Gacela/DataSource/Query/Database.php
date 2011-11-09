@@ -99,11 +99,7 @@ class Database extends Query {
 			$toBind = '';
 
 			if(isset($args)) {
-				if(in_array($op, array('in', 'notIn'))) {
-					for($i=0;$i<count($args);$i++) {
-						$bind[':'.$field.$i] = $args[$i];
-					}
-				} else {
+				if(!in_array($op, array('in', 'notIn'))) {
 					if(strstr($field, '.')) {
 						$toBind = str_replace('.', '_', $field);
 						$toBind = ":{$toBind}";
@@ -116,7 +112,7 @@ class Database extends Query {
 						$args = '%'.$args.'%';
 					}
 
-					$bind = array($toBind => $args);
+					$bind = array($toBind => $args);					
 				}
 			}
 			
@@ -127,11 +123,11 @@ class Database extends Query {
 				
 				$this->where("{$field} ".self::$_operators[$op]." {$toBind}", $bind);
 			} elseif(in_array($op, array('in', 'notIn'))) {
-				if(!count($bind)) {
+				if(empty($stmt[2])) {
 					continue;
 				}
 				
-				$this->where("{$field} ".self::$_operators[$stmt[0]]." (".implode(', ', array_keys($bind)).")", $bind);
+				$this->in($field, $stmt[2], $op === 'in' ? false : true);
 			} elseif(in_array($op, array('notNull', 'null'))) {
 				$this->where("{$field} ".self::$_operators[$stmt[0]]);
 			}
