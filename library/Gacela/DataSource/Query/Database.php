@@ -297,31 +297,15 @@ class Database extends Query {
 		$select = array();
 
 		foreach($this->_from as $from) {
-			foreach($from[1] as $alias => $field) {
-				if(is_int($alias)) {
-					$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$field);
-				} else {
-					$select[] = $this->_quoteIdentifier($this->_alias($from[0]).
-								'.'.
-								$field).
-								' AS '.
-								$this->_quoteIdentifier($alias);
-				}
+			foreach($from[1] as $item) {
+				$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$item);
 			}
 		}
 		
 		foreach($this->_join as $join) {
 			if(count($join[2])) {
 				foreach($join[2] as $item) {
-					if(is_int($alias)) {
-						$select[] = $this->_quoteIdentifier($this->_alias($join[0]).'.'.$field);
-					} else {
-						$select[] = $this->_quoteIdentifier($this->_alias($join[0]).
-									'.'.
-									$field).
-									' AS '.
-									$this->_quoteIdentifier($alias);
-					}					
+					$select[] = $this->_quoteIdentifier($this->_alias($join[0]).'.'.$item);
 				}
 			}
 		}
@@ -503,7 +487,7 @@ class Database extends Query {
 		return $this;
 	}
 	
-	public function in($field, $values, $not = false, $or = false)
+	public function in($field, array $values, $not = false, $or = false)
 	{
 		if($not) {
 			$stmt = self::$_operators['notIn'];
@@ -511,7 +495,14 @@ class Database extends Query {
 			$stmt = self::$_operators['in'];
 		}
 		
-		$stmt = $field.' '.$stmt.' '.array_walk(array_keys($values), function(&$val) { $val = ':'.$val; });
+		$keys = array_keys($values);
+		array_walk($keys, function(&$val) { $val = ':'.$val; });
+		
+		$stmt = $field.' '.$stmt.' ('.join(',', $keys).')';
+		
+		$values = array_combine($keys, array_values($values));
+		
+		return $this->where($stmt, $values, $or);
 	}
 	
 	public function insert($tableName, $data)
