@@ -297,15 +297,31 @@ class Database extends Query {
 		$select = array();
 
 		foreach($this->_from as $from) {
-			foreach($from[1] as $item) {
-				$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$item);
+			foreach($from[1] as $alias => $field) {
+				if(is_int($alias)) {
+					$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$field);
+				} else {
+					$select[] = $this->_quoteIdentifier($this->_alias($from[0]).
+								'.'.
+								$field).
+								' AS '.
+								$this->_quoteIdentifier($alias);
+				}
 			}
 		}
 		
 		foreach($this->_join as $join) {
 			if(count($join[2])) {
 				foreach($join[2] as $item) {
-					$select[] = $this->_quoteIdentifier($this->_alias($join[0]).'.'.$item);
+					if(is_int($alias)) {
+						$select[] = $this->_quoteIdentifier($this->_alias($join[0]).'.'.$field);
+					} else {
+						$select[] = $this->_quoteIdentifier($this->_alias($join[0]).
+									'.'.
+									$field).
+									' AS '.
+									$this->_quoteIdentifier($alias);
+					}					
 				}
 			}
 		}

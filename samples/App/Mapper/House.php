@@ -24,4 +24,13 @@ class House extends M {
 						$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
 					);
 	}
+	
+	public function findWithAliases()
+	{
+		$query = $this->_source()->getQuery();
+		
+		$query->from('houses', array('id' => 'houseId', '*'));
+		
+		exit(debug($query->assemble()));
+	}
 }
