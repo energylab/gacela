@@ -4,6 +4,6 @@ class Test extends Controller
 {
 	public function index()
 	{
-		exit(\Gacela::instance()->loadMapper('house')->findWithAliases());
+		exit(\Gacela::instance()->loadMapper('student')->findByHouse());
 	}
 }
