@@ -487,6 +487,17 @@ class Database extends Query {
 		return $this;
 	}
 	
+	public function in($field, $values, $not = false, $or = false)
+	{
+		if($not) {
+			$stmt = self::$_operators['notIn'];
+		} else {
+			$stmt = self::$_operators['in'];
+		}
+		
+		$stmt = $field.' '.$stmt.' '.array_walk(array_keys($values), function(&$val) { $val = ':'.$val; });
+	}
+	
 	public function insert($tableName, $data)
 	{
 		$this->_insert = array($tableName, $data);
