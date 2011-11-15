@@ -160,7 +160,7 @@ class Database extends Query {
 			$sql .= $this->_quoteIdentifier($field).',';
 		}
 
-		$sql = substr($sql, 0, strlen($sql-1));
+		$sql = substr($sql, 0, strlen($sql)-1);
 
 		return $sql;
 	}
