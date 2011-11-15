@@ -294,7 +294,7 @@ class Database extends Query {
 
 		foreach($this->_from as $from) {
 			foreach($from[1] as $item) {
-				if(strpos('.', $item)) {
+				if(strpos($item, '.') !== false) {
 					$select[] = $this->_quoteIdentifier($item);	
 				} else {
 					$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$item);
@@ -305,7 +305,7 @@ class Database extends Query {
 		foreach($this->_join as $join) {
 			if(count($join[2])) {
 				foreach($join[2] as $item) {
-					if(strpos('.', $item)) {
+					if(strpos($item, '.') !== false) {
 						$select[] = $this->_quoteIdentifier($item);	
 					} else {
 						$select[] = $this->_quoteIdentifier($this->_alias($join[0]).'.'.$item);
