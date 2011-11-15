@@ -162,7 +162,7 @@ class Database extends Query {
 
 		$sql = substr($sql, 0, strlen($sql)-1);
 
-		return $sql;
+		return $sql."\n";
 	}
 
 	private function _insert()
@@ -294,14 +294,22 @@ class Database extends Query {
 
 		foreach($this->_from as $from) {
 			foreach($from[1] as $item) {
-				$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$item);
+				if(strpos('.', $item)) {
+					$select[] = $this->_quoteIdentifier($item);	
+				} else {
+					$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$item);
+				}
 			}
 		}
 		
 		foreach($this->_join as $join) {
 			if(count($join[2])) {
 				foreach($join[2] as $item) {
-					$select[] = $this->_quoteIdentifier($this->_alias($join[0]).'.'.$item);
+					if(strpos('.', $item)) {
+						$select[] = $this->_quoteIdentifier($item);	
+					} else {
+						$select[] = $this->_quoteIdentifier($this->_alias($join[0]).'.'.$item);
+					}
 				}
 			}
 		}
@@ -358,7 +366,7 @@ class Database extends Query {
 			}
 		}
 		
-		return $_where;
+		return $_where."\n";
 	}
 	
 	public function __construct($schema, \Gacela\Criteria $criteria = null)
@@ -419,7 +427,7 @@ class Database extends Query {
 		$sql .= $this->_order();
 
 		if(!empty($this->_limit)) {
-			$sql .= 'LIMIT '.(int) $this->_limit[0].', '.(int) $this->_limit[1];
+			$sql .= 'LIMIT '.(int) $this->_limit[0].', '.(int) $this->_limit[1]."\n";
 		}
 
 		$this->_sql = $sql;
