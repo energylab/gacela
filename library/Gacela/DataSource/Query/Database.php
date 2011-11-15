@@ -345,9 +345,9 @@ class Database extends Query {
 			} else {
 				// Check for OR statements
 				if($where[2]) {
-					$_where .= "OR ({$where[0]})";
+					$_where .= "OR ({$where[0]}) ";
 				} else {
-					$_where .= "AND ({$where[0]})";
+					$_where .= "AND ({$where[0]}) ";
 				}
 			}
 
