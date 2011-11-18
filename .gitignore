@@ -1,3 +1,5 @@
 .idea/*
 documentation/api/*
 *.komodo*
+/nbproject/private/
+/nbproject/*
