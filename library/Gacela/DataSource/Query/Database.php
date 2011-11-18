@@ -293,22 +293,30 @@ class Database extends Query {
 		$select = array();
 
 		foreach($this->_from as $from) {
-			foreach($from[1] as $item) {
-				if(strpos($item, '.') !== false) {
-					$select[] = $this->_quoteIdentifier($item);	
+			foreach($from[1] as $alias => $field) {
+				if(strpos($field, '.') === false) {
+					$field = $this->_alias($from[0]).'.'.$field;
+				}
+				
+				if(is_int($alias)) {
+					$select[] = $this->_quoteIdentifier($field);
 				} else {
-					$select[] = $this->_quoteIdentifier($this->_alias($from[0]).'.'.$item);
+					$select[] = $this->_quoteIdentifier($field).' AS '.$this->_quoteIdentifier($alias);
 				}
 			}
 		}
 		
 		foreach($this->_join as $join) {
 			if(count($join[2])) {
-				foreach($join[2] as $item) {
-					if(strpos($item, '.') !== false) {
-						$select[] = $this->_quoteIdentifier($item);	
+				foreach($join[2] as $alias => $field) {
+					if(strpos($field, '.') === false) {
+						$field = $this->_alias($join[0]).'.'.$field;
+					}
+					
+					if(is_int($alias)) {
+						$select[] = $this->_quoteIdentifier($field);
 					} else {
-						$select[] = $this->_quoteIdentifier($this->_alias($join[0]).'.'.$item);
+						$select[] = $this->_quoteIdentifier($field).' AS '.$this->_quoteIdentifier($alias);
 					}
 				}
 			}
@@ -353,9 +361,9 @@ class Database extends Query {
 			} else {
 				// Check for OR statements
 				if($where[2]) {
-					$_where .= "OR ({$where[0]})";
+					$_where .= "OR ({$where[0]}) ";
 				} else {
-					$_where .= "AND ({$where[0]})";
+					$_where .= "AND ({$where[0]}) ";
 				}
 			}
 
