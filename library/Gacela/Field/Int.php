@@ -17,7 +17,7 @@ class Int extends Field {
 
 	public function validate($value)
 	{
-		unset($this->errorCode);
+		$this->errorCode = null;
 
 		if(is_null($value)) {
 			if($this->sequenced) {
@@ -31,13 +31,11 @@ class Int extends Field {
 			}
 		}
 
-		if(ctype_digit($value) && strlen($value) <= $this->length) {
+		if(is_int($value) && strlen($value) <= $this->length) {
 			return true;
 		} else {
-			if(!ctype_digit($value)) {
+			if(!is_int($value)) {
 				$this->errorCode = self::TYPE_CODE;
-			} elseif(strlen($value) <= $this->length) {
-				$this->errorCode = self::LENGTH_CODE;
 			}
 
 			return false;
@@ -46,6 +44,13 @@ class Int extends Field {
 
 	public function transform($value, $in = true)
 	{
-		return (int) $value;
+		if(ctype_digit($value))
+		{
+			return (int) $value;
+		}
+		elseif(is_int($value))
+		{
+			return $value;
+		}
 	}
 }
