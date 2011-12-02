@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author noah
  * @date 3/19/11
  * @brief
- * 
+ *
 */
 
 namespace Gacela\Field;
@@ -14,7 +14,7 @@ namespace Gacela\Field;
 class Int extends Field {
 
 	const TYPE_CODE = 'invalid_int';
-	
+
 	public function validate($value)
 	{
 		unset($this->errorCode);
@@ -26,7 +26,7 @@ class Int extends Field {
 				if(!$this->null) {
 					$this->errorCode = self::NULL_CODE;
 				}
-				
+
 				return $this->null;
 			}
 		}
@@ -46,6 +46,6 @@ class Int extends Field {
 
 	public function transform($value, $in = true)
 	{
-		return $value;
+		return (int) $value;
 	}
 }
