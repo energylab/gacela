@@ -19,7 +19,7 @@ class Int extends Field {
 	{
 		unset($this->errorCode);
 
-		if(empty($value)) {
+		if(is_null($value)) {
 			if($this->sequenced) {
 				return true;
 			} else {

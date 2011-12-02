@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date 6/9/11
  * @brief
- * 
+ *
 */
 
 namespace Gacela\Field;
@@ -11,12 +11,12 @@ namespace Gacela\Field;
 class Float extends Field {
 
 	const TYPE_CODE = 'invalid_float';
-	
+
 	public function validate($value)
 	{
 		unset($this->errorCode);
 
-		if(empty($value)) {
+		if(is_null($value)) {
 			if(!$this->null) {
 				$this->errorCode = self::NULL_CODE;
 			}
@@ -39,6 +39,6 @@ class Float extends Field {
 
 	public function transform($value, $in = true)
 	{
-		return $value;
+		return (float) $value;
 	}
 }
