@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author noah
  * @date 3/7/11
  * @brief
- * 
+ *
 */
 
 namespace Gacela;
@@ -20,7 +20,7 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 	public function __construct(\Gacela\Mapper\Mapper $mapper, array $data)
 	{
 		$this->_mapper = $mapper;
-		
+
 		$this->_data = $data;
 
 		$this->_count = count($data);
@@ -49,7 +49,7 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 
 			array_walk($array, function(&$val) use($arg) { $val = $val[$arg]; });
 		}
-		
+
 		return $array;
 	}
 
@@ -70,7 +70,7 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 		if(!isset($this->_data[$this->_pointer])) {
 			return $this->_mapper->find(null);
 		}
-		
+
 		$data = $this->_data[$this->_pointer];
 
 		if(is_object($data)) {
@@ -78,11 +78,6 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 		} elseif(is_integer($data)) {
 			return $this->_mapper->find($data);
 		}
-	}
-
-	public function find($id)
-	{
-		return $this->search($id);
 	}
 
 	public function key()
@@ -148,17 +143,17 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
         return $this;
 	}
 
-	public function search($value)
+	public function search(array $value)
 	{
-		if(!is_array($value)) {
-			$value = array(current($this->_mapper->getPrimaryKey()) => $value);
-		}
-
 		foreach($this->_data as $index => $row) {
 			$rs = true;
 
 			foreach($value as $key => $val) {
-				if($row[$key] != $val) {
+				if(!isset($row->$key)) {
+					throw new \Exception('Property: ('.$key.') does not exist!');
+				}
+
+				if($row->$key != $val) {
 					$rs = false;
 					break;
 				}
