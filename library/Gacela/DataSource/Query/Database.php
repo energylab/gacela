@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  * @author noah
  * @date 2/24/11
  * @brief
@@ -48,7 +48,7 @@ class Database extends Query {
 	protected $_sql = null;
 
 	protected $_update = array();
-	
+
 	protected $_where = array();
 
 	private function _alias($schema)
@@ -64,7 +64,7 @@ class Database extends Query {
 	{
 		foreach($criteria as $stmt) {
 			$op = $stmt[0];
-			
+
 			if($op instanceof \Gacela\Criteria) {
 				$query = new \Gacela\DataSource\Query\Database($this->_schema, $op);
 
@@ -75,25 +75,25 @@ class Database extends Query {
 				// Move along, nothing more to see here
 				continue;
 			}
-			
+
 			$field = $stmt[1];
-			
+
 			if(isset($stmt[2])) {
 				$args = $stmt[2];
 			} else {
 				$args = '';
 			}
-			
+
 			if($op == 'limit') {
 				$this->limit($field, $args);
-				
+
 				// Move on, this one is all done.
 				continue;
 			} elseif($op == 'sort') {
 				$this->orderBy($field, $args);
 			}
 
-			
+
 
 			$bind = array();
 			$toBind = '';
@@ -112,21 +112,21 @@ class Database extends Query {
 						$args = '%'.$args.'%';
 					}
 
-					$bind = array($toBind => $args);					
+					$bind = array($toBind => $args);
 				}
 			}
-			
+
 			if(in_array($op, array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
 				if(empty($bind)) {
 					continue;
 				}
-				
+
 				$this->where("{$field} ".self::$_operators[$op]." {$toBind}", $bind);
 			} elseif(in_array($op, array('in', 'notIn'))) {
 				if(empty($stmt[2])) {
 					continue;
 				}
-				
+
 				$this->in($field, $stmt[2], $op === 'in' ? false : true);
 			} elseif(in_array($op, array('notNull', 'null'))) {
 				$this->where("{$field} ".self::$_operators[$stmt[0]]);
@@ -170,10 +170,10 @@ class Database extends Query {
 		if(!isset($this->_insert[0])) {
 			return '';
 		}
-		
+
 		$name = $this->_insert[0];
 		$data = $this->_insert[1];
-		
+
 		if(!isset($data[0]) || !is_array($data[0])) {
 			$data = array($data);
 		}
@@ -244,7 +244,7 @@ class Database extends Query {
 
 			$_join .= "{$type} JOIN {$join[0]} ON {$on}\n";
 		}
-		
+
 		return $_join;
 	}
 
@@ -259,7 +259,7 @@ class Database extends Query {
 		foreach($this->_orderBy as $field => $dir) {
 			$sql .= $this->_quoteIdentifier($field).' '.$dir.',';
 		}
-		
+
 		$sql = substr($sql, 0, strlen($sql)-1);
 
 		return $sql;
@@ -270,7 +270,7 @@ class Database extends Query {
 		if(is_array($identifier)) {
 			throw new \Exception('Identifier in _quoteIdentifier is an array');
 		}
-		
+
 		if(strpos($identifier, '*') !== false) {
 			return $identifier;
 		} elseif(strpos($identifier, '(') && strpos($identifier, ')')) {
@@ -281,13 +281,13 @@ class Database extends Query {
 			foreach($identifier as $key => $value) {
 				$identifier[$key] = $this->_quoteIdentifier($value);
 			}
-			
+
 			return join('.', $identifier);
 		} else {
 			return "`$identifier`";
 		}
 	}
-	
+
 	private function _select()
 	{
 		$select = array();
@@ -297,7 +297,7 @@ class Database extends Query {
 				if(strpos($field, '.') === false) {
 					$field = $this->_alias($from[0]).'.'.$field;
 				}
-				
+
 				if(is_int($alias)) {
 					$select[] = $this->_quoteIdentifier($field);
 				} else {
@@ -305,14 +305,14 @@ class Database extends Query {
 				}
 			}
 		}
-		
+
 		foreach($this->_join as $join) {
 			if(count($join[2])) {
 				foreach($join[2] as $alias => $field) {
 					if(strpos($field, '.') === false) {
 						$field = $this->_alias($join[0]).'.'.$field;
 					}
-					
+
 					if(is_int($alias)) {
 						$select[] = $this->_quoteIdentifier($field);
 					} else {
@@ -354,7 +354,7 @@ class Database extends Query {
 		if(!count($this->_where)) {
 			return $_where;
 		}
-		
+
 		foreach($this->_where as $where) {
 			if(empty($_where)) {
 				$_where = "({$where[0]})";
@@ -373,10 +373,10 @@ class Database extends Query {
 				}
 			}
 		}
-		
+
 		return $_where."\n";
 	}
-	
+
 	public function __construct($schema, \Gacela\Criteria $criteria = null)
 	{
 		$this->_schema = $schema;
@@ -427,9 +427,9 @@ class Database extends Query {
 		if(!empty($sql) && !empty($where)) {
 			$sql .= 'WHERE ';
 		}
-		
+
 		$sql .= $where;
-		
+
 		$sql .= $this->_group();
 
 		$sql .= $this->_order();
@@ -439,8 +439,15 @@ class Database extends Query {
 		}
 
 		$this->_sql = $sql;
-		
+
 		return array($this->_sql, $this->_binds);
+	}
+
+	public function bind(array $bind)
+	{
+		$this->_binds = array_merge($this->_binds, $bind);
+
+		return $this;
 	}
 
 	/**
@@ -467,7 +474,7 @@ class Database extends Query {
 		} else {
 			$name = $tableName;
 		}
-		
+
 		if(is_null($schema)) {
 			$schema = $this->_schema;
 		}
@@ -498,7 +505,7 @@ class Database extends Query {
 	{
 		return $this;
 	}
-	
+
 	public function in($field, array $values, $not = false, $or = false)
 	{
 		if($not) {
@@ -506,17 +513,17 @@ class Database extends Query {
 		} else {
 			$stmt = self::$_operators['in'];
 		}
-		
+
 		$keys = array_keys($values);
 		array_walk($keys, function(&$val) { $val = ':'.$val; });
-		
+
 		$stmt = $field.' '.$stmt.' ('.join(',', $keys).')';
-		
+
 		$values = array_combine($keys, array_values($values));
-		
+
 		return $this->where($stmt, $values, $or);
 	}
-	
+
 	public function insert($tableName, $data)
 	{
 		$this->_insert = array($tableName, $data);
@@ -584,7 +591,7 @@ class Database extends Query {
 		if($stmt instanceof $this) {
 			$stmt = $stmt->assemble();
 		}
-		
+
 		$this->_where[] = array($stmt, $value, $or);
 
 		return $this;
