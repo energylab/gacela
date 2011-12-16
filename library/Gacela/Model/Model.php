@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date May 12, 2011
  * @brief
- * 
+ *
 */
 
 namespace Gacela\Model;
@@ -49,7 +49,7 @@ abstract class Model implements iModel {
 			$class = explode("\\", get_class($this));
 			$class = end($class);
 		}
-		
+
 		$this->_mapper = \Gacela::instance()->loadMapper($class);
 
 		return $this->_mapper;
@@ -67,20 +67,16 @@ abstract class Model implements iModel {
 		$this->_fields = $this->_mapper()->getFields();
 		$this->_relations = $this->_mapper()->getRelations();
 
-		if(!count($data)) {
-			$this->_data = new \stdClass;
-			
-			foreach($this->_fields as $field => $meta) {
-				$this->_data->$field = $meta->transform($meta->default, false);
-			}
-		} else {
-			$this->_data = new \stdClass;
-			
-			foreach($data as $key => $value) {
-				$this->_data->$key = $this->_fields[$key]->transform($data[$key], false);
-			}
+		$this->_data = new \stdClass;
+
+		foreach($this->_fields as $field => $meta) {
+			$this->_data->$field = $meta->transform($meta->default, false);
 		}
-		
+
+		foreach($data as $key => $value) {
+			$this->_data->$key = $this->_fields[$key]->transform($data[$key], false);
+		}
+
 		$this->init();
 	}
 
@@ -101,7 +97,7 @@ abstract class Model implements iModel {
 				return $this->_data->$key;
 			}
 		}
-		
+
 		throw new \Exception("Specified key ($key) does not exist!");
 	}
 
@@ -112,7 +108,7 @@ abstract class Model implements iModel {
 	public function __isset($key)
 	{
 		$method = '_isset'.ucfirst($key);
-		
+
 		if(method_exists($this, $method)) {
 			return $this->$method($key);
 		} elseif(isset($this->_relations[$key])) {
@@ -130,7 +126,7 @@ abstract class Model implements iModel {
 				}
 			}
 		}
-		
+
 		return isset($this->_data->$key);
 	}
 
@@ -149,7 +145,7 @@ abstract class Model implements iModel {
 			if(isset($this->_data->$key)) {
 				$this->_originalData[$key] = $this->_data->$key;
 			}
-			
+
 			$this->_changed[] = $key;
 
 			$this->_data->$key = $this->_fields[$key]->transform($val, false);
@@ -170,7 +166,7 @@ abstract class Model implements iModel {
 	 * @brief Called at the end of __construct.
 	 * Allows developers to add additional stuff to the setup process without
 	 * having to directly override the constructor.
-	 * 
+	 *
 	 */
 	public function init() {}
 
@@ -188,7 +184,7 @@ abstract class Model implements iModel {
 		if(!$this->validate($data)) {
 			return false;
 		}
-		
+
 		$data = $this->_mapper()->save($this->_changed, $this->_data, $this->_originalData);
 
 		if($data === false) {
@@ -200,7 +196,7 @@ abstract class Model implements iModel {
 
 		$this->_changed = array();
 		$this->_originalData = array();
-		
+
 		return true;
 	}
 
@@ -215,7 +211,7 @@ abstract class Model implements iModel {
 				$this->$key = $val;
 			}
 		}
-		
+
 		foreach((array) $this->_data as $key => $val) {
 			if($this->_fields[$key]->validate($val) === false) {
 				$this->_errors[$key] = $this->_fields[$key]->errorCode;
