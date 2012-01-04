@@ -341,7 +341,7 @@ class Database extends Query {
 		$sql = "UPDATE {$name} SET \n";
 
 		foreach($data as $key => $val) {
-			$sql .= $key." = :".$key.",\n";
+			$sql .= $this->_quoteIdentifier($key)." = :".$key.",\n";
 
 			$this->_binds[':'.$key] = $val;
 		}
