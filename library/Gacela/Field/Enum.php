@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date May 12, 2011
  * @brief
- * 
+ *
 */
 
 namespace Gacela\Field;
@@ -14,13 +14,13 @@ class Enum extends Field{
 
 	public function validate($value)
 	{
-		unset($this->errorCode);
-		
+		$this->errorCode = null;
+
 		if(empty($value)) {
 			if(!$this->null) {
 				$this->errorCode = self::NULL_CODE;
 			}
-			
+
 			return $this->null;
 		}
 

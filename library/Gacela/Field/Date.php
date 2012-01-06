@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author noah
  * @date 3/26/11
  * @brief
- * 
+ *
 */
 
 namespace Gacela\Field;
@@ -12,8 +12,8 @@ class Date extends Field {
 
 	public function validate($value)
 	{
-		unset($this->errorCode);
-		
+		$this->errorCode = null;
+
 		if(empty($value) && $this->null) {
 			return true;
 		}

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author noah
  * @date 3/19/11
  * @brief
- * 
+ *
 */
 
 namespace Gacela\Field;
@@ -12,7 +12,7 @@ class String extends Field {
 
 	public function validate($value)
 	{
-		unset($this->errorCode);
+		$this->errorCode = null;
 
 		if(empty($value)) {
 			if(!$this->null) {
@@ -21,7 +21,7 @@ class String extends Field {
 
 			return $this->null;
 		}
-		
+
 		if(strlen($value) <= $this->length || is_null($this->length)) {
 			return true;
 		} else {

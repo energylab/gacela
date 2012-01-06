@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date May 12, 2011
  * @brief
- * 
+ *
 */
 
 namespace Gacela\Field;
@@ -11,10 +11,10 @@ namespace Gacela\Field;
 class Bool extends Field {
 
 	const TYPE_CODE = 'invalid_bool';
-	
+
 	public function validate($value)
 	{
-		unset($this->errorCode);
+		$this->errorCode = null;
 
 		if(is_null($value)) {
 			if(!$this->null) {
@@ -23,7 +23,7 @@ class Bool extends Field {
 
 			return $this->null;
 		}
-		
+
 		if(!is_bool($value)) {
 			$this->errorCode = self::TYPE_CODE;
 			return false;

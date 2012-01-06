@@ -14,7 +14,7 @@ class Float extends Field {
 
 	public function validate($value)
 	{
-		unset($this->errorCode);
+		$this->errorCode = null;
 
 		if(is_null($value)) {
 			if(!$this->null) {
