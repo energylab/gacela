@@ -178,19 +178,23 @@ class Database extends Query {
 			$data = array($data);
 		}
 
-		$keys = current($data);
+		$tmp = current($data);
 
-		if(is_object($keys)) {
-			$keys = (array) $keys;
+		if(is_object($tmp)) {
+			$tmp = (array) $tmp;
 		}
 
-		$keys = array_keys($keys);
+		$keys = array();
+
+		foreach($tmp as $key => $val) {
+			$keys[] = $this->_quoteIdentifier($key);
+		}
 
 		$sql = "INSERT INTO `{$name}` (".join(',',$keys).") VALUES\n";
 
 		// Dynamically sets up the params to be bound
 		foreach($data as $index => $row) {
-			$tuple = $keys;
+			$tuple = array_keys($tmp);
 
 			array_walk($tuple, function(&$key, $k, $index) {  $key = ':'.$key.$index; }, $index);
 
@@ -337,7 +341,7 @@ class Database extends Query {
 		$sql = "UPDATE {$name} SET \n";
 
 		foreach($data as $key => $val) {
-			$sql .= $key." = :".$key.",\n";
+			$sql .= $this->_quoteIdentifier($key)." = :".$key.",\n";
 
 			$this->_binds[':'.$key] = $val;
 		}
