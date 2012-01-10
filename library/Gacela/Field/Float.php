@@ -29,7 +29,7 @@ class Float extends Field {
 		} else {
 			if(!is_float($value)) {
 				$this->errorCode = self::TYPE_CODE;
-			} elseif(strlen($value) <= $this->length) {
+			} elseif(strlen($value) <= $this->precision) {
 				$this->errorCode = self::LENGTH_CODE;
 			}
 
