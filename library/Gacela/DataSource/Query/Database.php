@@ -100,13 +100,7 @@ class Database extends Query {
 
 			if(isset($args)) {
 				if(!in_array($op, array('in', 'notIn'))) {
-					if(strstr($field, '.')) {
-						$toBind = str_replace('.', '_', $field);
-						$toBind = ":{$toBind}";
-					} else {
-						$toBind = ":{$field}";
-					}
-
+					$toBind = ":".str_replace('.', '_', $field).'_'.$args;
 
 					if(in_array($op, array('like', 'notLike'))) {
 						$args = '%'.$args.'%';
@@ -518,8 +512,8 @@ class Database extends Query {
 			$stmt = self::$_operators['in'];
 		}
 
-		$keys = array_keys($values);
-		array_walk($keys, function(&$val) { $val = ':'.$val; });
+		$keys = $values;
+		array_walk($keys, function(&$val, $key) use($field) { $val = ':'.str_replace('.', '_', $field).'_'.$val; });
 
 		$stmt = $field.' '.$stmt.' ('.join(',', $keys).')';
 
