@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date May 7, 2011
  * @brief
@@ -26,7 +26,7 @@ class Database extends DataSource {
 		foreach($dependents as $relation) {
 			$this->_buildJoin($relation, $query, 'left');
 		}
-		
+
 		return $query;
 	}
 
@@ -103,7 +103,7 @@ class Database extends DataSource {
 	 * @param Resource\Resource $resource
 	 * @param array $inherits
 	 * @param array $dependents
-	 * @return 
+	 * @return
 	 */
 	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
 	{
@@ -145,14 +145,14 @@ class Database extends DataSource {
 	 * @param array $data
 	 * @param array $inherits
 	 * @param array $dependents
-	 * @return 
+	 * @return
 	 */
 	public function findAllByAssociation(\Gacela\DataSource\Resource $resource, array $relation, array $data, array $inherits, array $dependents)
 	{
 		$query = $this->getQuery();
 
 		$this->_buildJoin($relation, $query);
-		
+
 		foreach($data as $primary => $value) {
 			$query->where(
 				$relation['meta']->refTable
@@ -163,13 +163,13 @@ class Database extends DataSource {
 				array(':'.$primary => $value)
 			);
 		}
-		
+
 		return $this->query(
 					$relation['resource'],
 					$this->_buildFinder($query, $resource, $inherits, $dependents)
 				);
 	}
-	
+
 	/**
 	 * @see \Gacela\DataSource\iDataSource::getQuery()
 	 */
@@ -183,25 +183,36 @@ class Database extends DataSource {
 	 */
 	public function insert($name, array $data, $transaction = null)
 	{
-		list($query, $binds) = $this->getQuery()->insert($name, $data)->assemble();
-		
-		$query = $this->_conn->prepare($query);
-		
+		list($sql, $binds) = $this->getQuery()->insert($name, $data)->assemble();
+
+		$query = $this->_conn->prepare($sql);
+
 		try {
 			if($query->execute($binds)) {
 				if($query->rowCount() == 0) {
 					return false;
 				}
-				
+
 				$this->_incrementCache($name);
-				
+
 				return $this->_conn->lastInsertId();
 			} else {
 				if($this->_conn->inTransaction()) {
 					$this->rollbackTransaction();
 				}
 
-				throw new \Exception('Insert failed with errors: <pre>'.print_r($query->errorInfo(), true).'</pre>');
+				throw new \Exception
+				(
+					'Insert to '.
+					$name .
+					' failed with errors: <pre>'.
+					print_r($query->errorInfo(), true) .
+					'</pre> With SQL: <pre>'.
+					$sql.
+					'</pre> And Data: </pre>'.
+					print_r($binds, true).
+					'</pre>'
+				);
 			}
 		} catch (PDOException $e) {
 			if($this->_conn->inTransaction()) {
@@ -229,18 +240,18 @@ class Database extends DataSource {
 		} else {
 			$this->_lastQuery = array('query' => $query, 'args' => $args);
 		}
-		
+
 		$key = hash('whirlpool', serialize(array($this->_lastQuery['query'], $this->_lastQuery['args'])));
-		
+
 		$cached = $this->_cache($resource->getName(), $key);
 
 		// If the query is cached, return the cached data
 		if($cached !== false AND !is_null($cached)) {
 			return $cached;
 		}
-		
+
 		$stmt = $this->_conn->prepare($this->_lastQuery['query']);
-		
+
 		if($stmt->execute($this->_lastQuery['args']) === true) {
 			$return = $stmt->fetchAll(\PDO::FETCH_OBJ);
 			$this->_cache($resource->getName(), $key, $return);
@@ -281,7 +292,7 @@ class Database extends DataSource {
 				if($query->rowCount() == 0) {
 					return false;
 				}
-				
+
 				$this->_incrementCache($name);
 				return true;
 			} else {
