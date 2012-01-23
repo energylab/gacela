@@ -100,7 +100,7 @@ class Database extends Query {
 
 			if(isset($args)) {
 				if(!in_array($op, array('in', 'notIn'))) {
-					$toBind = ":".str_replace('.', '_', $field).'_'.$args;
+					$toBind = preg_replace("/[-\. ]/", '_', ":".$field.'_'.$args);
 
 					if(in_array($op, array('like', 'notLike'))) {
 						$args = '%'.$args.'%';
