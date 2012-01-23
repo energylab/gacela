@@ -115,7 +115,7 @@ class Database extends Query {
 					continue;
 				}
 
-				$this->where("{$field} ".self::$_operators[$op]." {$toBind}", $bind);
+				$this->where($this->_quoteIdentifier($field).' '.self::$_operators[$op]." {$toBind}", $bind);
 			} elseif(in_array($op, array('in', 'notIn'))) {
 				if(empty($stmt[2])) {
 					continue;
@@ -366,9 +366,7 @@ class Database extends Query {
 			}
 
 			if(count($where[1])) {
-				foreach($where[1] as $param => $val) {
-					$this->_binds[$param] = $val;
-				}
+				$this->bind($where[1]);
 			}
 		}
 
@@ -441,9 +439,11 @@ class Database extends Query {
 		return array($this->_sql, $this->_binds);
 	}
 
-	public function bind(array $bind)
+	public function bind(array $binds)
 	{
-		$this->_binds = array_merge($this->_binds, $bind);
+		foreach($binds as $key => $val) {
+			$this->_binds[$key] = $this->_cast($val);
+		}
 
 		return $this;
 	}
