@@ -258,7 +258,7 @@ class Database extends Query {
 			$sql .= $this->_quoteIdentifier($field).' '.$dir.',';
 		}
 
-		$sql = substr($sql, 0, strlen($sql)-1);
+		$sql = substr($sql, 0, strlen($sql)-1)."\n";
 
 		return $sql;
 	}
