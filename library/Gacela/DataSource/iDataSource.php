@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date May 7, 2011
  * @brief
- * 
+ *
 */
 
 namespace Gacela\DataSource;
@@ -26,10 +26,13 @@ interface iDataSource {
 
 	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents);
 
+	/**
+	 *
+	 */
 	public function findAll(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents);
 
 	public function findAllByAssociation(\Gacela\DataSource\Resource $resource, array $relation, array $data, array $inherits, array $dependents);
-	
+
 	/**
 	 * @abstract
 	 * @param \Gacela\Criteria $criteria
@@ -58,7 +61,7 @@ interface iDataSource {
 	 * @abstract
 	 * @throws \Exception
 	 * @param  string|Query $query A valid representation of a query for the DataSource
-	 * @return array 
+	 * @return array
 	 */
 	public function query(\Gacela\DataSource\Resource $resource, $query);
 
@@ -68,7 +71,7 @@ interface iDataSource {
 	 * @param  array $data
 	 * @param \Gacela\Criteria $where
 	 * @param string - 'begin', 'commit'
-	 * @return bool 
+	 * @return bool
 	 */
 	public function update($name, $data, \Gacela\DataSource\Query\Query $where);
 }

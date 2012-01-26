@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date April 13, 2010
  *
@@ -43,7 +43,7 @@ abstract class Mapper implements iMapper {
 	/**
 	 * @brief Contains the primary key fields for the mapper.
 	 * By default the primary key loads from Resource::getPrimaryKey()
-	 * 
+	 *
 	 */
 	protected $_primaryKey = array();
 
@@ -116,7 +116,7 @@ abstract class Mapper implements iMapper {
 	{
 		$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $data);
 		$fields = $resource->getFields();
-		
+
 		if(is_null($primary)) {
 			return false;
 		} elseif($fields[key($primary)]->sequenced === false) {
@@ -128,7 +128,7 @@ abstract class Mapper implements iMapper {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 
@@ -235,14 +235,14 @@ abstract class Mapper implements iMapper {
 		$this->_dependents = array();
 
 		$fields = $this->getFields();
-		
+
 		foreach($_dependents as $key => $name) {
 			if(is_array($name)) {
 				$dependent = $name;
 				$name = $key;
 
 				$dependent = $this->_getRelationArray($dependent);
-				
+
 			} else {
 				$dependent = $this->_foreignKeys[$name];
 			}
@@ -251,7 +251,7 @@ abstract class Mapper implements iMapper {
 				unset($this->_foreignKeys[$name]);
 			}
 
-			
+
 			/**
 			 * If the keyColumn of the primary resource is nullable, then all fields in the dependent relationship need to
 			 * appear nullable.
@@ -276,7 +276,7 @@ abstract class Mapper implements iMapper {
 
 			$this->_dependents[$name] = $dependent;
 		}
-		
+
 		return $this;
 	}
 
@@ -298,7 +298,7 @@ abstract class Mapper implements iMapper {
 			if(is_array($meta) && isset($meta['resource'])) {
 				continue;
 			}
-			
+
 			$meta = (object) $meta;
 
 			$resource = $this->_source()->loadResource($meta->refTable);
@@ -319,12 +319,12 @@ abstract class Mapper implements iMapper {
 
 				if($this->_resource->getPrimaryKey() === $stuff['resource']->getPrimaryKey() && array_keys($stuff['meta']->keys) === $stuff['resource']->getPrimaryKey()) {
 					$this->_inherits[$name] = $stuff;
-					
+
 					$relations = $stuff['resource']->getRelations();
 
 					unset($relations[\Gacela\Inflector::singularize($this->_resourceName)]);
 					unset($this->_foreignKeys[$name]);
-					
+
 					$this->_initForeignKeys($relations);
 				}
 			}
@@ -343,7 +343,7 @@ abstract class Mapper implements iMapper {
 				}
 			}
 		}
-		
+
 		return $this;
 	}
 
@@ -381,12 +381,12 @@ abstract class Mapper implements iMapper {
 			$class = explode('\\', get_class($this));
 			$class = end($class);
 			$class[0] = strtolower($class[0]);
-			
+
 			$this->_resourceName = \Gacela\Inflector::pluralize($class);
 		}
 
 		$this->_resource = $this->_source()->loadResource($this->_resourceName);
-				
+
 		return $this;
 	}
 
@@ -415,27 +415,27 @@ abstract class Mapper implements iMapper {
 			if(!isset($data->$k) || is_null($data->$k)) {
 				continue;
 			}
-			
+
 			$primary[$k] = $data->$k;
 		}
-		
+
 		if(!count($primary) || count($primary) != count($primaryKey)) {
 			$primary = null;
 		}
-		
+
 		return $primary;
 	}
 
 	protected function _saveResource($resource, $changed, $new, $old)
 	{
 		$data = $this->_dataToSave($resource, $changed, $new);
-		
+
 		if(empty($data)) {
 			return array($changed, $new);
 		}
 
 		$test = array_merge((array) $new, $old);
-		
+
 		if($this->_doUpdate($resource, $test) === false) {
 			$rs = $this->_source()->insert($resource->getName(), $data);
 
@@ -444,14 +444,14 @@ abstract class Mapper implements iMapper {
 			}
 
 			$fields = $resource->getFields();
-			
+
 			if(count($resource->getPrimaryKey()) == 1 && $fields[current($resource->getPrimaryKey())]->sequenced === true) {
 				$new->{current($resource->getPrimaryKey())} = $rs;
 				$changed[] = current($resource->getPrimaryKey());
 			}
 		} else {
 			$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $test);
-			
+
 			if(is_null($primary)) {
 				throw new \Exception('Oops! primary key is null');
 			}
@@ -464,7 +464,7 @@ abstract class Mapper implements iMapper {
 
 			$this->_source()->update($resource->getName(), $data, $this->_source()->getQuery($where));
 		}
-		
+
 		return array($changed, $new);
 	}
 
@@ -493,7 +493,7 @@ abstract class Mapper implements iMapper {
 			$model = $association;
 			$association = array($model);
 		}
-		
+
 		$name = explode('\\', get_class($model));
 		$name = end($name);
 		$name = \Gacela\Inflector::pluralize($name);
@@ -533,13 +533,24 @@ abstract class Mapper implements iMapper {
 					}
 				}
 			}
-			
+
 			$toInsert[] = $array;
 		}
-		
+
 		$rs = $this->_source()->insert($assoc['meta']->refTable, $toInsert);
 
 		return $rs;
+	}
+
+	public function count(\Gacela\Criteria $criteria = null)
+	{
+		$query = $this->_source()->getQuery($criteria);
+
+		$query->from($this->_resourceName, array('count' => 'COUNT(*)'));
+
+		return current($this->_source()
+					->findAll($query, $this->_resource, $this->_inherits, $this->_dependents))
+					->count;
 	}
 
 	public function debug($return = true)
@@ -569,7 +580,7 @@ abstract class Mapper implements iMapper {
 	public function delete(\stdClass $data)
 	{
 		$this->_source()->beginTransaction();
-		
+
 		if(!$this->_deleteResource($this->_resource, $data)) {
 			$this->_source()->rollbackTransaction();
 			return false;
@@ -588,9 +599,9 @@ abstract class Mapper implements iMapper {
 				return false;
 			}
 		}
-		
+
 		$this->_source()->commitTransaction();
-		
+
 		return true;
 	}
 
@@ -611,15 +622,15 @@ abstract class Mapper implements iMapper {
 		}
 
 		$primary = $this->_primaryKey($this->_primaryKey, $id);
-		
+
 		if(!is_null($primary)) {
 			$data = current($this->_source()->find($primary, $this->_resource, $this->_inherits, $this->_dependents));
 		}
-		
+
 		if(!isset($data) || empty($data)) {
 			$data = new \stdClass();
 		}
-		
+
 		return $this->_load($data);
 	}
 
@@ -684,7 +695,7 @@ abstract class Mapper implements iMapper {
 		foreach($relation['meta']->keys as $key => $ref) {
 			$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
 		}
-		
+
 		$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
 
 		if ($relation['meta']->type == 'belongsTo') {
@@ -707,11 +718,11 @@ abstract class Mapper implements iMapper {
 		foreach($this->_inherits as $stuff) {
 			$array = array_merge($array, $stuff['resource']->getFields());
 		}
-		
+
 		foreach($this->_dependents as $dependent) {
 			$array = array_merge($dependent['resource']->getFields(), $array);
 		}
-		
+
 		return $array;
 	}
 
@@ -767,15 +778,15 @@ abstract class Mapper implements iMapper {
 		$name = end($name);
 		$name = \Gacela\Inflector::pluralize($name);
 		$name[0] = strtolower($name[0]);
-		
+
 		if(!isset($this->_associations[$name])) {
 			return false;
 		}
 
 		$assoc = $this->_associations[$name];
-		
+
 		$main = new \Gacela\Criteria;
-		
+
 		$me = new \Gacela\Criteria;
 
 		foreach($assoc['meta']->keys as $key => $ref) {
@@ -809,7 +820,7 @@ abstract class Mapper implements iMapper {
 	public function save(array $changed, \stdClass $new, array $old)
 	{
 		$this->_source()->beginTransaction();
-		
+
 		foreach($this->_dependents as $dependent) {
 
 			// This all looks like a nasty hack. Here's to hoping to some more brilliant minds to provide input. -- ndg
@@ -851,16 +862,16 @@ abstract class Mapper implements iMapper {
 				list($changed, $new) = $rs;
 			}
 		}
-		
+
 		$rs = $this->_saveResource($this->_resource, $changed, $new, $old);
-		
+
 		if($rs === false) {
 			$this->_source()->rollbackTransaction();
 			return false;
 		}
-		
+
 		$this->_source()->commitTransaction();
-		
+
 		return (object) $new;
 	}
 }

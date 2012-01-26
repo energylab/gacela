@@ -17,28 +17,37 @@ class Database extends DataSource {
 
 	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
-		$query->from($resource->getName());
+		$include_columns = false;
+
+		if(count($query->from) == 0) {
+			$query->from($resource->getName());
+
+			$include_columns = true;
+		}
 
 		foreach($inherits as $relation) {
-			$this->_buildJoin($relation, $query);
+			$this->_buildJoin($relation, $query, 'inner', $include_columns);
 		}
 
 		foreach($dependents as $relation) {
-			$this->_buildJoin($relation, $query, 'left');
+			$this->_buildJoin($relation, $query, 'left', $include_columns);
 		}
 
 		return $query;
 	}
 
-	protected function _buildJoin(array $relation, &$query, $type = null)
+	protected function _buildJoin(array $relation, &$query, $type, $include_columns)
 	{
-		$on = 	array();
+		$on = array();
+		$cols = array();
 
 		foreach($relation['meta']->keys as $key => $ref) {
 			$on[$relation['meta']->keyTable.'.'.$key] = $relation['meta']->refTable.'.'.$ref;
 		}
 
-		$cols = array_diff(array_keys($relation['resource']->getFields()), $relation['resource']->getPrimaryKey());
+		if($include_columns) {
+			$cols = array_diff(array_keys($relation['resource']->getFields()), $relation['resource']->getPrimaryKey());
+		}
 
 		$query->join($relation['meta']->refTable, $on, $cols, $type);
 	}
@@ -128,15 +137,9 @@ class Database extends DataSource {
 	 */
 	public function findAll(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
-		return $this->query(
-					$resource,
-					$this->_buildFinder(
-						$query,
-						$resource,
-						$inherits,
-						$dependents
-					)
-				);
+		$query = $this->_buildFinder($query, $resource, $inherits, $dependents);
+
+		return $this->query($resource,$query);
 	}
 
 	/**

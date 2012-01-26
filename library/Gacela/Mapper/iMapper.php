@@ -12,7 +12,9 @@ namespace Gacela\Mapper;
 interface iMapper {
 
 	public function init();
-	
+
+	public function count(\Gacela\Criteria $criteria = null);
+
 	public function find($id);
 
 	public function findAll(\Gacela\Criteria $criteria = null);

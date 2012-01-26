@@ -154,9 +154,11 @@ class Database extends Query {
 			$sql .= $this->_quoteIdentifier($field).',';
 		}
 
-		$sql = substr($sql, 0, strlen($sql)-1);
+		if(strlen($sql) > 0) {
+			$sql .= "\n";
+		}
 
-		return $sql."\n";
+		return $sql;
 	}
 
 	private function _insert()
@@ -258,7 +260,11 @@ class Database extends Query {
 			$sql .= $this->_quoteIdentifier($field).' '.$dir.',';
 		}
 
-		$sql = substr($sql, 0, strlen($sql)-1)."\n";
+		$sql = substr($sql, 0, strlen($sql)-1);
+
+		if(strlen($sql) > 0) {
+			$sql .= "\n";
+		}
 
 		return $sql;
 	}
@@ -292,7 +298,7 @@ class Database extends Query {
 
 		foreach($this->_from as $from) {
 			foreach($from[1] as $alias => $field) {
-				if(strpos($field, '.') === false) {
+				if(preg_match('#[\.|\(\)]#', $field) === 0) {
 					$field = $this->_alias($from[0]).'.'.$field;
 				}
 
@@ -307,7 +313,7 @@ class Database extends Query {
 		foreach($this->_join as $join) {
 			if(count($join[2])) {
 				foreach($join[2] as $alias => $field) {
-					if(strpos($field, '.') === false) {
+					if(preg_match('#[\.|\(\)]#', $field) === 0) {
 						$field = $this->_alias($join[0]).'.'.$field;
 					}
 
@@ -355,13 +361,13 @@ class Database extends Query {
 
 		foreach($this->_where as $where) {
 			if(empty($_where)) {
-				$_where = "({$where[0]})";
+				$_where = "({$where[0]})\n";
 			} else {
 				// Check for OR statements
 				if($where[2]) {
-					$_where .= " OR ({$where[0]}) ";
+					$_where .= "OR ({$where[0]})\n";
 				} else {
-					$_where .= " AND ({$where[0]}) ";
+					$_where .= "AND ({$where[0]})\n";
 				}
 			}
 
@@ -370,7 +376,7 @@ class Database extends Query {
 			}
 		}
 
-		return $_where."\n";
+		return $_where;
 	}
 
 	public function __construct($schema, \Gacela\Criteria $criteria = null)
@@ -380,6 +386,13 @@ class Database extends Query {
 		if(!is_null($criteria)) {
 			$this->_buildFromCriteria($criteria);
 		}
+	}
+
+	public function __get($val)
+	{
+		$val = '_'.$val;
+
+		return $this->$val;
 	}
 
 	/**

@@ -187,6 +187,15 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
         return $this;
     }
 
+	public function slice($offset, $length = null)
+	{
+		$data = array_slice($this->_data, $offset, $length);
+
+		$col = get_class($this);
+		
+		return new $col($this->_mapper, $data);
+	}
+
 	public function valid()
 	{
 		return $this->_pointer < $this->_count;
