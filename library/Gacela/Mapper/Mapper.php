@@ -66,6 +66,13 @@ abstract class Mapper implements iMapper {
 	 */
 	protected $_source = 'db';
 
+	protected function _collection(array $data)
+	{
+		$coll = $this->_singleton()->autoload('\\Collection');
+
+		return new $coll($this,$data);
+	}
+
 	/**
 	 * @param \Gacela\DataSource\Resource $resource
 	 * @param $changed
@@ -548,9 +555,10 @@ abstract class Mapper implements iMapper {
 
 		$query->from($this->_resourceName, array('count' => 'COUNT(*)'));
 
-		return current($this->_source()
-					->findAll($query, $this->_resource, $this->_inherits, $this->_dependents))
-					->count;
+		return	current(
+					$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
+				)
+				->count;
 	}
 
 	public function debug($return = true)
@@ -641,12 +649,15 @@ abstract class Mapper implements iMapper {
 	 */
 	public function findAll(\Gacela\Criteria $criteria = null)
 	{
-		$coll = $this->_singleton()->autoload('\\Collection');
-
-		return new 	$coll(
-						$this,
-						$this->_source()->findAll($this->_source()->getQuery($criteria), $this->_resource, $this->_inherits, $this->_dependents)
-					);
+		return $this->_collection(
+					$this->_source()
+						->findAll(
+							$this->_source()->getQuery($criteria),
+							$this->_resource,
+							$this->_inherits,
+							$this->_dependents
+						)
+				);
 	}
 
 	/**
