@@ -154,7 +154,7 @@ class Database extends DataSource {
 	{
 		$query = $this->getQuery();
 
-		$this->_buildJoin($relation, $query);
+		$this->_buildJoin($relation, $query, 'inner', true);
 
 		foreach($data as $primary => $value) {
 			$query->where(
