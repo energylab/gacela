@@ -150,8 +150,15 @@ class Database extends Query {
 
 		$sql = 'GROUP BY ';
 
+		$i=0;
 		foreach($this->_groupBy as $field) {
-			$sql .= $this->_quoteIdentifier($field).',';
+			if ($i) {
+				$sql .= ',';
+			}
+
+			$sql .= $this->_quoteIdentifier($field);
+
+			$i++;
 		}
 
 		if(strlen($sql) > 0) {
