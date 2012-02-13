@@ -534,9 +534,11 @@ abstract class Mapper implements iMapper {
 			$array = $me;
 
 			foreach($assoc['resource']->getRelations() as $relation) {
-				foreach($relation->keys as $key => $ref) {
-					if(array_search($key, $assoc['meta']->keys) === false) {
-						$array[$key] = $model->$ref;
+				if($relation->type == 'belongsTo') {
+					foreach($relation->keys as $key => $ref) {
+						if(array_search($key, $assoc['meta']->keys) === false) {
+							$array[$key] = $model->$ref;
+						}
 					}
 				}
 			}
@@ -808,9 +810,11 @@ abstract class Mapper implements iMapper {
 			$sub = $me;
 
 			foreach($assoc['resource']->getRelations() as $relation) {
-				foreach($relation->keys as $key => $ref) {
-					if(array_search($key, $assoc['meta']->keys) === false) {
-						$sub->equals($key, $model->$ref);
+				if($relation->type == 'belongsTo') {
+					foreach($relation->keys as $key => $ref) {
+						if(array_search($key, $assoc['meta']->keys) === false) {
+							$sub->equals($key, $model->$ref);
+						}
 					}
 				}
 			}
