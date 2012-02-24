@@ -12,11 +12,6 @@ abstract class Query {
 
 	protected function _cast($value)
 	{
-		if(ctype_digit($value))
-		{
-			return (int) $value;
-		}
-
 		return $value;
 	}
 
