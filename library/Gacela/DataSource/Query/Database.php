@@ -69,7 +69,7 @@ class Database extends Query {
 				$query = new \Gacela\DataSource\Query\Database($this->_schema, $op);
 
 				$query = $query->assemble();
-
+				
 				$this->where($query[0], $query[1], $stmt[1]);
 
 				// Move along, nothing more to see here
@@ -77,6 +77,7 @@ class Database extends Query {
 			}
 
 			$field = $stmt[1];
+			$or = isset($stmt[3]) ? $stmt[3] : false;
 
 			if(isset($stmt[2])) {
 				$args = $stmt[2];
@@ -102,7 +103,7 @@ class Database extends Query {
 				if(!in_array($op, array('in', 'notIn'))) {
 					$toBind = preg_replace("/[-\.: ]/", '_', $field.'_'.$args);
 					$toBind = ':'.$toBind;
-					
+
 					if(in_array($op, array('like', 'notLike'))) {
 						$args = '%'.$args.'%';
 					}
@@ -116,15 +117,15 @@ class Database extends Query {
 					continue;
 				}
 
-				$this->where($this->_quoteIdentifier($field).' '.self::$_operators[$op]." {$toBind}", $bind);
+				$this->where($this->_quoteIdentifier($field).' '.self::$_operators[$op]." {$toBind}", $bind, $or);
 			} elseif(in_array($op, array('in', 'notIn'))) {
 				if(empty($stmt[2])) {
 					continue;
 				}
 
-				$this->in($field, $stmt[2], $op === 'in' ? false : true);
+				$this->in($field, $stmt[2], $op === 'in' ? false : true, $or);
 			} elseif(in_array($op, array('notNull', 'null'))) {
-				$this->where("{$field} ".self::$_operators[$stmt[0]]);
+				$this->where("{$field} ".self::$_operators[$stmt[0]], array(), $or);
 			}
 		}
 	}
