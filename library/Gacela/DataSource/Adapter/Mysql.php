@@ -82,8 +82,8 @@ class Mysql extends Adapter implements iAdapter {
 				$meta['type'] = 'float';
 
 				if(isset($matches[1])) {
-					$meta['precision'] = $matches[2];
-					$meta['scale'] = $matches[3];
+					$meta['precision'] = $matches[1];
+					$meta['scale'] = $matches[2];
 				} else {
 					$meta['precision'] = 53;
 					$meta['scale'] = 15;
@@ -199,6 +199,8 @@ class Mysql extends Adapter implements iAdapter {
 
 	private function _field($field)
 	{
-		return "\\Gacela\\Field\\".ucfirst($field);
+		$class = \Gacela::instance()->autoload("\\Field\\".ucfirst($field));
+
+		return $class;
 	}
 }
