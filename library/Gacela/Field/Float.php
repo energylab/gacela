@@ -12,7 +12,7 @@ class Float extends Field {
 
 	const TYPE_CODE = 'invalid_float';
 
-	public function validate($value)
+	public static function validate($meta, $value)
 	{
 		$this->errorCode = null;
 
@@ -37,7 +37,7 @@ class Float extends Field {
 		}
 	}
 
-	public function transform($value, $in = true)
+	public static function transform($meta, $value, $in = true)
 	{
 		return (float) $value;
 	}

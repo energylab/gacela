@@ -10,27 +10,24 @@ namespace Gacela\Field;
 
 class String extends Field {
 
-	public function validate($value)
+	public static function validate($meta, $value)
 	{
-		$this->errorCode = null;
-
 		if(empty($value)) {
-			if(!$this->null) {
-				$this->errorCode = self::NULL_CODE;
+			if(!$meta->null) {
+				return self::NULL_CODE;
 			}
 
-			return $this->null;
+			return $meta->null;
 		}
 
-		if(strlen($value) <= $this->length || is_null($this->length)) {
+		if(strlen($value) <= $meta->length || is_null($meta->length)) {
 			return true;
 		} else {
-			$this->errorCode = self::LENGTH_CODE;
-			return false;
+			return self::LENGTH_CODE;
 		}
 	}
 
-	public function transform($value, $in = true)
+	public static function transform($meta, $value, $in = true)
 	{
 		return $value;
 	}

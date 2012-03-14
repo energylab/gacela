@@ -1,10 +1,10 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date May 7, 2011
  * @package Gacela
  * @brief
- * 
+ *
 */
 
 class Gacela {
@@ -15,10 +15,12 @@ class Gacela {
 
 	protected $_cached = array();
 
-	protected $_cacheEnabled = false;
+	protected $_cacheData = false;
+
+	protected $_cacheSchema = false;
 
 	protected $_config = null;
-	
+
 	protected $_namespaces = array();
 
 	protected $_sources = array();
@@ -89,7 +91,7 @@ class Gacela {
 
                 if($self->_findFile($file)) {
                 	$class = $ns.$class;
-					
+
                 	if(class_exists($class)) {
                 		return $class;
                 	} else {
@@ -99,7 +101,7 @@ class Gacela {
                 }
             }
         }
-        
+
         return false;
     }
 
@@ -110,7 +112,7 @@ class Gacela {
 	 */
 	public function cache($key, $object = null, $replace = false)
 	{
-		if(!$this->_cacheEnabled) {
+		if(!$this->_cacheData AND ($this->_cacheSchema === false OR (stristr($key, 'resource_') === false AND stristr($key, 'mapper_') === false))) {
 			if(is_null($object)) {
 				if(isset($this->_cached[$key])) {
 					return $this->_cached[$key];
@@ -161,7 +163,7 @@ class Gacela {
 	 * @param  Memcache|array $servers
 	 * @return Gacela
 	 */
-	public function enableCache($servers)
+	public function enableCache($servers, $schema = true, $data = true)
 	{
 		if($servers instanceof Memcache) {
 			$this->_cache = $servers;
@@ -173,7 +175,8 @@ class Gacela {
 			}
 		}
 
-		$this->_cacheEnabled = true;
+		$this->_cacheSchema = $schema;
+		$this->_cacheData = $data;
 
 		return $this;
 	}
@@ -194,7 +197,7 @@ class Gacela {
 
 	public function incrementCache($key)
 	{
-		if(!$this->cacheEnabled()) {
+		if(!$this->_cacheData) {
 			$this->_cached[$key]++;
 		} else {
 			$this->_cache->increment($key);
@@ -250,11 +253,6 @@ class Gacela {
 		return $cached;
 	}
 
-	public function cacheEnabled()
-	{
-		return $this->_cacheEnabled;
-	}
-
 	/**
 	 * @param  string $name Name by which the DataSource can later be referenced in Mappers and when directly accessing the registered DataSource.
 	 * @param  string $type Type of DataSource (database, *service, *xml ) *coming soon
@@ -267,9 +265,9 @@ class Gacela {
 		$config['type'] = $type;
 
 		$class = self::instance()->autoload("\\DataSource\\".ucfirst($type));
-		
+
 		$this->_sources[$name] = new $class($config);
-		
+
 		return $this;
 	}
 
@@ -283,7 +281,7 @@ class Gacela {
 		if(substr($path, -1, 1) != '/') {
 			$path .= '/';
 		}
-		
+
 		$this->_namespaces[$ns] = $path;
 
 		return $this;

@@ -15,34 +15,32 @@ class Int extends Field {
 
 	const TYPE_CODE = 'invalid_int';
 
-	public function validate($value)
+	public static function validate($meta, $value)
 	{
-		$this->errorCode = null;
-
 		if(is_null($value)) {
-			if($this->sequenced) {
+			if($meta->sequenced) {
 				return true;
 			} else {
-				if(!$this->null) {
-					$this->errorCode = self::NULL_CODE;
+				if(!$meta->null) {
+					return self::NULL_CODE;
 				}
 
-				return $this->null;
+				return $meta->null;
 			}
 		}
 
-		if(is_int($value) && strlen($value) <= $this->length) {
+		if(is_int($value) && strlen($value) <= $meta->length) {
 			return true;
 		} else {
 			if(!is_int($value)) {
-				$this->errorCode = self::TYPE_CODE;
+				return self::TYPE_CODE;
 			}
 
 			return false;
 		}
 	}
 
-	public function transform($value, $in = true)
+	public static function transform($meta, $value, $in = true)
 	{
 		if(ctype_digit($value))
 		{

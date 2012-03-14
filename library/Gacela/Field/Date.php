@@ -10,30 +10,27 @@ namespace Gacela\Field;
 
 class Date extends Field {
 
-	public function validate($value)
+	public static function validate($meta, $value)
 	{
-		$this->errorCode = null;
-
-		if(empty($value) && $this->null) {
+		if(empty($value) && $meta->null) {
 			return true;
 		}
 
-		if(empty($value) && !$this->null) {
-			$this->errorCode = self::NULL_CODE;
-			return false;
+		if(empty($value) && !$meta->null) {
+			return self::NULL_CODE;
 		}
 
 		return true;
 	}
 
-	public function transform($value, $in = true)
+	public static function transform($meta, $value, $in = true)
 	{
 		if($in && ctype_digit($value)) {
 			return date('c', $value);
 		} elseif($in && !ctype_digit($value)) {
 			return $value;
 		} elseif(!$in && !ctype_digit($value)) {
-			if(stripos($value, 'current') !== false || (stripos($this->default, 'current') !== false && empty($value))) {
+			if(stripos($value, 'current') !== false || (stripos($meta->default, 'current') !== false && empty($value))) {
 				return time();
 			}
 

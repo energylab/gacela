@@ -12,27 +12,24 @@ class Enum extends Field{
 
 	const VALUE_CODE = 'invalid_value';
 
-	public function validate($value)
+	public static function validate($meta, $value)
 	{
-		$this->errorCode = null;
-
 		if(empty($value)) {
-			if(!$this->null) {
-				$this->errorCode = self::NULL_CODE;
+			if(!$meta->null) {
+				return self::NULL_CODE;
 			}
 
-			return $this->null;
+			return $meta->null;
 		}
 
-		if(in_array($value, $this->values)) {
+		if(in_array($value, $meta->values)) {
 			return true;
 		} else {
-			$this->errorCode = self::VALUE_CODE;
-			return false;
+			return  self::VALUE_CODE;
 		}
 	}
 
-	public function transform($value, $in = true)
+	public static function transform($meta, $value, $in = true)
 	{
 		return $value;
 	}

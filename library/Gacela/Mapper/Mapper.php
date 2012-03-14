@@ -277,7 +277,7 @@ abstract class Mapper implements iMapper {
 						continue;
 					}
 
-					$val->override('null', true);
+					$val->null = true;
 				}
 			}
 

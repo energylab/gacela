@@ -1,66 +1,52 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date May 12, 2011
  * @brief
- * 
+ *
 */
 
 namespace Gacela\Field;
 
-abstract class Field {
+class Field {
 
 	const NULL_CODE = 'null';
 	const LENGTH_CODE = 'invalid_length';
 
-	public $errorCode = null;
-
-	protected $_meta = array();
-
-	public function __construct(array $meta)
-	{
-		$this->_meta = array_merge(
-							array(
-							'length' => null,
-							'precision' => null,
-							'scale' => null,
-							'unsigned' => false,
-							'sequenced' => false,
-							'primary' => false,
-							'default' => null,
-							'values' => array(),
-							'null' => false
-						),
-						$meta
-					);
-	}
-
-	public function __get($key)
-	{
-		if(!array_key_exists($key, $this->_meta)) {
-			throw new \Exception("Specified key ({$key}) does not exist in field metadata!");
-		}
-
-		return $this->_meta[$key];
-	}
-
-	public function override($key, $val)
-	{
-		$this->_meta[$key] = $val;
-	}
-
 	/**
-	 * @abstract
+	 * @static
 	 * @param  $value
 	 * @return bool
 	 */
-	abstract public function validate($value);
+	public static function validate($meta, $value)
+	{
+		$class = self::_class($meta->type);
+
+		return $class::validate($meta, $value);
+	}
 
 	/**
-	 * @abstract
+	 * @static
 	 * @param  $value
 	 * @param bool $in
 	 * @return mixed
 	 */
-	abstract public function transform($value, $in = true);
+	public static function transform($meta, $value, $in = true)
+	{
+		$class = self::_class($meta->type);
+
+		return $class::transform($meta, $value);
+	}
+
+	protected static function _singleton()
+	{
+		return \Gacela::instance();
+	}
+
+	protected static function _class($type)
+	{
+		$class = "\\Field\\".ucfirst($type);
+
+		return self::_singleton()->autoload($class);
+	}
 }

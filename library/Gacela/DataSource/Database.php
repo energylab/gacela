@@ -57,7 +57,7 @@ class Database extends DataSource {
 		if(empty($this->_driver)) {
 
 			$adapter = "\\Gacela\\DataSource\\Adapter\\".ucfirst($this->_config->dbtype);
-			$this->_driver = new $adapter;
+			$this->_driver = new $adapter($this->_conn);
 		}
 
 		return $this->_driver;
@@ -69,7 +69,12 @@ class Database extends DataSource {
 
 		$dsn = $this->_config->dbtype.':dbname='.$this->_config->schema.';host='.$this->_config->host;
 
-		$this->_conn = new \PDO($dsn, $this->_config->user, $this->_config->password);
+		$this->_conn = new \PDO(
+						$dsn,
+						$this->_config->user,
+						$this->_config->password,
+						property_exists($this->_config, 'options') ? $this->_config->options : null
+					);
 	}
 
 	public function beginTransaction()

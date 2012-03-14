@@ -55,6 +55,16 @@ abstract class Model implements iModel {
 		return $this->_mapper;
 	}
 
+	protected function _field()
+	{
+		return $this->_singleton()->autoload("\\Field\\Field");
+	}
+
+	protected function _singleton()
+	{
+		return \Gacela::instance();
+	}
+
 	/**
 	 * @param array|stdClass $data
 	 */
@@ -69,12 +79,14 @@ abstract class Model implements iModel {
 
 		$this->_data = new \stdClass;
 
-		foreach($this->_fields as $field => $meta) {
-			$this->_data->$field = $meta->transform($meta->default, false);
+		$field = $this->_field();
+
+		foreach($this->_fields as $name => $meta) {
+			$this->_data->$name = $field::transform($meta, $meta->default, false);
 		}
 
 		foreach($data as $key => $value) {
-			$this->_data->$key = $this->_fields[$key]->transform($data[$key], false);
+			$this->_data->$key = $field::transform($this->_fields[$key], $data[$key], false);
 		}
 
 		$this->init();
@@ -148,7 +160,9 @@ abstract class Model implements iModel {
 
 			$this->_changed[] = $key;
 
-			$this->_data->$key = $this->_fields[$key]->transform($val, false);
+			$field = $this->_field();
+
+			$this->_data->$key = $field::transform($this->_fields[$key], $val, false);
 		}
 	}
 
@@ -212,9 +226,10 @@ abstract class Model implements iModel {
 			}
 		}
 
+		$field = $this->_field();
 		foreach((array) $this->_data as $key => $val) {
-			if($this->_fields[$key]->validate($val) === false) {
-				$this->_errors[$key] = $this->_fields[$key]->errorCode;
+			if(($rs = $field::validate($this->_fields[$key], $val)) !== true) {
+				$this->_errors[$key] = $rs;
 			}
 		}
 
