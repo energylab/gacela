@@ -35,7 +35,7 @@ class Field {
 	{
 		$class = self::_class($meta->type);
 
-		return $class::transform($meta, $value);
+		return $class::transform($meta, $value, $in);
 	}
 
 	protected static function _singleton()

@@ -14,23 +14,21 @@ class Float extends Field {
 
 	public static function validate($meta, $value)
 	{
-		$this->errorCode = null;
-
 		if(is_null($value)) {
 			if(!$this->null) {
-				$this->errorCode = self::NULL_CODE;
+				return self::NULL_CODE;
 			}
 
-			return $this->null;
+			return $meta->null;
 		}
 
-		if(is_float($value) && strlen($value) <= $this->precision) {
+		if(is_float($value) && strlen($value) <= $meta->precision) {
 			return true;
 		} else {
 			if(!is_float($value)) {
-				$this->errorCode = self::TYPE_CODE;
-			} elseif(strlen($value) <= $this->precision) {
-				$this->errorCode = self::LENGTH_CODE;
+				return self::TYPE_CODE;
+			} elseif(strlen($value) <= $meta->precision) {
+				return self::LENGTH_CODE;
 			}
 
 			return false;

@@ -85,8 +85,10 @@ abstract class Mapper implements iMapper {
 
 		$data = array_intersect_key((array) $new, $fields, array_flip($changed));
 
+		$field = $this->_singleton()->autoload("\\Field\\Field");
+
 		foreach($data as $key => $val) {
-			$data[$key] = $fields[$key]->transform($val);
+			$data[$key] = $field::transform($fields[$key], $val);
 		}
 
 		return $data;

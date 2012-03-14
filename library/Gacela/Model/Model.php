@@ -36,6 +36,11 @@ abstract class Model implements iModel {
 		return $this->_errors;
 	}
 
+	protected function _field()
+	{
+		return $this->_singleton()->autoload("\\Field\\Field");
+	}
+
 	/**
 	 * @return \Gacela\Mapper\Mapper
 	 */
@@ -55,9 +60,17 @@ abstract class Model implements iModel {
 		return $this->_mapper;
 	}
 
-	protected function _field()
+	protected function _set($key, $val)
 	{
-		return $this->_singleton()->autoload("\\Field\\Field");
+		if(isset($this->_data->$key)) {
+			$this->_originalData[$key] = $this->_data->$key;
+		}
+
+		$this->_changed[] = $key;
+
+		$field = $this->_field();
+
+		$this->_data->$key = $field::transform($this->_fields[$key], $val, false);
 	}
 
 	protected function _singleton()
@@ -154,15 +167,7 @@ abstract class Model implements iModel {
 		if(method_exists($this, $method)) {
 			$this->$method($val);
 		} else {
-			if(isset($this->_data->$key)) {
-				$this->_originalData[$key] = $this->_data->$key;
-			}
-
-			$this->_changed[] = $key;
-
-			$field = $this->_field();
-
-			$this->_data->$key = $field::transform($this->_fields[$key], $val, false);
+			$this->_set($key, $val);
 		}
 	}
 
