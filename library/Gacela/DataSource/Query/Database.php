@@ -69,7 +69,7 @@ class Database extends Query {
 				$query = new \Gacela\DataSource\Query\Database($this->_schema, $op);
 
 				$query = $query->assemble();
-				
+
 				$this->where($query[0], $query[1], $stmt[1]);
 
 				// Move along, nothing more to see here
@@ -101,7 +101,7 @@ class Database extends Query {
 
 			if(isset($args)) {
 				if(!in_array($op, array('in', 'notIn'))) {
-					$toBind = preg_replace("/[-\.: ]/", '_', $field.'_'.$args);
+					$toBind = preg_replace("/[-\.:\$\^\*& ]/", '_', $field.'_'.md5($args));
 					$toBind = ':'.$toBind;
 
 					if(in_array($op, array('like', 'notLike'))) {

@@ -710,7 +710,7 @@ abstract class Mapper implements iMapper {
 		foreach($relation['meta']->keys as $key => $ref) {
 			$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
 		}
-
+		
 		$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
 
 		if ($relation['meta']->type == 'belongsTo') {
