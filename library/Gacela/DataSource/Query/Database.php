@@ -251,7 +251,13 @@ class Database extends Query {
 				$on = $join[1];
 			}
 
-			$_join .= "{$type} JOIN {$join[0]} ON {$on}\n";
+			if($type == 'STRAIGHT') {
+				$type = 'STRAIGHT_JOIN';
+			} else {
+				$type = $type.' JOIN';
+			}
+
+			$_join .= "{$type} {$join[0]} ON {$on}\n";
 		}
 
 		return $_join;
