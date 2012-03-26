@@ -33,21 +33,29 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 			throw new Exception('Invalid number of args passed to \\Gacela\\Collection::asArray().');
 		}
 
-		$array = array();
-		foreach($this as $row) {
-			$data = array();
-
-			foreach(func_get_args() as $field) {
-				$data[$field] = $row->$field;
-			}
-
-			$array[] = $data;
+		if(count(func_num_args() == 1)) {
+			$args = func_get_arg(0);
+		} else {
+			$args = func_get_args();
 		}
 
-		if(func_num_args() == 1) {
-			$arg = func_get_arg(0);
 
-			array_walk($array, function(&$val) use($arg) { $val = $val[$arg]; });
+
+
+		$array = array();
+		foreach($this as $row) {
+			if(!is_array($args)) {
+				$array[] = $row->$args;
+			} else {
+				$data = array();
+
+				foreach($args as $field) {
+					$data[$field] = $row->$field;
+				}
+
+				$array[] = $data;
+			}
+
 		}
 
 		return $array;
