@@ -10,6 +10,8 @@ namespace Gacela\Field;
 
 class Field {
 
+	protected static $_classes = array();
+
 	const NULL_CODE = 'null';
 	const LENGTH_CODE = 'invalid_length';
 
@@ -45,8 +47,10 @@ class Field {
 
 	protected static function _class($type)
 	{
-		$class = "\\Field\\".ucfirst($type);
+		if(!isset(self::$_classes[$type])) {
+			self::$_classes[$type] = self::_singleton()->autoload("\\Field\\".ucfirst($type));
+		}
 
-		return self::_singleton()->autoload($class);
+		return self::$_classes[$type];
 	}
 }

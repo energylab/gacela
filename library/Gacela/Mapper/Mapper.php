@@ -23,6 +23,15 @@ abstract class Mapper implements iMapper {
 	 */
 	protected $_dependents = array();
 
+	protected $_fields = false;
+
+	/**
+	 * @brief Contains the meta information necessary to load hasMany, belongsTo related data
+	 * Also used by Mapper::$_associations to load related data and by Mapper::$_inherits to determine whether
+	 * Concrete Table Inheritance is applicable.
+	 */
+	protected $_foreignKeys = array();
+
 	/**
 	 * @brief Contains the names of resources that Mapper::$_resource inherits from based on Mapper::$_foreignKeys and shared
 	 * primary keys
@@ -47,12 +56,7 @@ abstract class Mapper implements iMapper {
 	 */
 	protected $_primaryKey = array();
 
-	/**
-	 * @brief Contains the meta information necessary to load hasMany, belongsTo related data
-	 * Also used by Mapper::$_associations to load related data and by Mapper::$_inherits to determine whether
-	 * Concrete Table Inheritance is applicable.
-	 */
-	protected $_foreignKeys = array();
+	protected $_relations;
 
 	/**
 	 * @brief The main Gacela\DataSource\Resource object represented by the Mapper
@@ -191,7 +195,7 @@ abstract class Mapper implements iMapper {
 			->_initInherits()
 			->_initAssociations()
 			->_initDependents()
-			->_initModelName();
+			->_initModel();
 
 		return $this;
 	}
@@ -359,7 +363,7 @@ abstract class Mapper implements iMapper {
 	/**
 	 * @return Mapper
 	 */
-	protected function _initModelName()
+	protected function _initModel()
 	{
 		$classes = explode('\\', get_class($this));
 
@@ -368,6 +372,24 @@ abstract class Mapper implements iMapper {
 		$classes[$pos] = 'Model';
 
 		$this->_modelName = "\\".join("\\", $classes);
+
+		$this->_fields = $this->_resource->getFields();
+		foreach($this->_inherits as $stuff) {
+			$this->_fields = array_merge($this->_fields, $stuff['resource']->getFields());
+		}
+
+		foreach($this->_dependents as $dependent) {
+			$this->_fields = array_merge($dependent['resource']->getFields(), $this->_fields);
+		}
+
+		$this->_relations = array();
+		foreach($this->_foreignKeys as $key => $array) {
+			$this->_relations[$key] = $array['meta']->keys;
+		}
+
+		foreach($this->_associations as $key => $array) {
+			$this->_relations[$key] = $array['meta']->keys;
+		}
 
 		return $this;
 	}
@@ -710,7 +732,7 @@ abstract class Mapper implements iMapper {
 		foreach($relation['meta']->keys as $key => $ref) {
 			$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
 		}
-		
+
 		$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
 
 		if ($relation['meta']->type == 'belongsTo') {
@@ -728,17 +750,7 @@ abstract class Mapper implements iMapper {
 	 */
 	public function getFields()
 	{
-		$array = $this->_resource->getFields();
-
-		foreach($this->_inherits as $stuff) {
-			$array = array_merge($array, $stuff['resource']->getFields());
-		}
-
-		foreach($this->_dependents as $dependent) {
-			$array = array_merge($dependent['resource']->getFields(), $array);
-		}
-
-		return $array;
+		return $this->_fields;
 	}
 
 	/**
@@ -747,16 +759,7 @@ abstract class Mapper implements iMapper {
 	 */
 	public function getRelations()
 	{
-		$relations = array();
-		foreach($this->_foreignKeys as $key => $array) {
-			$relations[$key] = $array['meta']->keys;
-		}
-
-		foreach($this->_associations as $key => $array) {
-			$relations[$key] = $array['meta']->keys;
-		}
-
-		return $relations;
+		return $this->_relations;
 	}
 
 	public function init()

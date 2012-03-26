@@ -95,11 +95,13 @@ abstract class Model implements iModel {
 		$field = $this->_field();
 
 		foreach($this->_fields as $name => $meta) {
-			$this->_data->$name = $field::transform($meta, $meta->default, false);
-		}
+			if(isset($data[$name])) {
+				$value = $data[$name];
+			} else {
+				$value = $meta->default;
+			}
 
-		foreach($data as $key => $value) {
-			$this->_data->$key = $field::transform($this->_fields[$key], $data[$key], false);
+			$this->_data->$name = $field::transform($meta, $value, false);
 		}
 
 		$this->init();
