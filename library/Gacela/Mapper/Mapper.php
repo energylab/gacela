@@ -812,7 +812,7 @@ abstract class Mapper implements iMapper {
 		}
 
 		foreach($association as $model) {
-			$sub = $me;
+			$sub = clone $me;
 
 			foreach($assoc['resource']->getRelations() as $relation) {
 				if($relation->type == 'belongsTo') {

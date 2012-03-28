@@ -193,7 +193,12 @@ abstract class Model implements iModel {
 
 	public function remove($association)
 	{
-		return $this->_mapper()->removeAssociation($association, $this->_data);
+		if($association->count())
+		{
+			return $this->_mapper()->removeAssociation($association, $this->_data);
+		}
+
+		return true;
 	}
 
 	/**
