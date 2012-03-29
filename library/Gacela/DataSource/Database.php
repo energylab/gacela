@@ -189,9 +189,16 @@ class Database extends DataSource {
 	/**
 	 * @see Gacela\DataSource\iDataSource::insert()
 	 */
-	public function insert($name, array $data, $transaction = null)
+	public function insert($name, $data)
 	{
-		list($sql, $binds) = $this->getQuery()->insert($name, $data)->assemble();
+		if($data instanceof \Gacela\DataSource\Query\Query) {
+			list($sql, $binds) = $data->assemble();
+		} elseif(is_array($data)) {
+			list($sql, $binds) = $this->getQuery()->insert($name, $data)->assemble();
+		} else {
+			$sql = $data;
+			$binds = array();
+		}
 
 		$query = $this->_conn->prepare($sql);
 
@@ -289,9 +296,13 @@ class Database extends DataSource {
 	 * @param \Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function update($name, $data, \Gacela\DataSource\Query\Query $where, $transaction = null)
+	public function update($name, $data, \Gacela\DataSource\Query\Query $where = null)
 	{
-		list($query, $args) = $where->update($name, $data)->assemble();
+		if($data instanceof \Gacela\DataSource\Query\Query) {
+			list($query, $args) = $data->assemble();
+		} else {
+			list($query, $args) = $where->update($name, $data)->assemble();
+		}
 
 		$query = $this->_conn->prepare($query);
 

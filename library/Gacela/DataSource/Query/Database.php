@@ -213,7 +213,11 @@ class Database extends Query {
 			$keys[] = $this->_quoteIdentifier($key);
 		}
 
-		$sql = "INSERT INTO `{$name}` (".join(',',$keys).") VALUES\n";
+		array_walk($this->_insert[2], function(&$val) { $val = strtoupper($val); });
+
+		$modifiers = !empty($this->_insert[2]) ? join(' ', $this->_insert[2]) : '';
+
+		$sql = "INSERT {$modifiers} INTO `{$name}` (".join(',',$keys).") VALUES\n";
 
 		// Dynamically sets up the params to be bound
 		foreach($data as $index => $row) {
@@ -221,11 +225,11 @@ class Database extends Query {
 
 			array_walk($tuple, function(&$key, $k, $index) {  $key = ':'.$key.$index; }, $index);
 
-			$sql .= "(".join(",", $tuple)."),";
+			$sql .= "(".join(",", $tuple)."),\n";
 		}
 
 		// Removes the trailing comma created above.
-		$sql = substr($sql, 0, strlen($sql) - 1);
+		$sql = substr($sql, 0, strlen($sql) - 2);
 
 		// Binding the params per row
 		foreach($data as $index => $row) {
@@ -608,9 +612,9 @@ class Database extends Query {
 		return $this->where($stmt, $values, $or);
 	}
 
-	public function insert($tableName, $data)
+	public function insert($tableName, $data, $modifiers = array(), $on_duplicate_update = array())
 	{
-		$this->_insert = array($tableName, $data);
+		$this->_insert = array($tableName, $data, $modifiers, $on_duplicate_update);
 
 		return $this;
 	}
