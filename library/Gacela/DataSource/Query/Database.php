@@ -47,6 +47,8 @@ class Database extends Query {
 
 	protected $_sql = null;
 
+	protected $_union = array();
+
 	protected $_update = array();
 
 	protected $_where = array();
@@ -58,6 +60,11 @@ class Database extends Query {
 		}
 
 		return $schema;
+	}
+
+	private function _param($field, $args)
+	{
+		return ':'.preg_replace("/[-\.:\$\^\*& ]/", '_', $field).'_'.sha1($args);
 	}
 
 	private function _buildFromCriteria($criteria)
@@ -101,8 +108,7 @@ class Database extends Query {
 
 			if(isset($args)) {
 				if(!in_array($op, array('in', 'notIn'))) {
-					$toBind = preg_replace("/[-\.:\$\^\*& ]/", '_', $field.'_'.md5($args));
-					$toBind = ':'.$toBind;
+					$toBind = $this->_param($field, $args);
 
 					if(in_array($op, array('like', 'notLike'))) {
 						$args = '%'.$args.'%';
@@ -135,7 +141,19 @@ class Database extends Query {
 		$_from = array();
 		foreach($this->_from as $from) {
 			if(is_array($from[0])) {
-				$_from[] = $this->_quoteIdentifier(current($from[0]))." AS ".$this->_quoteIdentifier(key($from[0]));
+				if(current($from[0]) instanceof \Gacela\DataSource\Query\Database) {
+					list($table, $args) = current($from[0])->assemble();
+
+					$table = "(\n".$table.")";
+
+					$this->bind($args);
+				} else {
+					$table = $this->_quoteIdentifier(current($from[0]));
+				}
+
+				$alias = $this->_quoteIdentifier(key($from[0]));
+
+				$_from[] = $table." AS ".$alias;
 			} else {
 				$_from[] = $this->_quoteIdentifier($from[0]);
 			}
@@ -292,7 +310,7 @@ class Database extends Query {
 
 		if(strpos($identifier, '*') !== false) {
 			return $identifier;
-		} elseif(strpos($identifier, '(') && strpos($identifier, ')')) {
+		} elseif(strpos($identifier, '(') !== false && strpos($identifier, ')')) {
 			return $identifier;
 		} elseif(strpos($identifier, '.') !== false) {
 			$identifier = explode('.', $identifier);
@@ -342,6 +360,40 @@ class Database extends Query {
 		}
 
 		return join(', ', $select)."\n";
+	}
+
+	private function _union()
+	{
+		if(empty($this->_union)) {
+			return '';
+		}
+
+		$sql = '';
+		$binds = array();
+
+		foreach($this->_union as $union) {
+			if(!empty($sql)) {
+				$sql .= "UNION\n";
+			}
+
+			if($union instanceof \Gacela\DataSource\Query\Database) {
+				list($query, $args) = $union->assemble();
+			} elseif(is_array($union)) {
+				$query = $union[0];
+				$args = $union[1];
+			} else {
+				$query = $union;
+				$args = array();
+			}
+
+			$sql .= $query;
+
+			$binds = array_merge($args, $binds);
+		}
+
+		$this->bind($binds);
+
+		return $sql;
 	}
 
 	private function _update()
@@ -430,6 +482,9 @@ class Database extends Query {
 			$sql = "DELETE FROM {$this->_delete}\n";
 		}
 
+		// Now there is another type of query - UNION - that needs to be considered
+		$sql = $this->_union();
+
 		if(empty($sql)) {
 			$select = trim($this->_select());
 			$from = trim($this->_from());
@@ -496,7 +551,7 @@ class Database extends Query {
 	public function from($tableName, array $columns = array(), $schema = null)
 	{
 		if(is_array($tableName)) {
-			$name = current($tableName);
+			$name = key($tableName);
 		} else {
 			$name = $tableName;
 		}
@@ -541,7 +596,10 @@ class Database extends Query {
 		}
 
 		$keys = $values;
-		array_walk($keys, function(&$val, $key) use($field) { $val = ':'.str_replace('.', '_', $field).'_'.$val; });
+
+		foreach($keys as $key => $val) {
+			$keys[$key] = $this->_param($field, $val);
+		}
 
 		$stmt = $field.' '.$stmt.' ('.join(',', $keys).')';
 
@@ -592,6 +650,13 @@ class Database extends Query {
 	public function orderBy($column, $direction = 'ASC')
 	{
 		$this->_orderBy[$column] = $direction;
+		return $this;
+	}
+
+	public function union(array $queries)
+	{
+		$this->_union = $queries;
+
 		return $this;
 	}
 
