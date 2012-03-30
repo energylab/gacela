@@ -487,7 +487,7 @@ class Database extends Query {
 		}
 
 		// Now there is another type of query - UNION - that needs to be considered
-		$sql = $this->_union();
+		$sql .= $this->_union();
 
 		if(empty($sql)) {
 			$select = trim($this->_select());

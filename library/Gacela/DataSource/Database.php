@@ -303,7 +303,7 @@ class Database extends DataSource {
 		} else {
 			list($query, $args) = $where->update($name, $data)->assemble();
 		}
-
+		
 		$query = $this->_conn->prepare($query);
 
 		try {
