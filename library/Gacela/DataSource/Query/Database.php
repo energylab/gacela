@@ -62,6 +62,11 @@ class Database extends Query {
 		return $schema;
 	}
 
+	private function _is_function($value)
+	{
+		return strpos($value, '(') !== false && strpos($value, ')') !== false;
+	}
+
 	private function _param($field, $args)
 	{
 		return ':'.preg_replace("/[-\.:\$\^\*& ]/", '_', $field).'_'.sha1($args);
@@ -314,7 +319,7 @@ class Database extends Query {
 
 		if(strpos($identifier, '*') !== false) {
 			return $identifier;
-		} elseif(strpos($identifier, '(') !== false && strpos($identifier, ')')) {
+		} elseif($this->_is_function($identifier)) {
 			return $identifier;
 		} elseif(strpos($identifier, '.') !== false) {
 			$identifier = explode('.', $identifier);
@@ -412,9 +417,19 @@ class Database extends Query {
 		$sql = "UPDATE {$name} SET \n";
 
 		foreach($data as $key => $val) {
-			$sql .= $this->_quoteIdentifier($key)." = :".$key.",\n";
+			$sql .= $this->_quoteIdentifier($key)." = ";
 
-			$this->_binds[':'.$key] = $val;
+			if($this->_is_function($val)) {
+				$sql .= $val;
+			} else {
+				$param = $this->_param($key, $val);
+
+				$sql .= $param;
+
+				$this->_binds[$param] = $val;
+			}
+
+			$sql .= ",\n";
 		}
 
 		$sql = substr($sql, 0, strlen($sql) - 2);
