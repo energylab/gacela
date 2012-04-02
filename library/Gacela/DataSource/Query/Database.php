@@ -239,7 +239,7 @@ class Database extends Query {
 		// Binding the params per row
 		foreach($data as $index => $row) {
 			foreach($row as $key => $field) {
-				$this->_binds[$key.$index] = $field;
+				$this->_binds[':'.$key.$index] = $field;
 			}
 		}
 
