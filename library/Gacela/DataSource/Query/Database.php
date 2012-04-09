@@ -659,6 +659,8 @@ class Database extends Query {
 	public function limit($start, $count)
 	{
 		$this->_limit = array($start, $count);
+
+		return $this;
 	}
 
 	/**
