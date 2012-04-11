@@ -437,15 +437,20 @@ class Database extends Query {
 		return $sql.' ';
 	}
 
-	private function _where()
+	private function _where_or_having($array)
 	{
 		$_where = '';
 
-		if(!count($this->_where)) {
+		if(!count($array)) {
 			return $_where;
 		}
 
-		foreach($this->_where as $where) {
+		foreach($array as $where) {
+			if($where[0] instanceof $this) {
+				list($where[0], $where[1]) = $stmt->assemble();
+			}
+
+
 			if(empty($_where)) {
 				$_where = "({$where[0]})\n";
 			} else {
@@ -520,7 +525,7 @@ class Database extends Query {
 
 		$sql .= $this->_join();
 
-		$where = $this->_where();
+		$where = $this->_where_or_having($this->_where);
 
 		if(!empty($sql) && !empty($where)) {
 			$sql .= 'WHERE ';
@@ -529,6 +534,8 @@ class Database extends Query {
 		$sql .= $where;
 
 		$sql .= $this->_group();
+
+		$sql .= $this->_where_or_having($this->_having);
 
 		$sql .= $this->_order();
 
@@ -601,8 +608,10 @@ class Database extends Query {
 		return $this;
 	}
 
-	public function having($stmt, $value, $or = false)
+	public function having($stmt, array $value = array(), $or = false)
 	{
+		$this->_having[] = array($stmt, $value, $or);
+
 		return $this;
 	}
 
@@ -700,10 +709,6 @@ class Database extends Query {
 	 */
 	public function where($stmt, array $value = array(), $or = false)
 	{
-		if($stmt instanceof $this) {
-			$stmt = $stmt->assemble();
-		}
-
 		$this->_where[] = array($stmt, $value, $or);
 
 		return $this;
