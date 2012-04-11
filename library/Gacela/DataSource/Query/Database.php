@@ -446,10 +446,13 @@ class Database extends Query {
 		}
 
 		foreach($array as $where) {
-			if($where[0] instanceof $this) {
-				list($where[0], $where[1]) = $stmt->assemble();
-			}
+			if($where[1] instanceof $this) {
+				list($query, $args) = $where[1]->assemble();
 
+				str_replace(':query', $query, $_where[0]);
+
+				$this->bind($args);
+			}
 
 			if(empty($_where)) {
 				$_where = "({$where[0]})\n";
@@ -608,7 +611,7 @@ class Database extends Query {
 		return $this;
 	}
 
-	public function having($stmt, array $value = array(), $or = false)
+	public function having($stmt, $value = array(), $or = false)
 	{
 		$this->_having[] = array($stmt, $value, $or);
 
@@ -707,7 +710,7 @@ class Database extends Query {
 	 * @param bool $or
 	 * @return Query\Database
 	 */
-	public function where($stmt, array $value = array(), $or = false)
+	public function where($stmt, $value = array(), $or = false)
 	{
 		$this->_where[] = array($stmt, $value, $or);
 
