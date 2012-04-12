@@ -70,7 +70,7 @@ class Gacela {
 				$path = $parts;
 				unset($path[0]);
 
-				$path = join('/', $path);
+				$path = join(DIRECTORY_SEPARATOR, $path);
 
 				$file = $self->_namespaces[$parts[0]].$path.'.php';
 				if($self->_findFile($file)) {
@@ -87,7 +87,7 @@ class Gacela {
 					$tmp = $class;
             	}
 
-                $file = $path.str_replace("\\", "/", $tmp).'.php';
+                $file = $path.str_replace("\\", DIRECTORY_SEPARATOR, $tmp).'.php';
 
                 if($self->_findFile($file)) {
                 	$class = $ns.$class;
