@@ -64,7 +64,11 @@ class Database extends Query {
 
 	private function _is_function($value)
 	{
-		return strpos($value, '(') !== false && strpos($value, ')') !== false;
+		$value = trim($value);
+
+		if(strpos($value, ')') == strlen($value)-1 AND strpos('(') !== false) {
+			return true;
+		}
 	}
 
 	private function _param($field, $args)
