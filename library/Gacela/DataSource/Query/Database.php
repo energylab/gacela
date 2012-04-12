@@ -66,7 +66,7 @@ class Database extends Query {
 	{
 		$value = trim($value);
 
-		if(strpos($value, ')') == strlen($value)-1 AND strpos('(') !== false) {
+		if(strpos($value, ')') == strlen($value)-1 AND strpos($value, '(') !== false) {
 			return true;
 		}
 	}
