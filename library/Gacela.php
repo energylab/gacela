@@ -266,6 +266,10 @@ class Gacela {
 
 		$class = self::instance()->autoload("\\DataSource\\".ucfirst($type));
 
+		if(!$class) {
+			throw new \Exception('Failed to load DataSource ('.$name.')');
+		}
+
 		$this->_sources[$name] = new $class($config);
 
 		return $this;
