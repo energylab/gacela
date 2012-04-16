@@ -193,8 +193,11 @@ class Database extends DataSource {
 	{
 		if($data instanceof \Gacela\DataSource\Query\Query) {
 			list($sql, $binds) = $data->assemble();
-		} elseif(is_array($data)) {
+		} elseif(is_array($data) && !is_integer(key($data))) {
 			list($sql, $binds) = $this->getQuery()->insert($name, $data)->assemble();
+		} elseif(is_array($data) && is_integer(key($data))) {
+			$sql = $data[0];
+			$binds = $data[1];
 		} else {
 			$sql = $data;
 			$binds = array();
@@ -299,15 +302,21 @@ class Database extends DataSource {
 	public function update($name, $data, \Gacela\DataSource\Query\Query $where = null)
 	{
 		if($data instanceof \Gacela\DataSource\Query\Query) {
-			list($query, $args) = $data->assemble();
+			list($query, $binds) = $data->assemble();
+		} elseif(is_array($data) && !is_integer(key($data))) {
+			list($query, $binds) = $where->update($name, $data)->assemble();
+		} elseif(is_array($data) && is_integer(key($data))) {
+			$query = $data[0];
+			$binds = $data[1];
 		} else {
-			list($query, $args) = $where->update($name, $data)->assemble();
+			$query = $data;
+			$binds = array();
 		}
-		
+
 		$query = $this->_conn->prepare($query);
 
 		try {
-			if($query->execute($args)) {
+			if($query->execute($binds)) {
 				if($query->rowCount() == 0) {
 					return false;
 				}

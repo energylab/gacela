@@ -421,17 +421,11 @@ class Database extends Query {
 		$sql = "UPDATE {$name} SET \n";
 
 		foreach($data as $key => $val) {
-			$sql .= $this->_quoteIdentifier($key)." = ";
+			$param = $this->_param($key, $val);
 
-			if($this->_is_function($val)) {
-				$sql .= $val;
-			} else {
-				$param = $this->_param($key, $val);
+			$sql .= $this->_quoteIdentifier($key)." = ".$param;
 
-				$sql .= $param;
-
-				$this->_binds[$param] = $val;
-			}
+			$this->_binds[$param] = $val;
 
 			$sql .= ",\n";
 		}
