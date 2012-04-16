@@ -8,7 +8,7 @@
 
 namespace Gacela\DataSource\Query;
 
-class Database extends Query {
+class Sql extends Query {
 
 	protected static $_operators = array(
 		'equals' => '=',

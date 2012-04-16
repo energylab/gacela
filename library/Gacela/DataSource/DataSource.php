@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date May 7, 2011
  * @brief
- * 
+ *
 */
 
 namespace Gacela\DataSource;
@@ -13,6 +13,10 @@ abstract class DataSource implements iDataSource {
 	protected $_config = array();
 
 	protected $_resources = array();
+
+	protected $_driver;
+
+	protected $_lastQuery = array();
 
 	abstract protected function _driver();
 

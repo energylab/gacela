@@ -11,10 +11,6 @@ class Database extends DataSource {
 
 	protected $_conn;
 
-	protected $_driver;
-
-	protected $_lastQuery = array();
-
 	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		$include_columns = false;
@@ -183,7 +179,7 @@ class Database extends DataSource {
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		return new Query\Database($this->_config->schema, $criteria);
+		return new Query\Sql($this->_config->schema, $criteria);
 	}
 
 	/**
