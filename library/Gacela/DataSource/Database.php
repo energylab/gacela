@@ -9,8 +9,6 @@ namespace Gacela\DataSource;
 
 class Database extends DataSource {
 
-	protected $_conn;
-
 	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		$include_columns = false;
@@ -51,9 +49,8 @@ class Database extends DataSource {
 	protected function _driver()
 	{
 		if(empty($this->_driver)) {
-
 			$adapter = "\\Gacela\\DataSource\\Adapter\\".ucfirst($this->_config->dbtype);
-			$this->_driver = new $adapter($this->_conn);
+			$this->_driver = new $adapter($this->_config);
 		}
 
 		return $this->_driver;
@@ -62,25 +59,16 @@ class Database extends DataSource {
 	public function __construct(array $config)
 	{
 		$this->_config = (object) $config;
-
-		$dsn = $this->_config->dbtype.':dbname='.$this->_config->schema.';host='.$this->_config->host;
-
-		$this->_conn = new \PDO(
-						$dsn,
-						$this->_config->user,
-						$this->_config->password,
-						property_exists($this->_config, 'options') ? $this->_config->options : null
-					);
 	}
 
 	public function beginTransaction()
 	{
-		return $this->_conn->beginTransaction();
+		return $this->_driver()->beginTransaction();
 	}
 
 	public function commitTransaction()
 	{
-		return $this->_conn->commit();
+		return $this->_driver()->commit();
 	}
 
 	/**
@@ -94,7 +82,7 @@ class Database extends DataSource {
 	{
 		list($query, $args) = $where->delete($name)->assemble();
 
-		$query = $this->_conn->prepare($query);
+		$query = $this->_driver()->prepare($query);
 
 		if($query->execute($args)) {
 			if($query->rowCount() == 0) {
@@ -199,7 +187,7 @@ class Database extends DataSource {
 			$binds = array();
 		}
 
-		$query = $this->_conn->prepare($sql);
+		$query = $this->_driver()->prepare($sql);
 
 		try {
 			if($query->execute($binds)) {
@@ -209,9 +197,9 @@ class Database extends DataSource {
 
 				$this->_incrementCache($name);
 
-				return $this->_conn->lastInsertId();
+				return $this->_driver()->lastInsertId();
 			} else {
-				if($this->_conn->inTransaction()) {
+				if($this->_driver()->inTransaction()) {
 					$this->rollbackTransaction();
 				}
 
@@ -229,7 +217,7 @@ class Database extends DataSource {
 				);
 			}
 		} catch (PDOException $e) {
-			if($this->_conn->inTransaction()) {
+			if($this->_driver()->inTransaction()) {
 				$this->rollbackTransaction();
 			}
 
@@ -264,7 +252,7 @@ class Database extends DataSource {
 			return $cached;
 		}
 
-		$stmt = $this->_conn->prepare($this->_lastQuery['query']);
+		$stmt = $this->_driver()->prepare($this->_lastQuery['query']);
 
 		if($stmt->execute($this->_lastQuery['args']) === true) {
 			$return = $stmt->fetchAll(\PDO::FETCH_OBJ);
@@ -279,12 +267,12 @@ class Database extends DataSource {
 
 	public function quote($var, $type = null)
 	{
-		return $this->_conn->quote($var, $type);
+		return $this->_driver()->quote($var, $type);
 	}
 
 	public function rollbackTransaction()
 	{
-		return $this->_conn->rollBack();
+		return $this->_driver()->rollBack();
 	}
 
 	/**
@@ -309,7 +297,7 @@ class Database extends DataSource {
 			$binds = array();
 		}
 
-		$query = $this->_conn->prepare($query);
+		$query = $this->_driver()->prepare($query);
 
 		try {
 			if($query->execute($binds)) {
@@ -320,14 +308,14 @@ class Database extends DataSource {
 				$this->_incrementCache($name);
 				return true;
 			} else {
-				if($this->_conn->inTransaction()) {
+				if($this->_driver()->inTransaction()) {
 					$this->rollbackTransaction();
 				}
 
 				throw new \Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');
 			}
 		} catch (PDOException $e) {
-			if($this->_conn->inTransaction()) {
+			if($this->_driver()->inTransaction()) {
 				$this->rollbackTransaction();
 			}
 

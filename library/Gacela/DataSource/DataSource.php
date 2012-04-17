@@ -82,7 +82,7 @@ abstract class DataSource implements iDataSource {
 		$cached = $this->_singleton()->cache('resource_'.$name);
 
 		if($cached === false || is_null($cached))  {
-			$cached = new Resource($this->_driver()->load($this->_conn, $name, $this->_config->schema));
+			$cached = new Resource($this->_driver()->load($name));
 
 			$this->_singleton()->cache('resource_'.$name, $cached);
 		}

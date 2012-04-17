@@ -82,7 +82,7 @@ class Sql extends Query {
 			$op = $stmt[0];
 
 			if($op instanceof \Gacela\Criteria) {
-				$query = new \Gacela\DataSource\Query\Database($this->_schema, $op);
+				$query = new Sql($this->_schema, $op);
 
 				$query = $query->assemble();
 
@@ -150,7 +150,7 @@ class Sql extends Query {
 		$_from = array();
 		foreach($this->_from as $from) {
 			if(is_array($from[0])) {
-				if(current($from[0]) instanceof \Gacela\DataSource\Query\Database) {
+				if(current($from[0]) instanceof Sql) {
 					list($table, $args) = current($from[0])->assemble();
 
 					$table = "(\n".$table.")";
@@ -317,8 +317,11 @@ class Sql extends Query {
 
 	private function _quoteIdentifier($identifier)
 	{
-		if(is_array($identifier)) {
-			throw new \Exception('Identifier in _quoteIdentifier is an array');
+		if(!is_string($identifier)) {
+
+			$type = is_array($identifier) ? 'array' : get_class($identifier);
+
+			throw new \Exception('Identifier in _quoteIdentifier is a(n) '.$type.'!');
 		}
 
 		if(strpos($identifier, '*') !== false) {
@@ -389,7 +392,7 @@ class Sql extends Query {
 				$sql .= "UNION\n";
 			}
 
-			if($union instanceof \Gacela\DataSource\Query\Database) {
+			if($union instanceof Sql) {
 				list($query, $args) = $union->assemble();
 			} elseif(is_array($union)) {
 				$query = $union[0];
@@ -598,7 +601,7 @@ class Sql extends Query {
 
 	/**
 	 * @param  string $column
-	 * @return Query\Database
+	 * @return Query\Sql
 	 */
 	public function groupBy($column)
 	{
@@ -649,7 +652,7 @@ class Sql extends Query {
 	 * @param  string $on
 	 * @param array $columns
 	 * @param string $type
-	 * @return Query\Database
+	 * @return Query\Sql
 	 */
 	public function join($table, $on, array $columns = array(), $type = 'inner')
 	{
@@ -676,7 +679,7 @@ class Sql extends Query {
 	/**
 	 * @param string
 	 * @param string
-	 * @return Query\Database
+	 * @return Query\Sql
 	 */
 	public function orderBy($column, $direction = 'ASC')
 	{
@@ -706,7 +709,7 @@ class Sql extends Query {
 	 * @param  $stmt
 	 * @param array $value
 	 * @param bool $or
-	 * @return Query\Database
+	 * @return Query\Sql
 	 */
 	public function where($stmt, $value = array(), $or = false)
 	{

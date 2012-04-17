@@ -8,7 +8,7 @@
 
 namespace Gacela\DataSource\Adapter;
 
-class Mysql extends Adapter implements iAdapter {
+class Mysql extends Pdo {
 
 	public static $_separator = "_";
 
@@ -27,8 +27,10 @@ class Mysql extends Adapter implements iAdapter {
 
 	protected $_relationships = null;
 
-	public function __construct($conn)
+	public function __construct($config)
 	{
+		parent::__construct($config);
+
 		$sql = "
 			SELECT
 				TABLE_NAME AS keyTable,
@@ -42,10 +44,10 @@ class Mysql extends Adapter implements iAdapter {
 			GROUP BY constraintName
 			";
 
-		$this->_relationships = $conn->query($sql)->fetchAll(\PDO::FETCH_OBJ);
+		$this->_relationships = $this->_conn->query($sql)->fetchAll(\PDO::FETCH_OBJ);
 	}
 
-	public function load($conn, $name)
+	public function load($name)
 	{
 		$_meta = array('name' => $name);
 
@@ -72,7 +74,7 @@ class Mysql extends Adapter implements iAdapter {
 		$_meta['primary'] = array();
 
 		// Setup Column meta information
-		$stmt = $conn->prepare("DESCRIBE ".$name);
+		$stmt = $this->_conn->prepare("DESCRIBE ".$name);
 
 		if(!$stmt->execute()) {
 			throw new \Exception(
@@ -134,7 +136,7 @@ class Mysql extends Adapter implements iAdapter {
 			} elseif(preg_match('/(date*|timestamp)/', $column->Type, $matches)) {
 				$meta['type'] = 'date';
 			}
-			
+
 			$_meta['columns'][$column->Field] = (object) $meta;
 
 			if($_meta['columns'][$column->Field]->primary === true) {
