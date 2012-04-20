@@ -12,44 +12,42 @@ class Mysql extends Pdo {
 
 	public static $_separator = "_";
 
-	protected static $_meta = array(
-		'type' => null,
-		'length' => null,
-		'precision' => null,
-		'scale' => null,
-		'unsigned' => false,
-		'sequenced' => false,
-		'primary' => false,
-		'default' => false,
-		'values' => array(),
-		'null' => true
-	);
-
 	protected $_relationships = null;
 
 	public function __construct($config)
 	{
 		parent::__construct($config);
 
-		$sql = "
-			SELECT
-				TABLE_NAME AS keyTable,
-				GROUP_CONCAT(COLUMN_NAME) AS keyColumns,
-				REFERENCED_TABLE_NAME AS refTable,
-				GROUP_CONCAT(REFERENCED_COLUMN_NAME) AS refColumns,
-				CONSTRAINT_NAME AS constraintName
-			FROM INFORMATION_SCHEMA.key_column_usage
-			WHERE TABLE_SCHEMA = DATABASE()
-			AND REFERENCED_TABLE_NAME IS NOT NULL
-			GROUP BY constraintName
-			";
+		$this->_relationships = $this->_singleton()->cache($this->_config->schema.'_relationships');
 
-		$this->_relationships = $this->_conn->query($sql)->fetchAll(\PDO::FETCH_OBJ);
+		if(!$this->_relationships) {
+			$sql = "
+				SELECT
+					TABLE_NAME AS keyTable,
+					GROUP_CONCAT(COLUMN_NAME) AS keyColumns,
+					REFERENCED_TABLE_NAME AS refTable,
+					GROUP_CONCAT(REFERENCED_COLUMN_NAME) AS refColumns,
+					CONSTRAINT_NAME AS constraintName
+				FROM INFORMATION_SCHEMA.key_column_usage
+				WHERE TABLE_SCHEMA = DATABASE()
+				AND REFERENCED_TABLE_NAME IS NOT NULL
+				GROUP BY constraintName
+				";
+
+			$this->_relationships = $this->_conn->query($sql)->fetchAll(\PDO::FETCH_OBJ);
+
+			$this->_singleton()->cache($this->_config->schema.'_relationships');
+		}
 	}
 
 	public function load($name)
 	{
-		$_meta = array('name' => $name);
+		$_meta = array(
+			'name' => $name,
+			'columns' => array(),
+			'relations' => array(),
+			'primary' => array()
+		);
 
 		// Pull from the config file if enabled
 		$config = $this->_singleton()->loadConfig($name);
@@ -67,11 +65,6 @@ class Mysql extends Pdo {
 
 			return $_meta;
 		}
-
-		// Set it up from the database
-		$_meta['columns'] = array();
-		$_meta['relations'] = array();
-		$_meta['primary'] = array();
 
 		// Setup Column meta information
 		$stmt = $this->_conn->prepare("DESCRIBE ".$name);

@@ -14,6 +14,19 @@ abstract class Adapter implements iAdapter {
 
 	protected $_conn;
 
+	protected static $_meta = array(
+		'type' => null,
+		'length' => null,
+		'precision' => null,
+		'scale' => null,
+		'unsigned' => false,
+		'sequenced' => false,
+		'primary' => false,
+		'default' => false,
+		'values' => array(),
+		'null' => true
+	);
+
 	protected function _singleton()
 	{
 		return \Gacela::instance();

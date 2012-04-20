@@ -49,16 +49,12 @@ class Database extends DataSource {
 	protected function _driver()
 	{
 		if(empty($this->_driver)) {
-			$adapter = "\\Gacela\\DataSource\\Adapter\\".ucfirst($this->_config->dbtype);
+			$adapter = $this->_singleton()->autoload("\\DataSource\\Adapter\\".ucfirst($this->_config->dbtype));
+
 			$this->_driver = new $adapter($this->_config);
 		}
 
 		return $this->_driver;
-	}
-
-	public function __construct(array $config)
-	{
-		$this->_config = (object) $config;
 	}
 
 	public function beginTransaction()
@@ -167,7 +163,7 @@ class Database extends DataSource {
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		return new Query\Sql($this->_config->schema, $criteria);
+		return new Query\Sql($criteria);
 	}
 
 	/**
@@ -224,11 +220,6 @@ class Database extends DataSource {
 			throw $e;
 		}
 
-	}
-
-	public function lastQuery()
-	{
-		return $this->_lastQuery;
 	}
 
 	/**

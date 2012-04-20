@@ -10,9 +10,17 @@ namespace Gacela\DataSource\Query;
 
 abstract class Query {
 
+	abstract protected function _buildFromCriteria(\Gacela\Criteria $criteria);
+
 	protected function _cast($value)
 	{
 		return $value;
 	}
 
+	public function __construct(\Gacela\Criteria $criteria = null)
+	{
+		if(!is_null($criteria)) {
+			$this->_buildFromCriteria($criteria);
+		}
+	}
 }

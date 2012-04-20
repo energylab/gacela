@@ -53,7 +53,7 @@ class Sql extends Query {
 
 	protected $_where = array();
 
-	private function _alias($schema)
+	protected function _alias($schema)
 	{
 		if(is_array($schema)) {
 			return key($schema);
@@ -62,7 +62,7 @@ class Sql extends Query {
 		return $schema;
 	}
 
-	private function _is_function($value)
+	protected function _is_function($value)
 	{
 		$value = trim($value);
 
@@ -71,18 +71,347 @@ class Sql extends Query {
 		}
 	}
 
-	private function _param($field, $args)
+	protected function _param($field, $args)
 	{
 		return ':'.preg_replace("/[-\.:\$\^\*& ]/", '_', $field).'_'.sha1($args);
 	}
 
-	private function _buildFromCriteria($criteria)
+	protected function _from()
+	{
+		$_from = array();
+		foreach($this->_from as $from) {
+			if(is_array($from[0])) {
+				if(current($from[0]) instanceof Sql) {
+					list($table, $args) = current($from[0])->assemble();
+
+					$table = "(\n".$table.")";
+
+					$this->bind($args);
+				} else {
+					$table = $this->_quoteIdentifier(current($from[0]));
+				}
+
+				$alias = $this->_quoteIdentifier(key($from[0]));
+
+				$_from[] = $table." AS ".$alias;
+			} else {
+				$_from[] = $this->_quoteIdentifier($from[0]);
+			}
+		}
+
+		return join(', ', $_from)."\n";
+	}
+
+	protected function _group()
+	{
+		if(!count($this->_groupBy)) {
+			return '';
+		}
+
+		$sql = 'GROUP BY ';
+
+		$i=0;
+		foreach($this->_groupBy as $field) {
+			if ($i) {
+				$sql .= ',';
+			}
+
+			$sql .= $this->_quoteIdentifier($field);
+
+			$i++;
+		}
+
+		if(strlen($sql) > 0) {
+			$sql .= "\n";
+		}
+
+		return $sql;
+	}
+
+	protected function _insert()
+	{
+		if(!isset($this->_insert[0])) {
+			return '';
+		}
+
+		$name = $this->_insert[0];
+		$data = $this->_insert[1];
+
+		if(!isset($data[0]) || !is_array($data[0])) {
+			$data = array($data);
+		}
+
+		$tmp = current($data);
+
+		if(is_object($tmp)) {
+			$tmp = (array) $tmp;
+		}
+
+		$keys = array();
+
+		foreach($tmp as $key => $val) {
+			$keys[] = $this->_quoteIdentifier($key);
+		}
+
+		array_walk($this->_insert[2], function(&$val) { $val = strtoupper($val); });
+
+		$modifiers = !empty($this->_insert[2]) ? join(' ', $this->_insert[2]) : '';
+
+		$sql = "INSERT {$modifiers} INTO `{$name}` (".join(',',$keys).") VALUES\n";
+
+		// Dynamically sets up the params to be bound
+		foreach($data as $index => $row) {
+			$tuple = array_keys($tmp);
+
+			array_walk($tuple, function(&$key, $k, $index) {  $key = ':'.$key.$index; }, $index);
+
+			$sql .= "(".join(",", $tuple)."),\n";
+		}
+
+		// Removes the trailing comma created above.
+		$sql = substr($sql, 0, strlen($sql) - 2);
+
+		// Binding the params per row
+		foreach($data as $index => $row) {
+			foreach($row as $key => $field) {
+				$this->_binds[':'.$key.$index] = $field;
+			}
+		}
+
+		return array($sql, $this->_binds);
+	}
+
+	protected function _join()
+	{
+		$_join = '';
+
+		if(!count($this->_join)) {
+			return $_join;
+		}
+
+		foreach($this->_join as $join) {
+			$type = strtoupper($join[3]);
+
+			if(is_array($join[0])) {
+				$join[0] = $this->_quoteIdentifier(current($join[0]))." AS ".$this->_quoteIdentifier(key($join[0]));
+			} else {
+				$join[0] = $this->_quoteIdentifier($join[0]);
+			}
+
+			if(is_array($join[1])) {
+				$joins = $join[1];
+				$on = '';
+
+				foreach($joins as $key => $val) {
+					if(!empty($on)) {
+						$on .= ' AND ';
+					}
+
+					$on .= $this->_quoteIdentifier($key). ' = ' . $this->_quoteIdentifier($val);
+				}
+			} else {
+				$on = $join[1];
+			}
+
+			if($type == 'STRAIGHT') {
+				$type = 'STRAIGHT_JOIN';
+			} else {
+				$type = $type.' JOIN';
+			}
+
+			$_join .= "{$type} {$join[0]} ON {$on}\n";
+		}
+
+		return $_join;
+	}
+
+	protected function _order()
+	{
+		if(!count($this->_orderBy)) {
+			return '';
+		}
+
+		$sql = 'ORDER BY ';
+
+		foreach($this->_orderBy as $field => $dir) {
+			$sql .= $this->_quoteIdentifier($field).' '.$dir.',';
+		}
+
+		$sql = substr($sql, 0, strlen($sql)-1);
+
+		if(strlen($sql) > 0) {
+			$sql .= "\n";
+		}
+
+		return $sql;
+	}
+
+	protected function _quoteIdentifier($identifier)
+	{
+		if(!is_string($identifier)) {
+
+			$type = is_array($identifier) ? 'array' : get_class($identifier);
+
+			throw new \Exception('Identifier in _quoteIdentifier is a(n) '.$type.'!');
+		}
+
+		if(strpos($identifier, '*') !== false) {
+			return $identifier;
+		} elseif($this->_is_function($identifier)) {
+			return $identifier;
+		} elseif(strpos($identifier, '.') !== false) {
+			$identifier = explode('.', $identifier);
+
+			foreach($identifier as $key => $value) {
+				$identifier[$key] = $this->_quoteIdentifier($value);
+			}
+
+			return join('.', $identifier);
+		} else {
+			return "`$identifier`";
+		}
+	}
+
+	protected function _select()
+	{
+		$select = array();
+
+		foreach($this->_from as $from) {
+			foreach($from[1] as $alias => $field) {
+				if(preg_match('#[\.|\(\)]#', $field) === 0) {
+					$field = $this->_alias($from[0]).'.'.$field;
+				}
+
+				if(is_int($alias)) {
+					$select[] = $this->_quoteIdentifier($field);
+				} else {
+					$select[] = $this->_quoteIdentifier($field).' AS '.$this->_quoteIdentifier($alias);
+				}
+			}
+		}
+
+		foreach($this->_join as $join) {
+			if(count($join[2])) {
+				foreach($join[2] as $alias => $field) {
+					if(preg_match('#[\.|\(\)]#', $field) === 0) {
+						$field = $this->_alias($join[0]).'.'.$field;
+					}
+
+					if(is_int($alias)) {
+						$select[] = $this->_quoteIdentifier($field);
+					} else {
+						$select[] = $this->_quoteIdentifier($field).' AS '.$this->_quoteIdentifier($alias);
+					}
+				}
+			}
+		}
+
+		return join(', ', $select)."\n";
+	}
+
+	protected function _union()
+	{
+		if(empty($this->_union)) {
+			return '';
+		}
+
+		$sql = '';
+		$binds = array();
+
+		foreach($this->_union as $union) {
+			if(!empty($sql)) {
+				$sql .= "UNION\n";
+			}
+
+			if($union instanceof Sql) {
+				list($query, $args) = $union->assemble();
+			} elseif(is_array($union)) {
+				$query = $union[0];
+				$args = $union[1];
+			} else {
+				$query = $union;
+				$args = array();
+			}
+
+			$sql .= $query;
+
+			$binds = array_merge($args, $binds);
+		}
+
+		$this->bind($binds);
+
+		return $sql;
+	}
+
+	protected function _update()
+	{
+		if(!isset($this->_update[0])) {
+			return '';
+		}
+
+		$name = $this->_update[0];
+		$data = $this->_update[1];
+
+		$sql = "UPDATE {$name} SET \n";
+
+		foreach($data as $key => $val) {
+			$param = $this->_param($key, $val);
+
+			$sql .= $this->_quoteIdentifier($key)." = ".$param;
+
+			$this->_binds[$param] = $val;
+
+			$sql .= ",\n";
+		}
+
+		$sql = substr($sql, 0, strlen($sql) - 2);
+
+		return $sql.' ';
+	}
+
+	protected function _where_or_having($array)
+	{
+		$_where = '';
+
+		if(!count($array)) {
+			return $_where;
+		}
+
+		foreach($array as $where) {
+			if($where[1] instanceof $this) {
+				list($query, $args) = $where[1]->assemble();
+
+				str_replace(':query', $query, $_where[0]);
+
+				$this->bind($args);
+			}
+
+			if(empty($_where)) {
+				$_where = "({$where[0]})\n";
+			} else {
+				// Check for OR statements
+				if($where[2]) {
+					$_where .= "OR ({$where[0]})\n";
+				} else {
+					$_where .= "AND ({$where[0]})\n";
+				}
+			}
+
+			if(count($where[1])) {
+				$this->bind($where[1]);
+			}
+		}
+
+		return $_where;
+	}
+
+	protected function _buildFromCriteria(\Gacela\Criteria $criteria)
 	{
 		foreach($criteria as $stmt) {
 			$op = $stmt[0];
 
 			if($op instanceof \Gacela\Criteria) {
-				$query = new Sql($this->_schema, $op);
+				$query = new Sql($op);
 
 				$query = $query->assemble();
 
@@ -142,344 +471,6 @@ class Sql extends Query {
 			} elseif(in_array($op, array('notNull', 'null'))) {
 				$this->where("{$field} ".self::$_operators[$stmt[0]], array(), $or);
 			}
-		}
-	}
-
-	private function _from()
-	{
-		$_from = array();
-		foreach($this->_from as $from) {
-			if(is_array($from[0])) {
-				if(current($from[0]) instanceof Sql) {
-					list($table, $args) = current($from[0])->assemble();
-
-					$table = "(\n".$table.")";
-
-					$this->bind($args);
-				} else {
-					$table = $this->_quoteIdentifier(current($from[0]));
-				}
-
-				$alias = $this->_quoteIdentifier(key($from[0]));
-
-				$_from[] = $table." AS ".$alias;
-			} else {
-				$_from[] = $this->_quoteIdentifier($from[0]);
-			}
-		}
-
-		return join(', ', $_from)."\n";
-	}
-
-	private function _group()
-	{
-		if(!count($this->_groupBy)) {
-			return '';
-		}
-
-		$sql = 'GROUP BY ';
-
-		$i=0;
-		foreach($this->_groupBy as $field) {
-			if ($i) {
-				$sql .= ',';
-			}
-
-			$sql .= $this->_quoteIdentifier($field);
-
-			$i++;
-		}
-
-		if(strlen($sql) > 0) {
-			$sql .= "\n";
-		}
-
-		return $sql;
-	}
-
-	private function _insert()
-	{
-		if(!isset($this->_insert[0])) {
-			return '';
-		}
-
-		$name = $this->_insert[0];
-		$data = $this->_insert[1];
-
-		if(!isset($data[0]) || !is_array($data[0])) {
-			$data = array($data);
-		}
-
-		$tmp = current($data);
-
-		if(is_object($tmp)) {
-			$tmp = (array) $tmp;
-		}
-
-		$keys = array();
-
-		foreach($tmp as $key => $val) {
-			$keys[] = $this->_quoteIdentifier($key);
-		}
-
-		array_walk($this->_insert[2], function(&$val) { $val = strtoupper($val); });
-
-		$modifiers = !empty($this->_insert[2]) ? join(' ', $this->_insert[2]) : '';
-
-		$sql = "INSERT {$modifiers} INTO `{$name}` (".join(',',$keys).") VALUES\n";
-
-		// Dynamically sets up the params to be bound
-		foreach($data as $index => $row) {
-			$tuple = array_keys($tmp);
-
-			array_walk($tuple, function(&$key, $k, $index) {  $key = ':'.$key.$index; }, $index);
-
-			$sql .= "(".join(",", $tuple)."),\n";
-		}
-
-		// Removes the trailing comma created above.
-		$sql = substr($sql, 0, strlen($sql) - 2);
-
-		// Binding the params per row
-		foreach($data as $index => $row) {
-			foreach($row as $key => $field) {
-				$this->_binds[':'.$key.$index] = $field;
-			}
-		}
-
-		return array($sql, $this->_binds);
-	}
-
-	private function _join()
-	{
-		$_join = '';
-
-		if(!count($this->_join)) {
-			return $_join;
-		}
-
-		foreach($this->_join as $join) {
-			$type = strtoupper($join[3]);
-
-			if(is_array($join[0])) {
-				$join[0] = $this->_quoteIdentifier(current($join[0]))." AS ".$this->_quoteIdentifier(key($join[0]));
-			} else {
-				$join[0] = $this->_quoteIdentifier($join[0]);
-			}
-
-			if(is_array($join[1])) {
-				$joins = $join[1];
-				$on = '';
-
-				foreach($joins as $key => $val) {
-					if(!empty($on)) {
-						$on .= ' AND ';
-					}
-
-					$on .= $this->_quoteIdentifier($key). ' = ' . $this->_quoteIdentifier($val);
-				}
-			} else {
-				$on = $join[1];
-			}
-
-			if($type == 'STRAIGHT') {
-				$type = 'STRAIGHT_JOIN';
-			} else {
-				$type = $type.' JOIN';
-			}
-
-			$_join .= "{$type} {$join[0]} ON {$on}\n";
-		}
-
-		return $_join;
-	}
-
-	private function _order()
-	{
-		if(!count($this->_orderBy)) {
-			return '';
-		}
-
-		$sql = 'ORDER BY ';
-
-		foreach($this->_orderBy as $field => $dir) {
-			$sql .= $this->_quoteIdentifier($field).' '.$dir.',';
-		}
-
-		$sql = substr($sql, 0, strlen($sql)-1);
-
-		if(strlen($sql) > 0) {
-			$sql .= "\n";
-		}
-
-		return $sql;
-	}
-
-	private function _quoteIdentifier($identifier)
-	{
-		if(!is_string($identifier)) {
-
-			$type = is_array($identifier) ? 'array' : get_class($identifier);
-
-			throw new \Exception('Identifier in _quoteIdentifier is a(n) '.$type.'!');
-		}
-
-		if(strpos($identifier, '*') !== false) {
-			return $identifier;
-		} elseif($this->_is_function($identifier)) {
-			return $identifier;
-		} elseif(strpos($identifier, '.') !== false) {
-			$identifier = explode('.', $identifier);
-
-			foreach($identifier as $key => $value) {
-				$identifier[$key] = $this->_quoteIdentifier($value);
-			}
-
-			return join('.', $identifier);
-		} else {
-			return "`$identifier`";
-		}
-	}
-
-	private function _select()
-	{
-		$select = array();
-
-		foreach($this->_from as $from) {
-			foreach($from[1] as $alias => $field) {
-				if(preg_match('#[\.|\(\)]#', $field) === 0) {
-					$field = $this->_alias($from[0]).'.'.$field;
-				}
-
-				if(is_int($alias)) {
-					$select[] = $this->_quoteIdentifier($field);
-				} else {
-					$select[] = $this->_quoteIdentifier($field).' AS '.$this->_quoteIdentifier($alias);
-				}
-			}
-		}
-
-		foreach($this->_join as $join) {
-			if(count($join[2])) {
-				foreach($join[2] as $alias => $field) {
-					if(preg_match('#[\.|\(\)]#', $field) === 0) {
-						$field = $this->_alias($join[0]).'.'.$field;
-					}
-
-					if(is_int($alias)) {
-						$select[] = $this->_quoteIdentifier($field);
-					} else {
-						$select[] = $this->_quoteIdentifier($field).' AS '.$this->_quoteIdentifier($alias);
-					}
-				}
-			}
-		}
-
-		return join(', ', $select)."\n";
-	}
-
-	private function _union()
-	{
-		if(empty($this->_union)) {
-			return '';
-		}
-
-		$sql = '';
-		$binds = array();
-
-		foreach($this->_union as $union) {
-			if(!empty($sql)) {
-				$sql .= "UNION\n";
-			}
-
-			if($union instanceof Sql) {
-				list($query, $args) = $union->assemble();
-			} elseif(is_array($union)) {
-				$query = $union[0];
-				$args = $union[1];
-			} else {
-				$query = $union;
-				$args = array();
-			}
-
-			$sql .= $query;
-
-			$binds = array_merge($args, $binds);
-		}
-
-		$this->bind($binds);
-
-		return $sql;
-	}
-
-	private function _update()
-	{
-		if(!isset($this->_update[0])) {
-			return '';
-		}
-
-		$name = $this->_update[0];
-		$data = $this->_update[1];
-
-		$sql = "UPDATE {$name} SET \n";
-
-		foreach($data as $key => $val) {
-			$param = $this->_param($key, $val);
-
-			$sql .= $this->_quoteIdentifier($key)." = ".$param;
-
-			$this->_binds[$param] = $val;
-
-			$sql .= ",\n";
-		}
-
-		$sql = substr($sql, 0, strlen($sql) - 2);
-
-		return $sql.' ';
-	}
-
-	private function _where_or_having($array)
-	{
-		$_where = '';
-
-		if(!count($array)) {
-			return $_where;
-		}
-
-		foreach($array as $where) {
-			if($where[1] instanceof $this) {
-				list($query, $args) = $where[1]->assemble();
-
-				str_replace(':query', $query, $_where[0]);
-
-				$this->bind($args);
-			}
-
-			if(empty($_where)) {
-				$_where = "({$where[0]})\n";
-			} else {
-				// Check for OR statements
-				if($where[2]) {
-					$_where .= "OR ({$where[0]})\n";
-				} else {
-					$_where .= "AND ({$where[0]})\n";
-				}
-			}
-
-			if(count($where[1])) {
-				$this->bind($where[1]);
-			}
-		}
-
-		return $_where;
-	}
-
-	public function __construct($schema, \Gacela\Criteria $criteria = null)
-	{
-		$this->_schema = $schema;
-
-		if(!is_null($criteria)) {
-			$this->_buildFromCriteria($criteria);
 		}
 	}
 
@@ -578,7 +569,7 @@ class Sql extends Query {
 	 * @param null $schema
 	 * @return Database
 	 */
-	public function from($tableName, array $columns = array(), $schema = null)
+	public function from($tableName, array $columns = array())
 	{
 		if(is_array($tableName)) {
 			$name = key($tableName);
@@ -586,15 +577,11 @@ class Sql extends Query {
 			$name = $tableName;
 		}
 
-		if(is_null($schema)) {
-			$schema = $this->_schema;
-		}
-
 		if(empty($columns)) {
 			$columns = array('*');
 		}
 
-		$this->_from[$name] = array($tableName, $columns, $schema);
+		$this->_from[$name] = array($tableName, $columns);
 
 		return $this;
 	}

@@ -18,8 +18,6 @@ abstract class DataSource implements iDataSource {
 
 	protected $_lastQuery = array();
 
-	abstract protected function _driver();
-
 	protected function _cache($name, $key, $data = null)
 	{
 		$instance = $this->_singleton();
@@ -59,9 +57,26 @@ abstract class DataSource implements iDataSource {
 		$instance->incrementCache($name.'_version');
 	}
 
+	protected function _driver()
+	{
+		if(empty($this->_driver))
+		{
+			$adapter = $this->_singleton()->autoload("\\DataSource\\Adapter\\".ucfirst($this->_config->type));
+
+			$this->_driver = new $adapter($this->_config);
+		}
+
+		return $this->_driver;
+	}
+
 	protected function _singleton()
 	{
 		return \Gacela::instance();
+	}
+
+	public function __construct(array $config)
+	{
+		$this->_config = (object) $config;
 	}
 
 	public function beginTransaction()
@@ -72,6 +87,11 @@ abstract class DataSource implements iDataSource {
 	public function commitTransaction()
 	{
 		return false;
+	}
+
+	public function lastQuery()
+	{
+		return $this->_lastQuery;
 	}
 
 	/**

@@ -10,7 +10,6 @@ namespace Gacela\DataSource\Adapter;
 
 abstract class Pdo extends Adapter {
 
-
 	public function __construct($config)
 	{
 		parent::__construct($config);
