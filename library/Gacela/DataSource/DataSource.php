@@ -69,6 +69,18 @@ abstract class DataSource implements iDataSource {
 		return $this->_driver;
 	}
 
+	protected function _setLastQuery($query, $args = null)
+	{
+		if($query instanceof Query\Query)  {
+			// Using the _lastQuery variable so that we can see the query when debugging
+			list($this->_lastQuery['query'], $this->_lastQuery['args']) = $query->assemble();
+		} else {
+			$this->_lastQuery = array('query' => $query, 'args' => $args);
+		}
+
+		return hash('whirlpool', serialize(array($this->_lastQuery['query'], $this->_lastQuery['args'])));
+	}
+
 	protected function _singleton()
 	{
 		return \Gacela::instance();

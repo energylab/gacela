@@ -23,8 +23,6 @@ class Sql extends Query {
 		'notNull' => 'IS NOT NULL'
 	);
 
-	protected $_binds = array();
-
 	protected $_delete = null;
 
 	protected $_from = array();

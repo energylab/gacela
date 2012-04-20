@@ -33,16 +33,7 @@ class Salesforce extends DataSource
 
 	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
-		$query = $this->getQuery();
-
-		foreach($primary as $key => $val) {
-			$query->where($resource->getName().'.'.$key.' = :'.$key, array(':'.$key => $val));
-		}
-
-		return $this->query(
-					$resource,
-					$query->from($resource->getName())
-				);
+		throw new \Exception('Not Implemented Yet. Will use retrieve');
 	}
 
 	/**
@@ -50,10 +41,10 @@ class Salesforce extends DataSource
 	 */
 	public function findAll(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
-		if(count($query->from) === 0) {
-			$query->from($resource->getName());
+		if(!count($query->from) > 0) {
+			$query->from($resource->getName(), array_keys($resource->getFields()));
 		}
-
+		
 		return $this->query($resource,$query);
 	}
 
@@ -85,9 +76,34 @@ class Salesforce extends DataSource
 	 * @param  string|Query $query A valid representation of a query for the DataSource
 	 * @return array
 	 */
-	public function query(\Gacela\DataSource\Resource $resource, $query)
+	public function query(\Gacela\DataSource\Resource $resource, $query, $args = null)
 	{
-		// Bunch of setup to do here
+		$key = $this->_setLastQuery($query, $args);
+
+		$cached = $this->_cache($resource->getName(), $key);
+
+		// If the query is cached, return the cached data
+		if($cached !== false AND !is_null($cached)) {
+			return $cached;
+		}
+
+		try { //exit(\Debug::vars($this->_lastQuery['query']));
+			$return = $this->_driver()->query($this->_lastQuery['query']);
+
+			if(isset($return->records)) {
+				$return = $return->records;
+				$this->_cache($resource->getName(), $key, $return);
+			}
+
+			return array();
+		} catch(\SoapFault $s) {
+			exit(\Debug::vars($s));
+		}
+	}
+
+	public function quote($value)
+	{
+		return addslashes($value);
 	}
 
 	/**

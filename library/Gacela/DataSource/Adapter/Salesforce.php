@@ -28,7 +28,13 @@ class Salesforce extends Adapter
 	//put your code here
 	public function load($name)
 	{
-		$result = $this->_conn->describeSObject($name);
+		$config = $this->_loadConfig($name);
+
+		if(!is_null($config)) {
+			return $config;
+		}
+
+		$result = $this->describeSObject($name);
 
 		$_meta = array(
 			'name' => $name,
@@ -78,7 +84,7 @@ class Salesforce extends Adapter
 
 			$_meta['columns'][$field->name] = (object) $meta;
 		}
-		
+
 		return $_meta;
 	}
 }

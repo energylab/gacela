@@ -10,6 +10,8 @@ namespace Gacela\DataSource\Query;
 
 abstract class Query {
 
+	protected $_binds = array();
+
 	abstract protected function _buildFromCriteria(\Gacela\Criteria $criteria);
 
 	protected function _cast($value)

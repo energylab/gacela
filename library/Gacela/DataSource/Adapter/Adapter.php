@@ -27,6 +27,36 @@ abstract class Adapter implements iAdapter {
 		'null' => true
 	);
 
+	protected function _loadConfig($name)
+	{
+		// Pull from the config file if enabled
+		$config = $this->_singleton()->loadConfig($name);
+
+		if(!is_null($config)) {
+			$_meta = array_merge(
+				array(
+					'name' => $name,
+					'primary' => array(),
+					'relations' => array(),
+					'columns' => array()
+				),
+				$config
+			);
+
+			foreach($_meta['columns'] as $key => $array) {
+				$_meta['columns'][$key] = (object) array_merge(self::$_meta, $array);
+			}
+
+			foreach($_meta['relations'] as $k => $relation) {
+				$_meta['relations'][$k] = (object) $relation;
+			}
+
+			return $_meta;
+		}
+
+		return null;
+	}
+
 	protected function _singleton()
 	{
 		return \Gacela::instance();

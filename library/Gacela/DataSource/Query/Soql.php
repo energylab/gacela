@@ -11,10 +11,36 @@ namespace Gacela\DataSource\Query;
 
 class Soql extends Sql
 {
+	protected function _quoteIdentifier($identifier)
+	{
+		return $identifier;
+	}
+
+	protected function _select()
+	{
+		$select = array();
+
+		foreach($this->_from as $from) {
+			foreach($from[1] as $alias => $field) {
+				if(preg_match('#[\.|\(\)]#', $field) === 0) {
+					$field = $this->_alias($from[0]).'.'.$field;
+				}
+
+				if(is_int($alias)) {
+					$select[] = $this->_quoteIdentifier($field);
+				} else {
+					$select[] = $this->_quoteIdentifier($field).' AS '.$this->_quoteIdentifier($alias);
+				}
+			}
+		}
+
+		return join(', ', $select)."\n";
+	}
+
 	public function quote($param)
 	{
 		// This sucks but its the best of I've got right now.
-		return addslashes($param);
+		return "'".addslashes($param)."'";
 	}
 
 	public function assemble()
@@ -46,9 +72,17 @@ class Soql extends Sql
 		$sql .= $this->_order();
 
 		if(!empty($this->_limit)) {
-			$sql .= 'LIMIT '.(int) $this->_limit[0].', '.(int) $this->_limit[1]."\n";
+			$sql .= 'LIMIT '.(int) $this->_limit[1]."\n";
 		}
 
+		foreach($this->_binds as $key => $arg) {
+			$this->_binds[$key] = $this->quote($arg);
+		}
+
+		$sql = strtr($sql, $this->_binds);
+
 		$this->_sql = $sql;
+
+		return array($this->_sql, $this->_binds);
 	}
 }

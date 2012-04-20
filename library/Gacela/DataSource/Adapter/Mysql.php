@@ -49,21 +49,10 @@ class Mysql extends Pdo {
 			'primary' => array()
 		);
 
-		// Pull from the config file if enabled
-		$config = $this->_singleton()->loadConfig($name);
+		$config = $this->_loadConfig($name);
 
 		if(!is_null($config)) {
-			$_meta = array_merge($_meta, $config);
-
-			foreach($_meta['columns'] as $key => $array) {
-				$_meta['columns'][$key] = (object) array_merge(self::$_meta, $array);
-			}
-
-			foreach($_meta['relations'] as $k => $relation) {
-				$_meta['relations'][$k] = (object) $relation;
-			}
-
-			return $_meta;
+			return $config;
 		}
 
 		// Setup Column meta information
