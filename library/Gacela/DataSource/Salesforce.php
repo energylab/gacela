@@ -44,7 +44,7 @@ class Salesforce extends DataSource
 		if(!count($query->from) > 0) {
 			$query->from($resource->getName(), array_keys($resource->getFields()));
 		}
-		
+
 		return $this->query($resource,$query);
 	}
 
@@ -87,15 +87,17 @@ class Salesforce extends DataSource
 			return $cached;
 		}
 
-		try { //exit(\Debug::vars($this->_lastQuery['query']));
+		try {
 			$return = $this->_driver()->query($this->_lastQuery['query']);
 
 			if(isset($return->records)) {
 				$return = $return->records;
 				$this->_cache($resource->getName(), $key, $return);
+			} else {
+				$return = array();
 			}
 
-			return array();
+			return $return;
 		} catch(\SoapFault $s) {
 			exit(\Debug::vars($s));
 		}

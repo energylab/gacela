@@ -30,7 +30,7 @@ class Salesforce extends Adapter
 	{
 		$config = $this->_loadConfig($name);
 
-		if(!is_null($config)) {
+		if(!is_null($config) && !is_integer(key($config['columns']))) {
 			return $config;
 		}
 
@@ -44,7 +44,7 @@ class Salesforce extends Adapter
 		);
 
 		foreach($result->fields as $field) {
-			if($field->deprecatedAndHidden === true) {
+			if($field->deprecatedAndHidden === true OR (!is_null($config) && !in_array($field->name, $config['columns']))) {
 				continue;
 			}
 

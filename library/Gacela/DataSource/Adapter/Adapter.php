@@ -43,8 +43,10 @@ abstract class Adapter implements iAdapter {
 				$config
 			);
 
-			foreach($_meta['columns'] as $key => $array) {
-				$_meta['columns'][$key] = (object) array_merge(self::$_meta, $array);
+			if(!is_integer(key($_meta['columns']))) {
+				foreach($_meta['columns'] as $key => $array) {
+					$_meta['columns'][$key] = (object) array_merge(self::$_meta, $array);
+				}
 			}
 
 			foreach($_meta['relations'] as $k => $relation) {
