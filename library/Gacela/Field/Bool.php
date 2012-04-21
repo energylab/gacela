@@ -12,27 +12,24 @@ class Bool extends Field {
 
 	const TYPE_CODE = 'invalid_bool';
 
-	public function validate($value)
+	public static function validate($meta, $value)
 	{
-		$this->errorCode = null;
-
 		if(is_null($value)) {
-			if(!$this->null) {
-				$this->errorCode = self::NULL_CODE;
+			if(!$meta->null) {
+				return self::NULL_CODE;
 			}
 
-			return $this->null;
+			return $meta->null;
 		}
 
 		if(!is_bool($value)) {
-			$this->errorCode = self::TYPE_CODE;
-			return false;
+			return  self::TYPE_CODE;
 		} else {
 			return true;
 		}
 	}
 
-	public function transform($value, $in = true)
+	public static function transform($meta, $value, $in = true)
 	{
 		if($in && is_bool($value)) {
 			$value === true ? $value = 1 : $value = 0;

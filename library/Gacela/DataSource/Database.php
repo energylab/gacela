@@ -9,12 +9,6 @@ namespace Gacela\DataSource;
 
 class Database extends DataSource {
 
-	protected $_conn;
-
-	protected $_driver;
-
-	protected $_lastQuery = array();
-
 	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		$include_columns = false;
@@ -55,31 +49,22 @@ class Database extends DataSource {
 	protected function _driver()
 	{
 		if(empty($this->_driver)) {
+			$adapter = $this->_singleton()->autoload("\\DataSource\\Adapter\\".ucfirst($this->_config->dbtype));
 
-			$adapter = "\\Gacela\\DataSource\\Adapter\\".ucfirst($this->_config->dbtype);
-			$this->_driver = new $adapter;
+			$this->_driver = new $adapter($this->_config);
 		}
 
 		return $this->_driver;
 	}
 
-	public function __construct(array $config)
-	{
-		$this->_config = (object) $config;
-
-		$dsn = $this->_config->dbtype.':dbname='.$this->_config->schema.';host='.$this->_config->host;
-
-		$this->_conn = new \PDO($dsn, $this->_config->user, $this->_config->password);
-	}
-
 	public function beginTransaction()
 	{
-		return $this->_conn->beginTransaction();
+		return $this->_driver()->beginTransaction();
 	}
 
 	public function commitTransaction()
 	{
-		return $this->_conn->commit();
+		return $this->_driver()->commit();
 	}
 
 	/**
@@ -93,7 +78,7 @@ class Database extends DataSource {
 	{
 		list($query, $args) = $where->delete($name)->assemble();
 
-		$query = $this->_conn->prepare($query);
+		$query = $this->_driver()->prepare($query);
 
 		if($query->execute($args)) {
 			if($query->rowCount() == 0) {
@@ -178,17 +163,27 @@ class Database extends DataSource {
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		return new Query\Database($this->_config->schema, $criteria);
+		return new Query\Sql($criteria);
 	}
 
 	/**
 	 * @see Gacela\DataSource\iDataSource::insert()
 	 */
-	public function insert($name, array $data, $transaction = null)
+	public function insert($name, $data)
 	{
-		list($sql, $binds) = $this->getQuery()->insert($name, $data)->assemble();
+		if($data instanceof \Gacela\DataSource\Query\Query) {
+			list($sql, $binds) = $data->assemble();
+		} elseif(is_array($data) && !is_integer(key($data))) {
+			list($sql, $binds) = $this->getQuery()->insert($name, $data)->assemble();
+		} elseif(is_array($data) && is_integer(key($data))) {
+			$sql = $data[0];
+			$binds = $data[1];
+		} else {
+			$sql = $data;
+			$binds = array();
+		}
 
-		$query = $this->_conn->prepare($sql);
+		$query = $this->_driver()->prepare($sql);
 
 		try {
 			if($query->execute($binds)) {
@@ -198,9 +193,9 @@ class Database extends DataSource {
 
 				$this->_incrementCache($name);
 
-				return $this->_conn->lastInsertId();
+				return $this->_driver()->lastInsertId();
 			} else {
-				if($this->_conn->inTransaction()) {
+				if($this->_driver()->inTransaction()) {
 					$this->rollbackTransaction();
 				}
 
@@ -218,7 +213,7 @@ class Database extends DataSource {
 				);
 			}
 		} catch (PDOException $e) {
-			if($this->_conn->inTransaction()) {
+			if($this->_driver()->inTransaction()) {
 				$this->rollbackTransaction();
 			}
 
@@ -227,24 +222,12 @@ class Database extends DataSource {
 
 	}
 
-	public function lastQuery()
-	{
-		return $this->_lastQuery;
-	}
-
 	/**
 	 * @see Gacela\DataSource\iDataSource::query()
 	 */
 	public function query(\Gacela\DataSource\Resource $resource, $query, $args = null)
 	{
-		if($query instanceof Query\Query)  {
-			// Using the _lastQuery variable so that we can see the query when debugging
-			list($this->_lastQuery['query'], $this->_lastQuery['args']) = $query->assemble();
-		} else {
-			$this->_lastQuery = array('query' => $query, 'args' => $args);
-		}
-
-		$key = hash('whirlpool', serialize(array($this->_lastQuery['query'], $this->_lastQuery['args'])));
+		$key = $this->_setLastQuery($query, $args);
 
 		$cached = $this->_cache($resource->getName(), $key);
 
@@ -253,7 +236,7 @@ class Database extends DataSource {
 			return $cached;
 		}
 
-		$stmt = $this->_conn->prepare($this->_lastQuery['query']);
+		$stmt = $this->_driver()->prepare($this->_lastQuery['query']);
 
 		if($stmt->execute($this->_lastQuery['args']) === true) {
 			$return = $stmt->fetchAll(\PDO::FETCH_OBJ);
@@ -268,12 +251,12 @@ class Database extends DataSource {
 
 	public function quote($var, $type = null)
 	{
-		return $this->_conn->quote($var, $type);
+		return $this->_driver()->quote($var, $type);
 	}
 
 	public function rollbackTransaction()
 	{
-		return $this->_conn->rollBack();
+		return $this->_driver()->rollBack();
 	}
 
 	/**
@@ -284,14 +267,24 @@ class Database extends DataSource {
 	 * @param \Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function update($name, $data, \Gacela\DataSource\Query\Query $where, $transaction = null)
+	public function update($name, $data, \Gacela\DataSource\Query\Query $where = null)
 	{
-		list($query, $args) = $where->update($name, $data)->assemble();
+		if($data instanceof \Gacela\DataSource\Query\Query) {
+			list($query, $binds) = $data->assemble();
+		} elseif(is_array($data) && !is_integer(key($data))) {
+			list($query, $binds) = $where->update($name, $data)->assemble();
+		} elseif(is_array($data) && is_integer(key($data))) {
+			$query = $data[0];
+			$binds = $data[1];
+		} else {
+			$query = $data;
+			$binds = array();
+		}
 
-		$query = $this->_conn->prepare($query);
+		$query = $this->_driver()->prepare($query);
 
 		try {
-			if($query->execute($args)) {
+			if($query->execute($binds)) {
 				if($query->rowCount() == 0) {
 					return false;
 				}
@@ -299,14 +292,14 @@ class Database extends DataSource {
 				$this->_incrementCache($name);
 				return true;
 			} else {
-				if($this->_conn->inTransaction()) {
+				if($this->_driver()->inTransaction()) {
 					$this->rollbackTransaction();
 				}
 
 				throw new \Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');
 			}
 		} catch (PDOException $e) {
-			if($this->_conn->inTransaction()) {
+			if($this->_driver()->inTransaction()) {
 				$this->rollbackTransaction();
 			}
 

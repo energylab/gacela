@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date May 7, 2011
  * @brief
- * 
+ *
 */
 
 namespace Gacela\DataSource;
@@ -14,7 +14,9 @@ abstract class DataSource implements iDataSource {
 
 	protected $_resources = array();
 
-	abstract protected function _driver();
+	protected $_driver;
+
+	protected $_lastQuery = array();
 
 	protected function _cache($name, $key, $data = null)
 	{
@@ -55,9 +57,38 @@ abstract class DataSource implements iDataSource {
 		$instance->incrementCache($name.'_version');
 	}
 
+	protected function _driver()
+	{
+		if(empty($this->_driver))
+		{
+			$adapter = $this->_singleton()->autoload("\\DataSource\\Adapter\\".ucfirst($this->_config->type));
+
+			$this->_driver = new $adapter($this->_config);
+		}
+
+		return $this->_driver;
+	}
+
+	protected function _setLastQuery($query, $args = null)
+	{
+		if($query instanceof Query\Query)  {
+			// Using the _lastQuery variable so that we can see the query when debugging
+			list($this->_lastQuery['query'], $this->_lastQuery['args']) = $query->assemble();
+		} else {
+			$this->_lastQuery = array('query' => $query, 'args' => $args);
+		}
+
+		return hash('whirlpool', serialize(array($this->_lastQuery['query'], $this->_lastQuery['args'])));
+	}
+
 	protected function _singleton()
 	{
 		return \Gacela::instance();
+	}
+
+	public function __construct(array $config)
+	{
+		$this->_config = (object) $config;
 	}
 
 	public function beginTransaction()
@@ -70,6 +101,11 @@ abstract class DataSource implements iDataSource {
 		return false;
 	}
 
+	public function lastQuery()
+	{
+		return $this->_lastQuery;
+	}
+
 	/**
 	 * @see \Gacela\DataSource\iDataSource::loadResource()
 	 */
@@ -78,7 +114,7 @@ abstract class DataSource implements iDataSource {
 		$cached = $this->_singleton()->cache('resource_'.$name);
 
 		if($cached === false || is_null($cached))  {
-			$cached = new Resource($this->_driver()->load($this->_conn, $name, $this->_config->schema));
+			$cached = new Resource($this->_driver()->load($name));
 
 			$this->_singleton()->cache('resource_'.$name, $cached);
 		}

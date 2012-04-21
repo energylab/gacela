@@ -36,6 +36,11 @@ abstract class Model implements iModel {
 		return $this->_errors;
 	}
 
+	protected function _field()
+	{
+		return $this->_singleton()->autoload("\\Field\\Field");
+	}
+
 	/**
 	 * @return \Gacela\Mapper\Mapper
 	 */
@@ -55,6 +60,24 @@ abstract class Model implements iModel {
 		return $this->_mapper;
 	}
 
+	protected function _set($key, $val)
+	{
+		if(isset($this->_data->$key)) {
+			$this->_originalData[$key] = $this->_data->$key;
+		}
+
+		$this->_changed[] = $key;
+
+		$field = $this->_field();
+
+		$this->_data->$key = $field::transform($this->_fields[$key], $val, false);
+	}
+
+	protected function _singleton()
+	{
+		return \Gacela::instance();
+	}
+
 	/**
 	 * @param array|stdClass $data
 	 */
@@ -69,12 +92,16 @@ abstract class Model implements iModel {
 
 		$this->_data = new \stdClass;
 
-		foreach($this->_fields as $field => $meta) {
-			$this->_data->$field = $meta->transform($meta->default, false);
-		}
+		$field = $this->_field();
 
-		foreach($data as $key => $value) {
-			$this->_data->$key = $this->_fields[$key]->transform($data[$key], false);
+		foreach($this->_fields as $name => $meta) {
+			if(isset($data[$name])) {
+				$value = $data[$name];
+			} else {
+				$value = $meta->default;
+			}
+
+			$this->_data->$name = $field::transform($meta, $value, false);
 		}
 
 		$this->init();
@@ -142,13 +169,7 @@ abstract class Model implements iModel {
 		if(method_exists($this, $method)) {
 			$this->$method($val);
 		} else {
-			if(isset($this->_data->$key)) {
-				$this->_originalData[$key] = $this->_data->$key;
-			}
-
-			$this->_changed[] = $key;
-
-			$this->_data->$key = $this->_fields[$key]->transform($val, false);
+			$this->_set($key, $val);
 		}
 	}
 
@@ -172,7 +193,12 @@ abstract class Model implements iModel {
 
 	public function remove($association)
 	{
-		return $this->_mapper()->removeAssociation($association, $this->_data);
+		if($association->count())
+		{
+			return $this->_mapper()->removeAssociation($association, $this->_data);
+		}
+
+		return true;
 	}
 
 	/**
@@ -212,9 +238,10 @@ abstract class Model implements iModel {
 			}
 		}
 
+		$field = $this->_field();
 		foreach((array) $this->_data as $key => $val) {
-			if($this->_fields[$key]->validate($val) === false) {
-				$this->_errors[$key] = $this->_fields[$key]->errorCode;
+			if(($rs = $field::validate($this->_fields[$key], $val)) !== true) {
+				$this->_errors[$key] = $rs;
 			}
 		}
 

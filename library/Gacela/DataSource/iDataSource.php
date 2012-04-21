@@ -48,7 +48,7 @@ interface iDataSource {
 	 * @param string - 'begin', 'commit'
 	 * @return int|bool Last insert id (if supported by the DataSource and Resource) otherwise a boolean true
 	 */
-	public function insert($name, array $data);
+	public function insert($name, $data);
 
 	/**
 	 * @abstract
@@ -63,7 +63,7 @@ interface iDataSource {
 	 * @param  string|Query $query A valid representation of a query for the DataSource
 	 * @return array
 	 */
-	public function query(\Gacela\DataSource\Resource $resource, $query);
+	public function query(\Gacela\DataSource\Resource $resource, $query, $args = null);
 
 	/**
 	 * @abstract
@@ -73,5 +73,5 @@ interface iDataSource {
 	 * @param string - 'begin', 'commit'
 	 * @return bool
 	 */
-	public function update($name, $data, \Gacela\DataSource\Query\Query $where);
+	public function update($name, $data, \Gacela\DataSource\Query\Query $where = null);
 }

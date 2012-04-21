@@ -8,7 +8,7 @@
 
 namespace Gacela\DataSource\Query;
 
-class Database extends Query {
+class Sql extends Query {
 
 	protected static $_operators = array(
 		'equals' => '=',
@@ -22,8 +22,6 @@ class Database extends Query {
 		'null' => 'IS NULL',
 		'notNull' => 'IS NOT NULL'
 	);
-
-	protected $_binds = array();
 
 	protected $_delete = null;
 
@@ -47,11 +45,13 @@ class Database extends Query {
 
 	protected $_sql = null;
 
+	protected $_union = array();
+
 	protected $_update = array();
 
 	protected $_where = array();
 
-	private function _alias($schema)
+	protected function _alias($schema)
 	{
 		if(is_array($schema)) {
 			return key($schema);
@@ -60,82 +60,38 @@ class Database extends Query {
 		return $schema;
 	}
 
-	private function _buildFromCriteria($criteria)
+	protected function _is_function($value)
 	{
-		foreach($criteria as $stmt) {
-			$op = $stmt[0];
+		$value = trim($value);
 
-			if($op instanceof \Gacela\Criteria) {
-				$query = new \Gacela\DataSource\Query\Database($this->_schema, $op);
-
-				$query = $query->assemble();
-				
-				$this->where($query[0], $query[1], $stmt[1]);
-
-				// Move along, nothing more to see here
-				continue;
-			}
-
-			$field = $stmt[1];
-			$or = isset($stmt[3]) ? $stmt[3] : false;
-
-			if(isset($stmt[2])) {
-				$args = $stmt[2];
-			} else {
-				$args = '';
-			}
-
-			if($op == 'limit') {
-				$this->limit($field, $args);
-
-				// Move on, this one is all done.
-				continue;
-			} elseif($op == 'sort') {
-				$this->orderBy($field, $args);
-			}
-
-
-
-			$bind = array();
-			$toBind = '';
-
-			if(isset($args)) {
-				if(!in_array($op, array('in', 'notIn'))) {
-					$toBind = preg_replace("/[-\.: ]/", '_', $field.'_'.$args);
-					$toBind = ':'.$toBind;
-
-					if(in_array($op, array('like', 'notLike'))) {
-						$args = '%'.$args.'%';
-					}
-
-					$bind = array($toBind => $args);
-				}
-			}
-
-			if(in_array($op, array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
-				if(empty($bind)) {
-					continue;
-				}
-
-				$this->where($this->_quoteIdentifier($field).' '.self::$_operators[$op]." {$toBind}", $bind, $or);
-			} elseif(in_array($op, array('in', 'notIn'))) {
-				if(empty($stmt[2])) {
-					continue;
-				}
-
-				$this->in($field, $stmt[2], $op === 'in' ? false : true, $or);
-			} elseif(in_array($op, array('notNull', 'null'))) {
-				$this->where("{$field} ".self::$_operators[$stmt[0]], array(), $or);
-			}
+		if(strpos($value, ')') == strlen($value)-1 AND strpos($value, '(') !== false) {
+			return true;
 		}
 	}
 
-	private function _from()
+	protected function _param($field, $args)
+	{
+		return ':'.preg_replace("/[-\.:\$\^\*& ]/", '_', $field).'_'.sha1($args);
+	}
+
+	protected function _from()
 	{
 		$_from = array();
 		foreach($this->_from as $from) {
 			if(is_array($from[0])) {
-				$_from[] = $this->_quoteIdentifier(current($from[0]))." AS ".$this->_quoteIdentifier(key($from[0]));
+				if(current($from[0]) instanceof Sql) {
+					list($table, $args) = current($from[0])->assemble();
+
+					$table = "(\n".$table.")";
+
+					$this->bind($args);
+				} else {
+					$table = $this->_quoteIdentifier(current($from[0]));
+				}
+
+				$alias = $this->_quoteIdentifier(key($from[0]));
+
+				$_from[] = $table." AS ".$alias;
 			} else {
 				$_from[] = $this->_quoteIdentifier($from[0]);
 			}
@@ -144,7 +100,7 @@ class Database extends Query {
 		return join(', ', $_from)."\n";
 	}
 
-	private function _group()
+	protected function _group()
 	{
 		if(!count($this->_groupBy)) {
 			return '';
@@ -170,7 +126,7 @@ class Database extends Query {
 		return $sql;
 	}
 
-	private function _insert()
+	protected function _insert()
 	{
 		if(!isset($this->_insert[0])) {
 			return '';
@@ -195,7 +151,11 @@ class Database extends Query {
 			$keys[] = $this->_quoteIdentifier($key);
 		}
 
-		$sql = "INSERT INTO `{$name}` (".join(',',$keys).") VALUES\n";
+		array_walk($this->_insert[2], function(&$val) { $val = strtoupper($val); });
+
+		$modifiers = !empty($this->_insert[2]) ? join(' ', $this->_insert[2]) : '';
+
+		$sql = "INSERT {$modifiers} INTO `{$name}` (".join(',',$keys).") VALUES\n";
 
 		// Dynamically sets up the params to be bound
 		foreach($data as $index => $row) {
@@ -203,23 +163,23 @@ class Database extends Query {
 
 			array_walk($tuple, function(&$key, $k, $index) {  $key = ':'.$key.$index; }, $index);
 
-			$sql .= "(".join(",", $tuple)."),";
+			$sql .= "(".join(",", $tuple)."),\n";
 		}
 
 		// Removes the trailing comma created above.
-		$sql = substr($sql, 0, strlen($sql) - 1);
+		$sql = substr($sql, 0, strlen($sql) - 2);
 
 		// Binding the params per row
 		foreach($data as $index => $row) {
 			foreach($row as $key => $field) {
-				$this->_binds[$key.$index] = $field;
+				$this->_binds[':'.$key.$index] = $field;
 			}
 		}
 
 		return array($sql, $this->_binds);
 	}
 
-	private function _join()
+	protected function _join()
 	{
 		$_join = '';
 
@@ -251,13 +211,19 @@ class Database extends Query {
 				$on = $join[1];
 			}
 
-			$_join .= "{$type} JOIN {$join[0]} ON {$on}\n";
+			if($type == 'STRAIGHT') {
+				$type = 'STRAIGHT_JOIN';
+			} else {
+				$type = $type.' JOIN';
+			}
+
+			$_join .= "{$type} {$join[0]} ON {$on}\n";
 		}
 
 		return $_join;
 	}
 
-	private function _order()
+	protected function _order()
 	{
 		if(!count($this->_orderBy)) {
 			return '';
@@ -278,15 +244,18 @@ class Database extends Query {
 		return $sql;
 	}
 
-	private function _quoteIdentifier($identifier)
+	protected function _quoteIdentifier($identifier)
 	{
-		if(is_array($identifier)) {
-			throw new \Exception('Identifier in _quoteIdentifier is an array');
+		if(!is_string($identifier)) {
+
+			$type = is_array($identifier) ? 'array' : get_class($identifier);
+
+			throw new \Exception('Identifier in _quoteIdentifier is a(n) '.$type.'!');
 		}
 
 		if(strpos($identifier, '*') !== false) {
 			return $identifier;
-		} elseif(strpos($identifier, '(') && strpos($identifier, ')')) {
+		} elseif($this->_is_function($identifier)) {
 			return $identifier;
 		} elseif(strpos($identifier, '.') !== false) {
 			$identifier = explode('.', $identifier);
@@ -301,7 +270,7 @@ class Database extends Query {
 		}
 	}
 
-	private function _select()
+	protected function _select()
 	{
 		$select = array();
 
@@ -338,7 +307,41 @@ class Database extends Query {
 		return join(', ', $select)."\n";
 	}
 
-	private function _update()
+	protected function _union()
+	{
+		if(empty($this->_union)) {
+			return '';
+		}
+
+		$sql = '';
+		$binds = array();
+
+		foreach($this->_union as $union) {
+			if(!empty($sql)) {
+				$sql .= "UNION\n";
+			}
+
+			if($union instanceof Sql) {
+				list($query, $args) = $union->assemble();
+			} elseif(is_array($union)) {
+				$query = $union[0];
+				$args = $union[1];
+			} else {
+				$query = $union;
+				$args = array();
+			}
+
+			$sql .= $query;
+
+			$binds = array_merge($args, $binds);
+		}
+
+		$this->bind($binds);
+
+		return $sql;
+	}
+
+	protected function _update()
 	{
 		if(!isset($this->_update[0])) {
 			return '';
@@ -350,9 +353,13 @@ class Database extends Query {
 		$sql = "UPDATE {$name} SET \n";
 
 		foreach($data as $key => $val) {
-			$sql .= $this->_quoteIdentifier($key)." = :".$key.",\n";
+			$param = $this->_param($key, $val);
 
-			$this->_binds[':'.$key] = $val;
+			$sql .= $this->_quoteIdentifier($key)." = ".$param;
+
+			$this->_binds[$param] = $val;
+
+			$sql .= ",\n";
 		}
 
 		$sql = substr($sql, 0, strlen($sql) - 2);
@@ -360,15 +367,23 @@ class Database extends Query {
 		return $sql.' ';
 	}
 
-	private function _where()
+	protected function _where_or_having($array)
 	{
 		$_where = '';
 
-		if(!count($this->_where)) {
+		if(!count($array)) {
 			return $_where;
 		}
 
-		foreach($this->_where as $where) {
+		foreach($array as $where) {
+			if($where[1] instanceof $this) {
+				list($query, $args) = $where[1]->assemble();
+
+				str_replace(':query', $query, $_where[0]);
+
+				$this->bind($args);
+			}
+
 			if(empty($_where)) {
 				$_where = "({$where[0]})\n";
 			} else {
@@ -388,12 +403,72 @@ class Database extends Query {
 		return $_where;
 	}
 
-	public function __construct($schema, \Gacela\Criteria $criteria = null)
+	protected function _buildFromCriteria(\Gacela\Criteria $criteria)
 	{
-		$this->_schema = $schema;
+		foreach($criteria as $stmt) {
+			$op = $stmt[0];
 
-		if(!is_null($criteria)) {
-			$this->_buildFromCriteria($criteria);
+			if($op instanceof \Gacela\Criteria) {
+				$query = new Sql($op);
+
+				$query = $query->assemble();
+
+				$this->where($query[0], $query[1], $stmt[1]);
+
+				// Move along, nothing more to see here
+				continue;
+			}
+
+			$field = $stmt[1];
+			$or = isset($stmt[3]) ? $stmt[3] : false;
+
+			if(isset($stmt[2])) {
+				$args = $stmt[2];
+			} else {
+				$args = '';
+			}
+
+			if($op == 'limit') {
+				$this->limit($field, $args);
+
+				// Move on, this one is all done.
+				continue;
+			} elseif($op == 'sort') {
+				$this->orderBy($field, $args);
+			}
+
+
+
+			$bind = array();
+			$toBind = '';
+
+			if(isset($args)) {
+				if(!in_array($op, array('in', 'notIn'))) {
+					$toBind = $this->_param($field, $args);
+
+					if(in_array($op, array('like', 'notLike'))) {
+						$args = '%'.$args.'%';
+					}
+
+					$bind = array($toBind => $args);
+				}
+			}
+
+			if(in_array($op, array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
+				if(empty($bind)) {
+					continue;
+				}
+
+				$this->where($this->_quoteIdentifier($field).' '.self::$_operators[$op]." {$toBind}", $bind, $or);
+			} elseif(in_array($op, array('in', 'notIn'))) {
+				if(empty($stmt[2])) {
+					continue;
+				}
+
+				$this->in($field, $stmt[2], $op === 'in' ? false : true, $or);
+			} elseif(in_array($op, array('notNull', 'null'))) {
+				$this->where("{$field} ".self::$_operators[$stmt[0]], array(), $or);
+			}
 		}
 	}
 
@@ -424,6 +499,9 @@ class Database extends Query {
 			$sql = "DELETE FROM {$this->_delete}\n";
 		}
 
+		// Now there is another type of query - UNION - that needs to be considered
+		$sql .= $this->_union();
+
 		if(empty($sql)) {
 			$select = trim($this->_select());
 			$from = trim($this->_from());
@@ -440,7 +518,7 @@ class Database extends Query {
 
 		$sql .= $this->_join();
 
-		$where = $this->_where();
+		$where = $this->_where_or_having($this->_where);
 
 		if(!empty($sql) && !empty($where)) {
 			$sql .= 'WHERE ';
@@ -449,6 +527,8 @@ class Database extends Query {
 		$sql .= $where;
 
 		$sql .= $this->_group();
+
+		$sql .= $this->_where_or_having($this->_having);
 
 		$sql .= $this->_order();
 
@@ -487,30 +567,26 @@ class Database extends Query {
 	 * @param null $schema
 	 * @return Database
 	 */
-	public function from($tableName, array $columns = array(), $schema = null)
+	public function from($tableName, array $columns = array())
 	{
 		if(is_array($tableName)) {
-			$name = current($tableName);
+			$name = key($tableName);
 		} else {
 			$name = $tableName;
-		}
-
-		if(is_null($schema)) {
-			$schema = $this->_schema;
 		}
 
 		if(empty($columns)) {
 			$columns = array('*');
 		}
 
-		$this->_from[$name] = array($tableName, $columns, $schema);
+		$this->_from[$name] = array($tableName, $columns);
 
 		return $this;
 	}
 
 	/**
 	 * @param  string $column
-	 * @return Query\Database
+	 * @return Query\Sql
 	 */
 	public function groupBy($column)
 	{
@@ -521,8 +597,10 @@ class Database extends Query {
 		return $this;
 	}
 
-	public function having($stmt, $value, $or = false)
+	public function having($stmt, $value = array(), $or = false)
 	{
+		$this->_having[] = array($stmt, $value, $or);
+
 		return $this;
 	}
 
@@ -535,7 +613,10 @@ class Database extends Query {
 		}
 
 		$keys = $values;
-		array_walk($keys, function(&$val, $key) use($field) { $val = ':'.str_replace('.', '_', $field).'_'.$val; });
+
+		foreach($keys as $key => $val) {
+			$keys[$key] = $this->_param($field, $val);
+		}
 
 		$stmt = $field.' '.$stmt.' ('.join(',', $keys).')';
 
@@ -544,9 +625,9 @@ class Database extends Query {
 		return $this->where($stmt, $values, $or);
 	}
 
-	public function insert($tableName, $data)
+	public function insert($tableName, $data, $modifiers = array(), $on_duplicate_update = array())
 	{
-		$this->_insert = array($tableName, $data);
+		$this->_insert = array($tableName, $data, $modifiers, $on_duplicate_update);
 
 		return $this;
 	}
@@ -556,7 +637,7 @@ class Database extends Query {
 	 * @param  string $on
 	 * @param array $columns
 	 * @param string $type
-	 * @return Query\Database
+	 * @return Query\Sql
 	 */
 	public function join($table, $on, array $columns = array(), $type = 'inner')
 	{
@@ -576,16 +657,25 @@ class Database extends Query {
 	public function limit($start, $count)
 	{
 		$this->_limit = array($start, $count);
+
+		return $this;
 	}
 
 	/**
 	 * @param string
 	 * @param string
-	 * @return Query\Database
+	 * @return Query\Sql
 	 */
 	public function orderBy($column, $direction = 'ASC')
 	{
 		$this->_orderBy[$column] = $direction;
+		return $this;
+	}
+
+	public function union(array $queries)
+	{
+		$this->_union = $queries;
+
 		return $this;
 	}
 
@@ -604,14 +694,10 @@ class Database extends Query {
 	 * @param  $stmt
 	 * @param array $value
 	 * @param bool $or
-	 * @return Query\Database
+	 * @return Query\Sql
 	 */
-	public function where($stmt, array $value = array(), $or = false)
+	public function where($stmt, $value = array(), $or = false)
 	{
-		if($stmt instanceof $this) {
-			$stmt = $stmt->assemble();
-		}
-
 		$this->_where[] = array($stmt, $value, $or);
 
 		return $this;

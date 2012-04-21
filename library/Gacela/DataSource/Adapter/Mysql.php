@@ -8,40 +8,55 @@
 
 namespace Gacela\DataSource\Adapter;
 
-class Mysql extends Adapter implements iAdapter {
+class Mysql extends Pdo {
 
 	public static $_separator = "_";
 
-	public function load($conn, $name, $schema)
-	{
-		$_meta = array('name' => $name);
+	protected $_relationships = null;
 
-		// Pull from the config file if enabled
-		$config = $this->_singleton()->loadConfig($name);
+	public function __construct($config)
+	{
+		parent::__construct($config);
+
+		$this->_relationships = $this->_singleton()->cache($this->_config->schema.'_relationships');
+
+		if(!$this->_relationships) {
+			$sql = "
+				SELECT
+					TABLE_NAME AS keyTable,
+					GROUP_CONCAT(COLUMN_NAME) AS keyColumns,
+					REFERENCED_TABLE_NAME AS refTable,
+					GROUP_CONCAT(REFERENCED_COLUMN_NAME) AS refColumns,
+					CONSTRAINT_NAME AS constraintName
+				FROM INFORMATION_SCHEMA.key_column_usage
+				WHERE TABLE_SCHEMA = DATABASE()
+				AND REFERENCED_TABLE_NAME IS NOT NULL
+				GROUP BY constraintName
+				";
+
+			$this->_relationships = $this->_conn->query($sql)->fetchAll(\PDO::FETCH_OBJ);
+
+			$this->_singleton()->cache($this->_config->schema.'_relationships');
+		}
+	}
+
+	public function load($name)
+	{
+		$_meta = array(
+			'name' => $name,
+			'columns' => array(),
+			'relations' => array(),
+			'primary' => array()
+		);
+
+		$config = $this->_loadConfig($name);
 
 		if(!is_null($config)) {
-			$_meta = array_merge($_meta, $config);
-
-			foreach($_meta['columns'] as $key => $array) {
-				$field = $this->_field($array['type']);
-
-				$_meta['columns'][$key] = new $field($array);
-			}
-
-			foreach($_meta['relations'] as $k => $relation) {
-				$_meta['relations'][$k] = (object) $relation;
-			}
-
-			return $_meta;
+			return $config;
 		}
 
-		// Set it up from the database
-		$_meta['columns'] = array();
-		$_meta['relations'] = array();
-		$_meta['primary'] = array();
-
 		// Setup Column meta information
-		$stmt = $conn->prepare("DESCRIBE ".$name);
+		$stmt = $this->_conn->prepare("DESCRIBE ".$name);
 
 		if(!$stmt->execute()) {
 			throw new \Exception(
@@ -58,22 +73,19 @@ class Mysql extends Adapter implements iAdapter {
 
 		foreach($columns as $column) {
 
-			$meta = array(
-						'type' => null,
-						'length' => null,
-						'precision' => null,
-						'scale' => null,
-						'unsigned' => false,
-						'sequenced' => (bool) (stripos($column->Extra, 'auto_increment') !== false),
-						'primary' => (bool) (strtoupper($column->Key) == 'PRI'),
-						'default' => $column->Default,
-						'values' => array(),
-						'null' => (bool) ($column->Null == 'YES')
+			$meta = array_merge(
+						self::$_meta,
+						array(
+							'sequenced' => (bool) (stripos($column->Extra, 'auto_increment') !== false),
+							'primary' => (bool) (strtoupper($column->Key) == 'PRI'),
+							'default' => $column->Default,
+							'null' => (bool) ($column->Null == 'YES')
+						)
 					);
 
 			if (preg_match('/unsigned/', $column->Type)) {
-                $meta['unsigned'] = true;
-            }
+				$meta['unsigned'] = true;
+			}
 
 			if (preg_match('/^((?:var)?char)\((\d+)\)/', $column->Type, $matches)) {
 				$meta['type'] = 'string';
@@ -82,8 +94,8 @@ class Mysql extends Adapter implements iAdapter {
 				$meta['type'] = 'float';
 
 				if(isset($matches[1])) {
-					$meta['precision'] = $matches[2];
-					$meta['scale'] = $matches[3];
+					$meta['precision'] = $matches[1];
+					$meta['scale'] = $matches[2];
 				} else {
 					$meta['precision'] = 53;
 					$meta['scale'] = 15;
@@ -107,9 +119,7 @@ class Mysql extends Adapter implements iAdapter {
 				$meta['type'] = 'date';
 			}
 
-			$field = $this->_field($meta['type']);
-
-			$_meta['columns'][$column->Field] = new $field($meta);
+			$_meta['columns'][$column->Field] = (object) $meta;
 
 			if($_meta['columns'][$column->Field]->primary === true) {
 				$_meta['primary'][] = $column->Field;
@@ -118,26 +128,17 @@ class Mysql extends Adapter implements iAdapter {
 
 		unset($stmt);
 
-
 		// Setup Relationships
+		foreach($this->_relationships as $rel)
+		{
+			$key = explode(self::$_separator, $rel->constraintName);
 
-		// First check for stored procedure used to generate belongs_to relationships
-		$stmt = $conn->prepare("SHOW PROCEDURE STATUS LIKE :sp");
+			if(!isset($key[1])) {
+				throw new \Exception('Improper relationship definition: '.print_r($rel, true));
+			}
 
-		$stmt->execute(array(':sp' => 'sp_belongs_to'));
-
-		if($stmt->rowCount()) {
-			$sp = $conn->prepare("CALL sp_belongs_to (:schema,:table)");
-			$sp->execute(array(':schema' => $schema, ':table' => $name));
-
-			$rs = $sp->fetchAll(\PDO::FETCH_OBJ);
-
-			foreach($rs as $row) {
-				$key = explode(self::$_separator, $row->constraintName);
-
-				if(!isset($key[1])) {
-					throw new \Exception('Improper belongs_to definition: '.print_r($row, true));
-				}
+			if($rel->keyTable == $name) {
+				$row = clone $rel;
 
 				$key = $key[1];
 
@@ -156,23 +157,15 @@ class Mysql extends Adapter implements iAdapter {
 				unset($row->refColumns);
 
 				$_meta['relations'][$key] = $row;
-			}
-		}
 
-		$stmt->execute(array(':sp' => 'sp_has_many'));
+			} elseif($rel->refTable == $name) {
+				$row = clone $rel;
 
-		if($stmt->rowCount()) {
-			$sp = $conn->prepare("CALL sp_has_many (:schema, :table)");
-			$sp->execute(array(':schema' => $schema, ':table' => $name));
+				$rt = $row->refTable;
+				$kt = $row->keyTable;
 
-			$rs = $sp->fetchAll(\PDO::FETCH_OBJ);
-
-			foreach($rs as $row) {
-				$key = explode(self::$_separator, $row->constraintName);
-
-				if(!isset($key[2])) {
-					throw new \Exception('Improper has_many definition: '.print_r($row, true));
-				}
+				$row->refTable = $kt;
+				$row->keyTable = $rt;
 
 				$key = $key[2];
 
@@ -183,22 +176,18 @@ class Mysql extends Adapter implements iAdapter {
 
 				$row->keys = array();
 
-				foreach($keys as $k => $v) {
-					$row->keys[$v] = $refs[$k];
+				foreach($refs as $k => $v) {
+					$row->keys[$v] = $keys[$k];
 				}
 
 				unset($row->keyColumns);
 				unset($row->refColumns);
 
 				$_meta['relations'][$key] = $row;
+
 			}
 		}
 
 		return $_meta;
-	}
-
-	private function _field($field)
-	{
-		return "\\Gacela\\Field\\".ucfirst($field);
 	}
 }
