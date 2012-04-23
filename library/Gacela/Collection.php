@@ -157,7 +157,7 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 			$rs = true;
 
 			foreach($value as $key => $val) {
-				if(!property_exists($row->$key)) {
+				if(!property_exists($row, $key)) {
 					throw new \Exception('Property: ('.$key.') does not exist!');
 				}
 

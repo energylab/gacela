@@ -22,10 +22,6 @@ class Soql extends Sql
 
 		foreach($this->_from as $from) {
 			foreach($from[1] as $alias => $field) {
-				if(preg_match('#[\.|\(\)]#', $field) === 0) {
-					$field = $this->_alias($from[0]).'.'.$field;
-				}
-
 				if(is_int($alias)) {
 					$select[] = $this->_quoteIdentifier($field);
 				} else {
