@@ -413,7 +413,7 @@ class Sql extends Query {
 
 				$query = $query->assemble();
 
-				$this->where($query[0], $query[1], $stmt[1]);
+				$this->where($query[0], $query[1], $stmt[3]);
 
 				// Move along, nothing more to see here
 				continue;
