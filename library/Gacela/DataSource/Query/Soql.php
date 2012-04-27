@@ -35,9 +35,9 @@ class Soql extends Sql
 
 	public function __construct(\Gacela\Criteria $criteria = null)
 	{
-		static::$_operators['null'] = '=';
-		static::$_operators['notNull'] = '!=';
-		
+		$this->_operators['null'] = '=';
+		$this->_operators['notNull'] = '!=';
+
 		parent::__construct($criteria);
 	}
 

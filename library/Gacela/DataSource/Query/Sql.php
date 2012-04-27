@@ -10,7 +10,7 @@ namespace Gacela\DataSource\Query;
 
 class Sql extends Query {
 
-	protected static $_operators = array(
+	protected  $_operators = array(
 		'equals' => '=',
 		'notEquals' => '!=',
 		'lessThan' => '<',
@@ -459,7 +459,7 @@ class Sql extends Query {
 					continue;
 				}
 
-				$this->where($this->_quoteIdentifier($field).' '.static::$_operators[$op]." {$toBind}", $bind, $or);
+				$this->where($this->_quoteIdentifier($field).' '.$this->_operators[$op]." {$toBind}", $bind, $or);
 			} elseif(in_array($op, array('in', 'notIn'))) {
 				if(empty($stmt[2])) {
 					continue;
@@ -467,7 +467,7 @@ class Sql extends Query {
 
 				$this->in($field, $stmt[2], $op === 'in' ? false : true, $or);
 			} elseif(in_array($op, array('notNull', 'null'))) {
-				$this->where("{$field} ".static::$_operators[$stmt[0]], array(), $or);
+				$this->where("{$field} ".$this->_operators[$stmt[0]], array(), $or);
 			}
 		}
 	}
@@ -607,9 +607,9 @@ class Sql extends Query {
 	public function in($field, array $values, $not = false, $or = false)
 	{
 		if($not) {
-			$stmt = static::$_operators['notIn'];
+			$stmt = $this->_operators['notIn'];
 		} else {
-			$stmt = static::$_operators['in'];
+			$stmt = $this->_operators['in'];
 		}
 
 		$keys = $values;
