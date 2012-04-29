@@ -99,7 +99,11 @@ class Salesforce extends DataSource
 
 			return $return;
 		} catch(\SoapFault $s) {
-			exit(\Debug::vars($s));
+			if(strpos($s->getMessage(), 'MALFORMED_QUERY') !== false) {
+				throw $s;
+			} else {
+				return array();
+			}
 		}
 	}
 

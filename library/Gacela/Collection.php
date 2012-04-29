@@ -98,57 +98,57 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 		++$this->_pointer;
 	}
 
-    /**
-     * Check if an offset exists
-     * Required by the ArrayAccess implementation
-     *
-     * @param string $offset
-     * @return boolean
-     */
-    public function offsetExists($offset)
-    {
-        return isset($this->_data[(int) $offset]);
-    }
+	/**
+		* Check if an offset exists
+		* Required by the ArrayAccess implementation
+		*
+		* @param string $offset
+		* @return boolean
+		*/
+	public function offsetExists($offset)
+	{
+		return isset($this->_data[(int) $offset]);
+	}
 
-    /**
-     * Get the row for the given offset
-     * Required by the ArrayAccess implementation
-     *
-     * @param string $offset
-     * @return $_modelClass
-     */
-    public function offsetGet($offset)
-    {
-        $this->_pointer = (int) $offset;
+	/**
+		* Get the row for the given offset
+		* Required by the ArrayAccess implementation
+		*
+		* @param string $offset
+		* @return $_modelClass
+		*/
+	public function offsetGet($offset)
+	{
+		$this->_pointer = (int) $offset;
 
-        return $this->current();
-    }
+		return $this->current();
+	}
 
-    /**
-     * Does nothing
-     * Required by the ArrayAccess implementation
-     *
-     * @param string $offset
-     * @param mixed $value
-     */
-    public function offsetSet($offset, $value)
-    {
-    }
+	/**
+		* Does nothing
+		* Required by the ArrayAccess implementation
+		*
+		* @param string $offset
+		* @param mixed $value
+		*/
+	public function offsetSet($offset, $value)
+	{
+	}
 
-    /**
-     * Does nothing
-     * Required by the ArrayAccess implementation
-     *
-     * @param string $offset
-     */
-    public function offsetUnset($offset)
-    {
-    }
+	/**
+		* Does nothing
+		* Required by the ArrayAccess implementation
+		*
+		* @param string $offset
+		*/
+	public function offsetUnset($offset)
+	{
+	}
 
 	public function rewind()
 	{
-        $this->_pointer = 0;
-        return $this;
+		$this->_pointer = 0;
+		return $this;
 	}
 
 	public function search(array $value)
@@ -157,7 +157,7 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 			$rs = true;
 
 			foreach($value as $key => $val) {
-				if(!property_exists($row->$key)) {
+				if(!property_exists($row, $key)) {
 					throw new \Exception('Property: ('.$key.') does not exist!');
 				}
 
@@ -176,24 +176,24 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 		return false;
 	}
 
-    /**
-     * Take the Iterator to position $position
-     * Required by interface SeekableIterator.
-     *
-     * @param int $position the position to seek to
-     * @return LP_Model_Collection_Abstract
-     * @throws Zend_Exception
-     */
-    public function seek($position)
-    {
-        $position = (int) $position;
-        if ($position < 0 || $position > $this->_count) {
-            throw new Exception("Illegal index $position");
-        }
+	/**
+		* Take the Iterator to position $position
+		* Required by interface SeekableIterator.
+		*
+		* @param int $position the position to seek to
+		* @return LP_Model_Collection_Abstract
+		* @throws Zend_Exception
+		*/
+	public function seek($position)
+	{
+		$position = (int) $position;
+		if ($position < 0 || $position > $this->_count) {
+			throw new Exception("Illegal index $position");
+		}
 
-        $this->_pointer = $position;
-        return $this;
-    }
+		$this->_pointer = $position;
+		return $this;
+	}
 
 	public function slice($offset, $length = null)
 	{

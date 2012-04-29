@@ -22,10 +22,6 @@ class Soql extends Sql
 
 		foreach($this->_from as $from) {
 			foreach($from[1] as $alias => $field) {
-				if(preg_match('#[\.|\(\)]#', $field) === 0) {
-					$field = $this->_alias($from[0]).'.'.$field;
-				}
-
 				if(is_int($alias)) {
 					$select[] = $this->_quoteIdentifier($field);
 				} else {
@@ -37,10 +33,12 @@ class Soql extends Sql
 		return join(', ', $select)."\n";
 	}
 
-	public function quote($param)
+	public function __construct(\Gacela\Criteria $criteria = null)
 	{
-		// This sucks but its the best of I've got right now.
-		return "'".addslashes($param)."'";
+		$this->_operators['null'] = '=';
+		$this->_operators['notNull'] = '!=';
+
+		parent::__construct($criteria);
 	}
 
 	public function assemble()
@@ -85,4 +83,11 @@ class Soql extends Sql
 
 		return array($this->_sql, $this->_binds);
 	}
+
+	public function quote($param)
+	{
+		// This sucks but its the best of I've got right now.
+		return "'".addslashes($param)."'";
+	}
+
 }
