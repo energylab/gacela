@@ -169,20 +169,17 @@ class Database extends DataSource {
 	/**
 	 * @see Gacela\DataSource\iDataSource::insert()
 	 */
-	public function insert($name, $data)
+	public function insert($name, $data, $binds = array())
 	{
 		if($data instanceof \Gacela\DataSource\Query\Query) {
 			list($sql, $binds) = $data->assemble();
-		} elseif(is_array($data) && !is_integer(key($data))) {
+		} elseif(is_array($data)) {
 			list($sql, $binds) = $this->getQuery()->insert($name, $data)->assemble();
-		} elseif(is_array($data) && is_integer(key($data))) {
-			$sql = $data[0];
-			$binds = $data[1];
 		} else {
 			$sql = $data;
 			$binds = array();
 		}
-
+		
 		$query = $this->_driver()->prepare($sql);
 
 		try {
@@ -267,18 +264,15 @@ class Database extends DataSource {
 	 * @param \Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function update($name, $data, \Gacela\DataSource\Query\Query $where = null)
+	public function update($name, $data, $where = array())
 	{
-		if($data instanceof \Gacela\DataSource\Query\Query) {
+		if($data instanceof Query\Query) {
 			list($query, $binds) = $data->assemble();
-		} elseif(is_array($data) && !is_integer(key($data))) {
+		} elseif(is_array($data) && $where instanceof Query\Query) {
 			list($query, $binds) = $where->update($name, $data)->assemble();
-		} elseif(is_array($data) && is_integer(key($data))) {
-			$query = $data[0];
-			$binds = $data[1];
-		} else {
+		} elseif(is_array($data) && is_array($where)) {
 			$query = $data;
-			$binds = array();
+			$binds = $where;
 		}
 
 		$query = $this->_driver()->prepare($query);
