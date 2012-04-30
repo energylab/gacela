@@ -179,7 +179,7 @@ class Database extends DataSource {
 			$sql = $data;
 			$binds = array();
 		}
-		
+
 		$query = $this->_driver()->prepare($sql);
 
 		try {
@@ -270,7 +270,7 @@ class Database extends DataSource {
 			list($query, $binds) = $data->assemble();
 		} elseif(is_array($data) && $where instanceof Query\Query) {
 			list($query, $binds) = $where->update($name, $data)->assemble();
-		} elseif(is_array($data) && is_array($where)) {
+		} elseif(is_array($where)) {
 			$query = $data;
 			$binds = $where;
 		}
