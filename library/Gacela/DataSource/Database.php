@@ -177,7 +177,6 @@ class Database extends DataSource {
 			list($sql, $binds) = $this->getQuery()->insert($name, $data)->assemble();
 		} else {
 			$sql = $data;
-			$binds = array();
 		}
 
 		$query = $this->_driver()->prepare($sql);
