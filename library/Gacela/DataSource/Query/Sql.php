@@ -191,7 +191,19 @@ class Sql extends Query {
 			$type = strtoupper($join[3]);
 
 			if(is_array($join[0])) {
-				$join[0] = $this->_quoteIdentifier(current($join[0]))." AS ".$this->_quoteIdentifier(key($join[0]));
+				if(current($join[0]) instanceof Sql) {
+					list($table, $args) = current($join[0])->assemble();
+
+					$table = "(\n".$table.")";
+
+					$this->bind($args);
+				} else {
+					$table = $this->_quoteIdentifier(current($join[0]));
+				}
+
+				$alias = $this->_quoteIdentifier(key($join[0]));
+
+				$join[0] = $table." AS ".$alias;
 			} else {
 				$join[0] = $this->_quoteIdentifier($join[0]);
 			}
@@ -344,27 +356,28 @@ class Sql extends Query {
 	protected function _update()
 	{
 		if(!isset($this->_update[0])) {
-			return '';
+			return array();
 		}
 
 		$name = $this->_update[0];
 		$data = $this->_update[1];
 
-		$sql = "UPDATE {$name} SET \n";
+		$update = "UPDATE {$name}";
 
+		$set = "SET ";
 		foreach($data as $key => $val) {
 			$param = $this->_param($key, $val);
 
-			$sql .= $this->_quoteIdentifier($key)." = ".$param;
+			$set .= $this->_quoteIdentifier($key)." = ".$param;
 
 			$this->_binds[$param] = $val;
 
-			$sql .= ",\n";
+			$set .= ",\n";
 		}
 
-		$sql = substr($sql, 0, strlen($sql) - 2);
+		$set = substr($set, 0, strlen($set) - 2);
 
-		return $sql.' ';
+		return array($update, $set);
 	}
 
 	protected function _where_or_having($array)
@@ -492,7 +505,11 @@ class Sql extends Query {
 		}
 
 		// Now it might be an update statement in which case we'll skip select and from
-		$sql = $this->_update();
+		$update = $this->_update();
+
+		if(isset($update[0])) {
+			$sql = $update[0]."\n";
+		}
 
 		// If its not an insert or an update, it might also be a delete
 		if(!is_null($this->_delete)) {
@@ -518,6 +535,10 @@ class Sql extends Query {
 
 		$sql .= $this->_join();
 
+		if(isset($update[1])) {
+			$sql .= $update[1]."\n";
+		}
+
 		$where = $this->_where_or_having($this->_where);
 
 		if(!empty($sql) && !empty($where)) {
@@ -528,7 +549,12 @@ class Sql extends Query {
 
 		$sql .= $this->_group();
 
-		$sql .= $this->_where_or_having($this->_having);
+		$having = $this->_where_or_having($this->_having);
+
+		if($having) {
+			$sql .= 'HAVING '.$having;
+		}
+
 
 		$sql .= $this->_order();
 
