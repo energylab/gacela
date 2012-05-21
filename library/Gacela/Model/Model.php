@@ -104,6 +104,12 @@ abstract class Model implements iModel {
 			$this->_data->$name = $field::transform($meta, $value, false);
 		}
 
+		$extras = array_diff_key($data, $this->_fields);
+
+		foreach($extras as $key => $val) {
+			$this->_data->$key = $val;
+		}
+
 		$this->init();
 	}
 
