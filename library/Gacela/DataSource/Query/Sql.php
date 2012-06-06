@@ -435,7 +435,7 @@ class Sql extends Query {
 			$field = $stmt[1];
 			$or = isset($stmt[3]) ? $stmt[3] : false;
 
-			if(isset($stmt[2]) && $stmt[2] != false) {
+			if(isset($stmt[2]) && $stmt[2] !== false) {
 				$args = $stmt[2];
 			} else {
 				$args = '';

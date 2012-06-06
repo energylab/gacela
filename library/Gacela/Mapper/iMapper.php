@@ -13,7 +13,7 @@ interface iMapper {
 
 	public function init();
 
-	public function count(\Gacela\Criteria $criteria = null);
+	public function count($criteria = null);
 
 	public function find($id);
 

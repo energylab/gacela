@@ -575,11 +575,18 @@ abstract class Mapper implements iMapper {
 		return $rs;
 	}
 
-	public function count(\Gacela\Criteria $criteria = null)
+	public function count($query = null)
 	{
-		$query = $this->_source()->getQuery($criteria);
+		if($query instanceof \Gacela\Criteria || is_null($query)) {
+			$query = $this->_source()->getQuery($query);
 
-		$query->from($this->_resourceName, array('count' => 'COUNT(*)'));
+			$query->from($this->_resourceName, array('count' => 'COUNT(*)'));
+		} elseif($query instanceof \Gacela\DataSource\Query\Sql) {
+			$sub = $query;
+
+			$query = $this->_source()->getQuery()
+				->from(array('s' => $sub), array('count' => 'COUNT(*)'));
+		}
 
 		return	current(
 					$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
