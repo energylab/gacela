@@ -294,12 +294,12 @@ abstract class Model implements iModel {
 		}
 
 		$field = static::$_field;
-		foreach($this->_fields as $field => $meta) {
+		foreach($this->_fields as $key => $meta) {
 
-			$rs = $field::validate($meta, $this->_data->$field);
+			$rs = $field::validate($meta, $this->_data->$key);
 
 			if($rs !== true) {
-				$this->_errors[$field] = $rs;
+				$this->_errors[$key] = $rs;
 			}
 		}
 
