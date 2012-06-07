@@ -183,6 +183,11 @@ abstract class Mapper implements iMapper {
 				);
 	}
 
+	protected function _getQuery(\Gacela\Criteria $criteria = null)
+	{
+		return $this->_source()->getQuery($criteria);
+	}
+
 	/**
 	 * @return Mapper
 	 */
@@ -455,6 +460,15 @@ abstract class Mapper implements iMapper {
 		}
 
 		return $primary;
+	}
+
+	protected function _runQuery($query, $args = null, \Gacela\DataSource\Resource $resource = null)
+	{
+		if(is_null($resource)) {
+			$resource = $this->_resource;
+		}
+
+		return $this->_source()->query($resource, $query, $args);
 	}
 
 	protected function _saveResource($resource, $changed, $new, $old)
