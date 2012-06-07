@@ -10,9 +10,11 @@ namespace Gacela\Model;
 
 abstract class Model implements iModel {
 
+	protected static $_field = null;
+
 	protected $_changed = array();
 
-	protected $_data;
+	protected $_data = null;
 
 	protected $_errors = array();
 
@@ -36,9 +38,33 @@ abstract class Model implements iModel {
 		return $this->_errors;
 	}
 
-	protected function _field()
+	/**
+	 *
+	 * @param array $data
+	 */
+	protected function _initData(array $data)
 	{
-		return $this->_singleton()->autoload("\\Field\\Field");
+		if(!$this->_data) {
+			$this->_data = new \stdClass;
+		}
+
+		$field = $this->_field();
+
+		foreach($this->_fields as $name => $meta) {
+			if(isset($data[$name])) {
+				$value = $data[$name];
+			} else {
+				$value = $meta->default;
+			}
+
+			$this->_data->$name = $field::transform($meta, $value, false);
+		}
+
+		$extras = array_diff(array_keys($data), array_keys($this->_fields));
+
+		foreach($extras as $key) {
+			$this->_data->$key = $data[$key];
+		}
 	}
 
 	/**
@@ -46,7 +72,9 @@ abstract class Model implements iModel {
 	 */
 	protected function _mapper()
 	{
-		if(!is_string($this->_mapper) && !empty($this->_mapper)) return $this->_mapper;
+		if($this->_mapper instanceof \Gacela\Mapper\Mapper) {
+			return $this->_mapper;
+		}
 
 		if(is_string($this->_mapper)) {
 			$class = $this->_mapper;
@@ -62,15 +90,19 @@ abstract class Model implements iModel {
 
 	protected function _set($key, $val)
 	{
-		if(isset($this->_data->$key)) {
-			$this->_originalData[$key] = $this->_data->$key;
+		if(isset($this->_fields[$key])) {
+			if(isset($this->_data->$key)) {
+				$this->_originalData[$key] = $this->_data->$key;
+			}
+
+			$this->_changed[] = $key;
+
+			$field = static::$_field;
+
+			$this->_data->$key = $field::transform($this->_fields[$key], $val, false);
+		} else {
+			$this->_data->$key = $val;
 		}
-
-		$this->_changed[] = $key;
-
-		$field = $this->_field();
-
-		$this->_data->$key = $field::transform($this->_fields[$key], $val, false);
 	}
 
 	protected function _singleton()
@@ -83,6 +115,10 @@ abstract class Model implements iModel {
 	 */
 	public function __construct($data = array())
 	{
+		if(is_null(static::$_field)) {
+			static::$_field = $this->_singleton()->autoload("\\Field\\Field");
+		}
+
 		if(is_object($data)) {
 			$data = (array) $data;
 		}
@@ -90,19 +126,7 @@ abstract class Model implements iModel {
 		$this->_fields = $this->_mapper()->getFields();
 		$this->_relations = $this->_mapper()->getRelations();
 
-		$this->_data = new \stdClass;
-
-		$field = $this->_field();
-
-		foreach($this->_fields as $name => $meta) {
-			if(isset($data[$name])) {
-				$value = $data[$name];
-			} else {
-				$value = $meta->default;
-			}
-
-			$this->_data->$name = $field::transform($meta, $value, false);
-		}
+		$this->_initData($data);
 
 		$this->init();
 	}
@@ -178,6 +202,10 @@ abstract class Model implements iModel {
 		return $this->_mapper()->addAssociation($association, $this->_data, $delete);
 	}
 
+	/**
+	 *
+	 * @return bool
+	 */
 	public function delete()
 	{
 		return $this->_mapper()->delete($this->_data);
@@ -191,6 +219,11 @@ abstract class Model implements iModel {
 	 */
 	public function init() {}
 
+	/**
+	 *
+	 * @param type $association
+	 * @return boolean
+	 */
 	public function remove($association)
 	{
 		if($association->count())
@@ -207,7 +240,11 @@ abstract class Model implements iModel {
 	 */
 	public function save($data = null)
 	{
-		if(!$this->validate($data)) {
+		if($data) {
+			$this->setData($data);
+		}
+
+		if(!$this->validate()) {
 			return false;
 		}
 
@@ -217,7 +254,7 @@ abstract class Model implements iModel {
 			return false;
 		}
 
-		$this->_data = $data;
+		$this->_data = $this->_initData((array) $data);
 		unset($data);
 
 		$this->_changed = array();
@@ -227,21 +264,36 @@ abstract class Model implements iModel {
 	}
 
 	/**
+	 *
+	 * @param array $data
+	 * @return \Gacela\Model\Model
+	 */
+	public function setData(array $data)
+	{
+		foreach($data as $field => $val) {
+			$this->$field = $val;
+		}
+
+		return $this;
+	}
+
+	/**
 	 * @param \stdClass|null $data
 	 * @return bool
 	 */
 	public function validate(array $data = null)
 	{
-		if(!is_null($data)) {
-			foreach($data as $key => $val) {
-				$this->$key = $val;
-			}
+		if($data) {
+			$this->setData($data);
 		}
 
-		$field = $this->_field();
-		foreach((array) $this->_data as $key => $val) {
-			if(($rs = $field::validate($this->_fields[$key], $val)) !== true) {
-				$this->_errors[$key] = $rs;
+		$field = static::$_field;
+		foreach($this->_fields as $field => $meta) {
+
+			$rs = $field::validate($meta, $this->_data->$field);
+
+			if($rs !== true) {
+				$this->_errors[$field] = $rs;
 			}
 		}
 
