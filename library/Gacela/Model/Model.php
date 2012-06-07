@@ -48,7 +48,7 @@ abstract class Model implements iModel {
 			$this->_data = new \stdClass;
 		}
 
-		$field = $this->_field();
+		$field = static::$_field;
 
 		foreach($this->_fields as $name => $meta) {
 			if(isset($data[$name])) {
