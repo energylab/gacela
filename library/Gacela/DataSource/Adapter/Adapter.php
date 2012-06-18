@@ -10,9 +10,9 @@ namespace Gacela\DataSource\Adapter;
 
 abstract class Adapter implements iAdapter {
 
-	protected $_config;
+	protected $_config = null;
 
-	protected $_conn;
+	protected $_conn = null;
 
 	protected static $_meta = array(
 		'type' => null,
@@ -64,8 +64,14 @@ abstract class Adapter implements iAdapter {
 		return \Gacela::instance();
 	}
 
+	abstract protected function _loadConn();
+
 	public function __call($method, $args)
 	{
+		if(!$this->_conn) {
+			$this->_loadConn();
+		}
+
 		$method = new \ReflectionMethod($this->_conn, $method);
 
 		return $method->invokeArgs($this->_conn, $args);
