@@ -468,16 +468,8 @@ class Sql extends Query {
 			}
 
 			if(in_array($op, array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
-				if(empty($bind)) {
-					continue;
-				}
-
 				$this->where($this->_quoteIdentifier($field).' '.$this->_operators[$op]." {$toBind}", $bind, $or);
 			} elseif(in_array($op, array('in', 'notIn'))) {
-				if(empty($stmt[2])) {
-					continue;
-				}
-
 				$this->in($field, $stmt[2], $op === 'in' ? false : true, $or);
 			} elseif(in_array($op, array('notNull', 'null'))) {
 				$this->where("{$field} ".$this->_operators[$stmt[0]], array(), $or);
@@ -632,6 +624,10 @@ class Sql extends Query {
 
 	public function in($field, array $values, $not = false, $or = false)
 	{
+		if(!count($values)) {
+			throw new \Exception('Sql::in() requires an array of values that are not empty!');
+		}
+
 		if($not) {
 			$stmt = $this->_operators['notIn'];
 		} else {
