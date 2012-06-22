@@ -34,7 +34,7 @@ class Mysql extends Pdo {
 				GROUP BY constraintName
 				";
 
-			$this->_relationships = $this->_conn->query($sql)->fetchAll(\PDO::FETCH_OBJ);
+			$this->_relationships = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
 
 			$this->_singleton()->cache($this->_config->schema.'_relationships');
 		}
@@ -56,7 +56,7 @@ class Mysql extends Pdo {
 		}
 
 		// Setup Column meta information
-		$stmt = $this->_conn->prepare("DESCRIBE ".$name);
+		$stmt = $this->prepare("DESCRIBE ".$name);
 
 		if(!$stmt->execute()) {
 			throw new \Exception(

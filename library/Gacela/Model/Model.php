@@ -128,12 +128,6 @@ abstract class Model implements iModel {
 
 		$this->_initData($data);
 
-		$extras = array_diff_key($data, $this->_fields);
-
-		foreach($extras as $key => $val) {
-			$this->_data->$key = $val;
-		}
-
 		$this->init();
 	}
 
@@ -260,9 +254,10 @@ abstract class Model implements iModel {
 			return false;
 		}
 
-		$this->_data = $this->_initData((array) $data);
-		unset($data);
+		$this->_initData((array) $data);
 
+		unset($data);
+		
 		$this->_changed = array();
 		$this->_originalData = array();
 
