@@ -73,7 +73,7 @@ class Gacela {
 
 		$query = strtr($sql, $args);
 
-		exit('<pre>'.print_r($query, true).'</pre>');
+		print('<pre>'.print_r($query, true).'</pre>');
 	}
 
 	/**
