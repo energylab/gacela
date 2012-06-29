@@ -41,6 +41,41 @@ class Gacela {
         return file_exists($file) && is_readable($file);
     }
 
+	public static function debug($query)
+	{
+		if($query instanceof \Gacela\DataSource\Query\Query)
+		{
+			list($sql, $args) = $query->assemble();
+		}
+		else
+		{
+			if(isset($query['lastDataSourceQuery']))
+			{
+				$sql = $query['lastDataSourceQuery']['query'];
+				$args = $query['lastDataSourceQuery']['args'];
+			}
+			elseif(isset($query['query']))
+			{
+				$sql = $query['query'];
+				$args = $query['args'];
+			}
+			elseif(is_numeric(key($query)))
+			{
+				$sql = $query[0];
+				$args = $query[1];
+			}
+		}
+
+		foreach($args as $key => $val)
+		{
+			$args[$key] = self::instance()->getDataSource('db')->quote($val);
+		}
+
+		$query = strtr($sql, $args);
+
+		exit('<pre>'.print_r($query, true).'</pre>');
+	}
+
 	/**
 	 * @static
 	 * @return Gacela
@@ -179,36 +214,6 @@ class Gacela {
 		$this->_cacheData = $data;
 
 		return $this;
-	}
-
-	public static function debug($query)
-	{
-		if($query instanceof \Gacela\DataSource\Query\Database)
-		{
-			list($sql, $args) = $query->assemble();
-		}
-		else
-		{
-			if(isset($query['lastDataSourceQuery']))
-			{
-				$sql = $query['lastDataSourceQuery']['query'];
-				$args = $query['lastDataSourceQuery']['args'];
-			}
-			elseif(isset($query['query']))
-			{
-				$sql = $query['query'];
-				$args = $query['args'];
-			}
-		}
-
-		foreach($args as $key => $val)
-		{
-			$args[$key] = self::instance()->getDataSource('db')->quote($val);
-		}
-
-		$query = strtr($sql, $args);
-
-		exit('<pre>'.print_r($query, true).'</pre>');
 	}
 
 	/**

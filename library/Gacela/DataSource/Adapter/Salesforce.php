@@ -12,17 +12,14 @@ namespace Gacela\DataSource\Adapter;
 
 class Salesforce extends Adapter
 {
-
-	public function __construct($config)
+	protected function _loadConn()
 	{
-		parent::__construct($config);
-
-		require $config->soapclient_path.'SforceEnterpriseClient.php';
+		require $this->_config->soapclient_path.'SforceEnterpriseClient.php';
 
 		$this->_conn = new \SforceEnterpriseClient();
 
-		$this->_conn->createConnection($config->wsdl_path);
-		$this->_conn->login($config->username, $config->password);
+		$this->_conn->createConnection($this->_config->wsdl_path);
+		$this->_conn->login($this->_config->username, $this->_config->password);
 	}
 
 	//put your code here
