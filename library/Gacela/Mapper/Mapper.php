@@ -252,8 +252,6 @@ abstract class Mapper implements iMapper {
 		$_dependents = $this->_dependents;
 		$this->_dependents = array();
 
-		$fields = $this->getFields();
-
 		foreach($_dependents as $key => $name) {
 			if(is_array($name)) {
 				$dependent = $name;
@@ -276,7 +274,7 @@ abstract class Mapper implements iMapper {
 			 */
 			$nullable = false;
 			foreach(array_keys($dependent['meta']->keys) as $key) {
-				if($fields[$key]->null) {
+				if($this->_fields[$key]->null) {
 					$nullable = true;
 					break;
 				}
@@ -293,6 +291,10 @@ abstract class Mapper implements iMapper {
 			}
 
 			$this->_dependents[$name] = $dependent;
+		}
+
+		foreach($this->_dependents as $dependent) {
+			$this->_fields = array_merge($dependent['resource']->getFields(), $this->_fields);
 		}
 
 		return $this;
@@ -362,6 +364,10 @@ abstract class Mapper implements iMapper {
 			}
 		}
 
+		foreach($this->_inherits as $stuff) {
+			$this->_fields = array_merge($this->_fields, $stuff['resource']->getFields());
+		}
+
 		return $this;
 	}
 
@@ -377,15 +383,6 @@ abstract class Mapper implements iMapper {
 		$classes[$pos] = 'Model';
 
 		$this->_modelName = "\\".join("\\", $classes);
-
-		$this->_fields = $this->_resource->getFields();
-		foreach($this->_inherits as $stuff) {
-			$this->_fields = array_merge($this->_fields, $stuff['resource']->getFields());
-		}
-
-		foreach($this->_dependents as $dependent) {
-			$this->_fields = array_merge($dependent['resource']->getFields(), $this->_fields);
-		}
 
 		$this->_relations = array();
 		foreach($this->_foreignKeys as $key => $array) {
@@ -422,6 +419,8 @@ abstract class Mapper implements iMapper {
 		}
 
 		$this->_resource = $this->_source()->loadResource($this->_resourceName);
+
+		$this->_fields = $this->_resource->getFields();
 
 		return $this;
 	}
