@@ -41,7 +41,7 @@ class Gacela {
         return file_exists($file) && is_readable($file);
     }
 
-	public static function debug($query)
+	public static function debug($query, $return = false)
 	{
 		if($query instanceof \Gacela\DataSource\Query\Query)
 		{
@@ -66,14 +66,25 @@ class Gacela {
 			}
 		}
 
-		foreach($args as $key => $val)
+		if(isset($args))
 		{
-			$args[$key] = self::instance()->getDataSource('db')->quote($val);
+			foreach($args as $key => $val)
+			{
+				$args[$key] = self::instance()->getDataSource('db')->quote($val);
+			}
+
+			$query = strtr($sql, $args);
+		}
+		else
+		{
+			$query = $sql;
 		}
 
-		$query = strtr($sql, $args);
-
-		exit('<pre>'.print_r($query, true).'</pre>');
+		if($return) {
+			return $query;
+		} else {
+			print('<pre>'.print_r($query, true).'</pre>');
+		}
 	}
 
 	/**
