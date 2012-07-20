@@ -115,7 +115,7 @@ class Mysql extends Pdo {
 			} elseif(preg_match('/(enum)\((\'.*?\')\)/', $column->Type, $matches)) {
 				$meta['type'] = 'enum';
 				$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
-			} elseif(preg_match('/(date*|timestamp)/', $column->Type, $matches)) {
+			} elseif(preg_match('/(date*|timestamp|time)/', $column->Type, $matches)) {
 				$meta['type'] = 'date';
 			}
 
