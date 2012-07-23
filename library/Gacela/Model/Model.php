@@ -2,7 +2,7 @@
 /**
  * @author Noah Goodrich
  * @date May 12, 2011
- * @brief
+ *
  *
 */
 
@@ -212,7 +212,7 @@ abstract class Model implements iModel {
 	}
 
 	/**
-	 * @brief Called at the end of __construct.
+	 *  Called at the end of __construct.
 	 * Allows developers to add additional stuff to the setup process without
 	 * having to directly override the constructor.
 	 *
@@ -257,7 +257,7 @@ abstract class Model implements iModel {
 		$this->_initData((array) $data);
 
 		unset($data);
-		
+
 		$this->_changed = array();
 		$this->_originalData = array();
 

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author noah
  * @date 2/26/11
- * @brief
- * 
+ *
+ *
 */
 
 namespace Gacela\DataSource;

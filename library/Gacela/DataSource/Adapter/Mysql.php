@@ -2,7 +2,7 @@
 /**
  * @author Noah Goodrich
  * @date 5/22/11
- * @brief
+ *
  *
 */
 

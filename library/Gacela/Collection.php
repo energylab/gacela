@@ -1,8 +1,8 @@
 <?php
 /**
- * @author noah
+ * @author Noah Goodrich
  * @date 3/7/11
- * @brief
+ *
  *
 */
 
@@ -181,14 +181,14 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 		* Required by interface SeekableIterator.
 		*
 		* @param int $position the position to seek to
-		* @return LP_Model_Collection_Abstract
-		* @throws Zend_Exception
+		* @return \Gacela\Collection
+		* @throws \Exception
 		*/
 	public function seek($position)
 	{
 		$position = (int) $position;
 		if ($position < 0 || $position > $this->_count) {
-			throw new Exception("Illegal index $position");
+			throw new \Exception("Illegal index $position");
 		}
 
 		$this->_pointer = $position;

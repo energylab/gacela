@@ -3,7 +3,7 @@
  * @author Noah Goodrich
  * @date May 7, 2011
  * @package Gacela
- * @brief
+ *
  *
 */
 

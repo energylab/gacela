@@ -12,45 +12,45 @@ abstract class Mapper implements iMapper {
 	protected static $_deletedField = 'isDeleted';
 
 	/**
-	 * @brief Contains the names of resources that are associations to Mapper::$_resource
-	 * <a href="http://martinfowler.com/eaaCatalog/associationTableMapping.html">Association Table Mapping</a>
+	 * Contains the names of resources that are associations to Mapper::$_resource
+	 * <a href="http://martinfowler.com/eaaCatalog/associationTableMapping.html" target="_blank">Association Table Mapping</a>
 	 */
 	protected $_associations = array();
 
 	/**
-	 * @brief Contains the names of resources that are dependent on Mapper::$_resource
-	 * <a href="http://martinfowler.com/eaaCatalog/dependentMapping.html">Dependent Mapping</a>
+	 *  Contains the names of resources that are dependent on Mapper::$_resource <br/>
+	 * <a href="http://martinfowler.com/eaaCatalog/dependentMapping.html" target="_blank">Dependent Mapping</a>
 	 */
 	protected $_dependents = array();
 
 	protected $_fields = false;
 
 	/**
-	 * @brief Contains the meta information necessary to load hasMany, belongsTo related data
+	 *  Contains the meta information necessary to load hasMany, belongsTo related data
 	 * Also used by Mapper::$_associations to load related data and by Mapper::$_inherits to determine whether
 	 * Concrete Table Inheritance is applicable.
 	 */
 	protected $_foreignKeys = array();
 
 	/**
-	 * @brief Contains the names of resources that Mapper::$_resource inherits from based on Mapper::$_foreignKeys and shared
+	 *  Contains the names of resources that Mapper::$_resource inherits from based on Mapper::$_foreignKeys and shared
 	 * primary keys
 	 * <a href="http://martinfowler.com/eaaCatalog/concreteTableInheritance.html">Concrete Table Inheritance</a>
 	 */
 	protected $_inherits = array();
 
 	/**
-	 * @brief Registry of Model objects already loaded from the DataSource.
+	 *  Registry of Model objects already loaded from the DataSource.
 	 */
 	protected $_models = array();
 
 	/**
-	 * @brief Model class name to create in _load()
+	 *  Model class name to create in _load()
 	 */
 	protected $_modelName = null;
 
 	/**
-	 * @brief Contains the primary key fields for the mapper.
+	 *  Contains the primary key fields for the mapper.
 	 * By default the primary key loads from Resource::getPrimaryKey()
 	 *
 	 */
@@ -59,14 +59,14 @@ abstract class Mapper implements iMapper {
 	protected $_relations;
 
 	/**
-	 * @brief The main Gacela\DataSource\Resource object represented by the Mapper
+	 *  The main Gacela\DataSource\Resource object represented by the Mapper
 	 */
 	protected $_resource = null;
 
 	protected $_resourceName = null;
 
 	/**
-	 * @brief Instance of DataSource to use for the Mapper.
+	 *  Instance of DataSource to use for the Mapper.
 	 */
 	protected $_source = 'db';
 
@@ -523,7 +523,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief - Not Yet Implemented
+	 *  - Not Yet Implemented
 	 * @param $association
 	 * @param $data
 	 * @param bool $delete
@@ -627,7 +627,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief Called by the Model to delete the record represented by the identity field
+	 *  Called by the Model to delete the record represented by the identity field
 	 * @param stdClass - The data from the Model
 	 * @return true on success, false on failure
 	 */
@@ -660,7 +660,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief Returns a single instance of Mapper::$_modelName based on the identity field
+	 *  Returns a single instance of Mapper::$_modelName based on the identity field
 	 * @param  $id integer|array
 	 * @return Model
 	 *
@@ -689,7 +689,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief Returns a Collection of Model objects based on the Criteria specified
+	 *  Returns a Collection of Model objects based on the Criteria specified
 	 * @param \Gacela\Criteria|null $criteria
 	 * @return \Gacela\Collection
 	 */
@@ -728,7 +728,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief Requests a related Model or Collection and returns it to the requesting Model.
+	 *  Requests a related Model or Collection and returns it to the requesting Model.
 	 * Uses Mapper::$_associations, Mapper::$_foreignKeys
 	 *
 	 * @param  $name - The name of the Model or Collection to return
@@ -765,7 +765,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief Used by Model to get all of the fields available from mapper.
+	 *  Used by Model to get all of the fields available from mapper.
 	 * @return A merged array of all fields from $_resource, $_inherits, $_dependents
 	 */
 	public function getFields()
@@ -774,7 +774,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief Provides the Model with the names of related Models
+	 *  Provides the Model with the names of related Models
 	 * @return An array of all the relation names whether as $_associations or $_foreignKeys meaning belongsTo or hasMany
 	 */
 	public function getRelations()
@@ -788,7 +788,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief Loads a new instance of $_modelName from the $data provided.
+	 *  Loads a new instance of $_modelName from the $data provided.
 	 * @param \stdClass $data
 	 * @return Model
 	 */
@@ -798,7 +798,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief - Removes an association between two different Models
+	 *  - Removes an association between two different Models
 	 * @param $association
 	 * @param $data
 	 * @return bool
@@ -851,7 +851,7 @@ abstract class Mapper implements iMapper {
 	}
 
 	/**
-	 * @brief Save is called by Model, the Mapper is responsible for knowing whether to call insert() or update() on the DataSource for $_resource, $_inherits, and $_dependents.
+	 *  Save is called by Model, the Mapper is responsible for knowing whether to call insert() or update() on the DataSource for $_resource, $_inherits, and $_dependents.
 	 * @param array $changed - An array of the changed fields
 	 * @param \stdClass $new - The data from the Model
 	 * @param array $old - The original data from the Model
