@@ -31,9 +31,29 @@ class Salesforce extends DataSource
 	 */
 	public function delete($name, \Gacela\DataSource\Query\Query $where) {}
 
+	/**
+	 * Can be used to find a single Salesforce record. (\Gacela\Mapper\Mapper works this way).
+	 * Can also be used to retrieve an array of Salesforce records if an array of Id's is passed.
+	 * 
+	 * @param array $primary
+	 * @param \Gacela\DataSource\Resource $resource
+	 * @param array $inherits
+	 * @param array $dependents
+	 * @return array()
+	 */
 	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
-		throw new \Exception('Not Implemented Yet. Will use retrieve');
+		if(key($primary) === 'Id') {
+			$primary = array($primary['Id']);
+		}
+
+		$return = $this->_driver()->retrieve(join(',', array_keys($resource->getFields())), $resource->getName(), $primary);
+
+		if(is_null($return) OR is_object($return)) {
+			$return = array($return);
+		}
+
+		return $return;
 	}
 
 	/**
