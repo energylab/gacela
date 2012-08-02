@@ -75,6 +75,10 @@ class Gacela {
 
 			$query = strtr($sql, $args);
 		}
+		else
+		{
+			$query = $sql;
+		}
 
 		if($return) {
 			return $query;
