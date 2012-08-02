@@ -30,17 +30,14 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 	{
 		if(func_num_args() < 1)
 		{
-			throw new Exception('Invalid number of args passed to \\Gacela\\Collection::asArray().');
+			throw new \Exception('Invalid number of args passed to \\Gacela\\Collection::asArray().');
 		}
 
-		if(count(func_num_args() == 1)) {
+		if(func_num_args() == 1) {
 			$args = func_get_arg(0);
 		} else {
 			$args = func_get_args();
 		}
-
-
-
 
 		$array = array();
 		foreach($this as $row) {
