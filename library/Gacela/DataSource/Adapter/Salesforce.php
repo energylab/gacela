@@ -26,11 +26,11 @@ class Salesforce extends Adapter
 	}
 
 	//put your code here
-	public function load($name)
+	public function load($name, $force = false)
 	{
 		$config = $this->_loadConfig($name);
 
-		if(!is_null($config) && !is_integer(key($config['columns']))) {
+		if(!is_null($config) && !$force) {
 			return $config;
 		}
 
@@ -44,7 +44,7 @@ class Salesforce extends Adapter
 		);
 
 		foreach($result->fields as $field) {
-			if($field->deprecatedAndHidden === true OR (!is_null($config) && !in_array($field->name, $config['columns']))) {
+			if($field->deprecatedAndHidden === true) {
 				continue;
 			}
 
@@ -56,7 +56,7 @@ class Salesforce extends Adapter
 						self::$_meta,
 						array(
 							'sequenced' => $field->autoNumber,
-							'primary' => (bool) $field->type == 'id',
+							'primary' => $field->type == 'id',
 							'null' => $field->nillable,
 							'length' => $field->length,
 							'precision' => $field->precision,
@@ -76,6 +76,23 @@ class Salesforce extends Adapter
 				case 'dateTime':
 				case 'time':
 					$meta['type'] = 'date';
+					break;
+				case 'picklist':
+					$meta['type'] = 'enum';
+					$meta['values'] = array();
+
+					if(is_object($field->picklistValues)) {
+						if($field->picklistValues->active) {
+							$meta['values'][] = $field->picklistValues->value;
+						}
+					} else {
+						foreach($field->picklistValues as $v) {
+							if($v->active) {
+								$meta['values'][] = $v->value;
+							}
+						}
+					}
+
 					break;
 				default:
 					$meta['type'] = 'string';

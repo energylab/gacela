@@ -32,7 +32,7 @@ abstract class Adapter implements iAdapter {
 		// Pull from the config file if enabled
 		$config = $this->_singleton()->loadConfig($name);
 
-		if(!is_null($config)) {
+		if(is_array($config)) {
 			$_meta = array_merge(
 				array(
 					'name' => $name,
@@ -43,10 +43,8 @@ abstract class Adapter implements iAdapter {
 				$config
 			);
 
-			if(!is_integer(key($_meta['columns']))) {
-				foreach($_meta['columns'] as $key => $array) {
-					$_meta['columns'][$key] = (object) array_merge(self::$_meta, $array);
-				}
+			foreach($_meta['columns'] as $key => $array) {
+				$_meta['columns'][$key] = (object) array_merge(self::$_meta, $array);
 			}
 
 			foreach($_meta['relations'] as $k => $relation) {

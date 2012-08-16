@@ -40,7 +40,7 @@ class Mysql extends Pdo {
 		}
 	}
 
-	public function load($name)
+	public function load($name, $force = false)
 	{
 		$_meta = array(
 			'name' => $name,
@@ -51,7 +51,7 @@ class Mysql extends Pdo {
 
 		$config = $this->_loadConfig($name);
 
-		if(!is_null($config)) {
+		if(!is_null($config) && !$force) {
 			return $config;
 		}
 
