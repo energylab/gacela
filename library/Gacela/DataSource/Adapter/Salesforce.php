@@ -73,9 +73,12 @@ class Salesforce extends Adapter
 					$meta['type'] = 'float';
 					break;
 				case 'date':
-				case 'dateTime':
+				case 'datetime':
 				case 'time':
 					$meta['type'] = 'date';
+					break;
+				case 'boolean':
+					$meta['type'] = 'bool';
 					break;
 				case 'picklist':
 					$meta['type'] = 'enum';
