@@ -42,18 +42,18 @@ class Mysql extends Pdo {
 
 	public function load($name, $force = false)
 	{
+		$config = $this->_loadConfig($name, $force);
+
+		if(!is_null($config)) {
+			return $config;
+		}
+
 		$_meta = array(
 			'name' => $name,
 			'columns' => array(),
 			'relations' => array(),
 			'primary' => array()
 		);
-
-		$config = $this->_loadConfig($name);
-
-		if(!is_null($config) && !$force) {
-			return $config;
-		}
 
 		// Setup Column meta information
 		$stmt = $this->prepare("DESCRIBE ".$name);

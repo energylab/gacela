@@ -96,10 +96,8 @@ abstract class DataSource implements iDataSource {
 		return false;
 	}
 
-	public function createConfig($name, $fields)
+	public function createConfig($name, $fields, $write = false)
 	{
-		$handle = fopen($this->_singleton()->configPath().$name.'.php', 'w+');
-
 		$resource = $this->loadResource($name, true);
 
 		$resource = (array) $resource;
@@ -126,11 +124,15 @@ abstract class DataSource implements iDataSource {
 
 		$string .= ';';
 
-		if(!fwrite($handle, $string)) {
-			return false;
+		if($write) {
+			$handle = fopen($this->_singleton()->configPath().$name.'.php', 'w+');
+
+			if(!fwrite($handle, $string)) {
+				return false;
+			}
 		}
 
-		return true;
+		return $string;
 	}
 
 	public function commitTransaction()

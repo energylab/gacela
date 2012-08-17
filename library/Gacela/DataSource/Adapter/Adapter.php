@@ -27,8 +27,12 @@ abstract class Adapter implements iAdapter {
 		'null' => true
 	);
 
-	protected function _loadConfig($name)
+	protected function _loadConfig($name, $skip = false)
 	{
+		if($skip) {
+			return null;
+		}
+
 		// Pull from the config file if enabled
 		$config = $this->_singleton()->loadConfig($name);
 

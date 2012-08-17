@@ -28,9 +28,9 @@ class Salesforce extends Adapter
 	//put your code here
 	public function load($name, $force = false)
 	{
-		$config = $this->_loadConfig($name);
+		$config = $this->_loadConfig($name, $force);
 
-		if(!is_null($config) && !$force) {
+		if(!is_null($config)) {
 			return $config;
 		}
 
