@@ -530,6 +530,14 @@ abstract class Mapper implements iMapper {
 		$this->init();
 	}
 
+	public function __wakeup()
+	{
+		if(is_null(static::$_field)) {
+			static::$_field = $this->_singleton()->autoload("\\Field\\Field");
+		}
+	}
+
+
 	/**
 	 *  - Not Yet Implemented
 	 * @param $association
