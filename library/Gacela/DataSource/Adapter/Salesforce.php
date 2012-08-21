@@ -12,6 +12,8 @@ namespace Gacela\DataSource\Adapter;
 
 class Salesforce extends Adapter
 {
+	protected $_columns = null;
+
 	protected function _loadConn()
 	{
         if(!class_exists('\SforceEnterpriseClient'))
@@ -19,10 +21,18 @@ class Salesforce extends Adapter
             require_once($this->_config->soapclient_path.'SforceEnterpriseClient.php');
         }
 
-		$this->_conn = new \SforceEnterpriseClient();
+		if(is_null($this->_conn)) {
+			$this->_conn = new \SforceEnterpriseClient();
 
-		$this->_conn->createConnection($this->_config->wsdl_path);
-		$this->_conn->login($this->_config->username, $this->_config->password);
+			$this->_conn->createConnection($this->_config->wsdl_path);
+			$this->_conn->login($this->_config->username, $this->_config->password);
+
+			$this->_columns = $this->describeSObjects($this->_config->objects);
+
+			if(!is_array($this->_columns)) {
+				$this->_columns = array($this->_columns);
+			}
+		}
 	}
 
 	//put your code here
@@ -34,7 +44,7 @@ class Salesforce extends Adapter
 			return $config;
 		}
 
-		$result = $this->describeSObject($name);
+		$this->_loadConn();
 
 		$_meta = array(
 			'name' => $name,
@@ -43,7 +53,21 @@ class Salesforce extends Adapter
 			'columns' => array(),
 		);
 
-		foreach($result->fields as $field) {
+		$resource = null;
+
+		while(is_null($resource) AND current($this->_columns) !== false) {
+			$col = current($this->_columns);
+
+			if($col->name == $name) {
+				$resource = $col;
+			}
+
+			next($this->_columns);
+		}
+
+		reset($this->_columns);
+
+		foreach($resource->fields as $field) {
 			if($field->deprecatedAndHidden === true) {
 				continue;
 			}
