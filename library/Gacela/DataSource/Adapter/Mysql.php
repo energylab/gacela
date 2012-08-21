@@ -14,29 +14,46 @@ class Mysql extends Pdo {
 
 	protected $_relationships = null;
 
-	public function __construct($config)
+	protected $_columns = null;
+
+	protected function _loadConn()
 	{
-		parent::__construct($config);
+		if(!$this->_conn) {
+			parent::_loadConn();
 
-		$this->_relationships = $this->_singleton()->cache($this->_config->schema.'_relationships');
+			// Moved out of __construct to allow for lazy loading of config data
+			$this->_relationships = $this->_singleton()->cache($this->_config->schema.'_relationships');
 
-		if(!$this->_relationships) {
-			$sql = "
+			if(!$this->_relationships) {
+				$sql = "
 				SELECT
 					TABLE_NAME AS keyTable,
 					GROUP_CONCAT(COLUMN_NAME) AS keyColumns,
 					REFERENCED_TABLE_NAME AS refTable,
 					GROUP_CONCAT(REFERENCED_COLUMN_NAME) AS refColumns,
 					CONSTRAINT_NAME AS constraintName
-				FROM INFORMATION_SCHEMA.key_column_usage
+				FROM information_schema.key_column_usage
 				WHERE TABLE_SCHEMA = DATABASE()
 				AND REFERENCED_TABLE_NAME IS NOT NULL
 				GROUP BY constraintName
 				";
 
-			$this->_relationships = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
+				$this->_relationships = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
 
-			$this->_singleton()->cache($this->_config->schema.'_relationships');
+				$this->_singleton()->cache($this->_config->schema.'_relationships');
+			}
+
+			$this->_columns = $this->_singleton()->cache($this->_config->schema.'_columns');
+
+			if(!$this->_columns) {
+				$sql = "SELECT *
+			FROM information_schema.COLUMNS
+			WHERE TABLE_SCHEMA = DATABASE()";
+
+				$this->_columns = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
+
+				$this->_singleton()->cache($this->_config->schema.'_columns');
+			}
 		}
 	}
 
@@ -48,6 +65,8 @@ class Mysql extends Pdo {
 			return $config;
 		}
 
+		$this->_loadConn();
+
 		$_meta = array(
 			'name' => $name,
 			'columns' => array(),
@@ -56,81 +75,65 @@ class Mysql extends Pdo {
 		);
 
 		// Setup Column meta information
-		$stmt = $this->prepare("DESCRIBE ".$name);
+		foreach($this->_columns as $column) {
 
-		if(!$stmt->execute()) {
-			throw new \Exception(
-				'Error Code: '.
-				$stmt->errorCode().
-				'<br/>'.
-				print_r($stmt->errorInfo(), true).
-				'Param Dump:'.
-				print_r($stmt->debugDumpParams(), true)
-			);
-		}
+			if($column->TABLE_NAME == $name) {
+				$meta = array_merge(
+					self::$_meta,
+					array(
+						'sequenced' => (bool) (stripos($column->EXTRA, 'auto_increment') !== false),
+						'primary' => (bool) (strtoupper($column->COLUMN_KEY) == 'PRI'),
+						'default' => $column->COLUMN_DEFAULT,
+						'null' => (bool) ($column->IS_NULLABLE == 'YES')
+					)
+				);
 
-		$columns = $stmt->fetchAll(\PDO::FETCH_OBJ);
-
-		foreach($columns as $column) {
-
-			$meta = array_merge(
-						self::$_meta,
-						array(
-							'sequenced' => (bool) (stripos($column->Extra, 'auto_increment') !== false),
-							'primary' => (bool) (strtoupper($column->Key) == 'PRI'),
-							'default' => $column->Default,
-							'null' => (bool) ($column->Null == 'YES')
-						)
-					);
-
-			if (preg_match('/unsigned/', $column->Type)) {
-				$meta['unsigned'] = true;
-			}
-
-			if (preg_match('/^((?:var)?char)\((\d+)\)/', $column->Type, $matches)) {
-				$meta['type'] = 'string';
-				$meta['length'] = $matches[2];
-			} elseif (preg_match('/^float|decimal|double(?:\((\d+),(\d+)\))?$/', $column->Type, $matches)) {
-				$meta['type'] = 'float';
-
-				if(isset($matches[1])) {
-					$meta['precision'] = $matches[1];
-					$meta['scale'] = $matches[2];
-				} else {
-					$meta['precision'] = 53;
-					$meta['scale'] = 15;
+				if (preg_match('/unsigned/', $column->COLUMN_TYPE)) {
+					$meta['unsigned'] = true;
 				}
 
-			} elseif (preg_match('/^(([a-zA-Z]*)int)\((\d+)\)/', $column->Type, $matches)) {
-				// Use $matches[2] to determine size of the field for validation.
-				if($matches[2] == 'tiny' && $matches[3] == 1) {
-					$meta['type'] = 'bool';
-				} else {
-					$meta['type'] = 'int';
-					$meta['length'] = $matches[3];
+				if (preg_match('/^((?:var)?char)\((\d+)\)/', $column->COLUMN_TYPE, $matches)) {
+					$meta['type'] = 'string';
+					$meta['length'] = $matches[2];
+				} elseif (preg_match('/^float|decimal|double(?:\((\d+),(\d+)\))?$/', $column->COLUMN_TYPE, $matches)) {
+					$meta['type'] = 'float';
+
+					if(isset($matches[1])) {
+						$meta['precision'] = $matches[1];
+						$meta['scale'] = $matches[2];
+					} else {
+						$meta['precision'] = 53;
+						$meta['scale'] = 15;
+					}
+
+				} elseif (preg_match('/^(([a-zA-Z]*)int)\((\d+)\)/', $column->COLUMN_TYPE, $matches)) {
+					// Use $matches[2] to determine size of the field for validation.
+					if($matches[2] == 'tiny' && $matches[3] == 1) {
+						$meta['type'] = 'bool';
+					} else {
+						$meta['type'] = 'int';
+						$meta['length'] = $matches[3];
+					}
+				} elseif(preg_match('/^(([a-zA-Z]*)text)/', $column->COLUMN_TYPE, $matches)) {
+					// Use $matches[2] to determine size of the field for validation.
+					$meta['type'] = 'string';
+				} elseif(preg_match('/(enum)\((\'.*?\')\)/', $column->COLUMN_TYPE, $matches)) {
+					$meta['type'] = 'enum';
+					$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
+				} elseif(preg_match('/(date*|timestamp|time)/', $column->COLUMN_TYPE, $matches)) {
+					$meta['type'] = 'date';
 				}
-			} elseif(preg_match('/^(([a-zA-Z]*)text)/', $column->Type, $matches)) {
-				// Use $matches[2] to determine size of the field for validation.
-				$meta['type'] = 'string';
-			} elseif(preg_match('/(enum)\((\'.*?\')\)/', $column->Type, $matches)) {
-				$meta['type'] = 'enum';
-				$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
-			} elseif(preg_match('/(date*|timestamp|time)/', $column->Type, $matches)) {
-				$meta['type'] = 'date';
-			}
 
-			$_meta['columns'][$column->Field] = (object) $meta;
+				$_meta['columns'][$column->COLUMN_NAME] = (object) $meta;
 
-			if($_meta['columns'][$column->Field]->primary === true) {
-				$_meta['primary'][] = $column->Field;
+				if($_meta['columns'][$column->COLUMN_NAME]->primary === true) {
+					$_meta['primary'][] = $column->COLUMN_NAME;
+				}
 			}
 		}
-
-		unset($stmt);
 
 		// Setup Relationships
-		foreach($this->_relationships as $rel)
-		{
+		foreach($this->_relationships as $rel) {
 			$key = explode(self::$_separator, $rel->constraintName);
 
 			if(!isset($key[1])) {
