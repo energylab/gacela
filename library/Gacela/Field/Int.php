@@ -44,6 +44,8 @@ class Int extends Field {
 	{
 		if(ctype_digit($value)) {
 			$value = (int) $value;
+		} elseif($value === '' || $value === false) {
+			$value = null;
 		}
 
 		return $value;
