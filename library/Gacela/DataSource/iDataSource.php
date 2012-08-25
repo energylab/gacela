@@ -55,7 +55,7 @@ interface iDataSource {
 	 * @param  string $name
 	 * @return \Gacela\DataSource\Resource\Resource
 	 */
-	public function loadResource($name);
+	public function loadResource($name, $force = false);
 
 	/**
 	 * @abstract

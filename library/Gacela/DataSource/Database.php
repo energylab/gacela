@@ -85,7 +85,7 @@ class Database extends DataSource {
 				return false;
 			}
 
-			$this->_incrementCache($name);
+			//$this->_incrementCache($name);
 			return true;
 		} else {
 			throw new \Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');
@@ -187,7 +187,7 @@ class Database extends DataSource {
 					return false;
 				}
 
-				$this->_incrementCache($name);
+				//$this->_incrementCache($name);
 
 				return $this->_driver()->lastInsertId();
 			} else {
@@ -225,18 +225,18 @@ class Database extends DataSource {
 	{
 		$key = $this->_setLastQuery($query, $args);
 
-		$cached = $this->_cache($resource->getName(), $key);
+		/*$cached = $this->_cache($resource->getName(), $key);
 
 		// If the query is cached, return the cached data
 		if($cached !== false AND !is_null($cached)) {
 			return $cached;
-		}
+		}*/
 
 		$stmt = $this->_driver()->prepare($this->_lastQuery['query']);
 
 		if($stmt->execute($this->_lastQuery['args']) === true) {
 			$return = $stmt->fetchAll(\PDO::FETCH_OBJ);
-			$this->_cache($resource->getName(), $key, $return);
+			//$this->_cache($resource->getName(), $key, $return);
 			return $return;
 		} else {
 			$error = $stmt->errorInfo();
@@ -282,7 +282,7 @@ class Database extends DataSource {
 					return false;
 				}
 
-				$this->_incrementCache($name);
+				//$this->_incrementCache($name);
 				return true;
 			} else {
 				if($this->_driver()->inTransaction()) {

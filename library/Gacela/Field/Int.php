@@ -42,13 +42,12 @@ class Int extends Field {
 
 	public static function transform($meta, $value, $in = true)
 	{
-		if(ctype_digit($value))
-		{
-			return (int) $value;
+		if(ctype_digit($value)) {
+			$value = (int) $value;
+		} elseif($value === '' || $value === false) {
+			$value = null;
 		}
-		elseif(is_int($value))
-		{
-			return $value;
-		}
+
+		return $value;
 	}
 }

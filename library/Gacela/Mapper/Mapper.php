@@ -11,6 +11,8 @@ abstract class Mapper implements iMapper {
 
 	protected static $_deletedField = 'isDeleted';
 
+	protected static $_field = null;
+
 	/**
 	 * Contains the names of resources that are associations to Mapper::$_resource
 	 * <a href="http://martinfowler.com/eaaCatalog/associationTableMapping.html" target="_blank">Association Table Mapping</a>
@@ -89,7 +91,7 @@ abstract class Mapper implements iMapper {
 
 		$data = array_intersect_key((array) $new, $fields, array_flip($changed));
 
-		$field = $this->_singleton()->autoload("\\Field\\Field");
+		$field = static::$_field;
 
 		foreach($data as $key => $val) {
 			$data[$key] = $field::transform($fields[$key], $val);
@@ -193,6 +195,10 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _init()
 	{
+		if(is_null(static::$_field)) {
+			static::$_field = $this->_singleton()->autoload("\\Field\\Field");
+		}
+
 		// Everything loads in order based on what resources are needed first.
 		$this->_initResource()
 			->_initPrimaryKey()
@@ -519,8 +525,18 @@ abstract class Mapper implements iMapper {
 
 	public function __construct()
 	{
+		$this->_init();
+
 		$this->init();
 	}
+
+	public function __wakeup()
+	{
+		if(is_null(static::$_field)) {
+			static::$_field = $this->_singleton()->autoload("\\Field\\Field");
+		}
+	}
+
 
 	/**
 	 *  - Not Yet Implemented
@@ -782,10 +798,7 @@ abstract class Mapper implements iMapper {
 		return $this->_relations;
 	}
 
-	public function init()
-	{
-		$this->_init();
-	}
+	public function init() {}
 
 	/**
 	 *  Loads a new instance of $_modelName from the $data provided.

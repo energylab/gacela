@@ -96,6 +96,45 @@ abstract class DataSource implements iDataSource {
 		return false;
 	}
 
+	public function createConfig($name, $fields, $write = false)
+	{
+		$resource = $this->loadResource($name, true);
+
+		$resource = (array) $resource;
+
+		$resource = array_shift($resource);
+
+		foreach($resource['columns'] as $field => $meta)
+		{
+			if(!in_array($field, $fields)) {
+				unset($resource['columns'][$field]);
+			}
+			else {
+				foreach($meta as $k => $m) {
+					if(is_object($m)) {
+						$meta[$k] = (array) $m;
+					}
+				}
+
+				$resource['columns'][$field] = (array) $meta;
+			}
+		}
+
+		$string = "<?php \n\n return ".var_export($resource, true);
+
+		$string .= ';';
+
+		if($write) {
+			$handle = fopen($this->_singleton()->configPath().$name.'.php', 'w+');
+
+			if(!fwrite($handle, $string)) {
+				return false;
+			}
+		}
+
+		return $string;
+	}
+
 	public function commitTransaction()
 	{
 		return false;
@@ -109,12 +148,12 @@ abstract class DataSource implements iDataSource {
 	/**
 	 * @see \Gacela\DataSource\iDataSource::loadResource()
 	 */
-	public function loadResource($name)
+	public function loadResource($name, $force = false)
 	{
 		$cached = $this->_singleton()->cache('resource_'.$name);
 
 		if($cached === false || is_null($cached))  {
-			$cached = new Resource($this->_driver()->load($name));
+			$cached = new Resource($this->_driver()->load($name, $force));
 
 			$this->_singleton()->cache('resource_'.$name, $cached);
 		}
