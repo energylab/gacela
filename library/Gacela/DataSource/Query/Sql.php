@@ -686,11 +686,9 @@ class Sql extends Query {
 	 * @param string $type
 	 * @return Query\Sql
 	 */
-	public function left_join($table, $on, array $columns = array(), $type = 'left')
+	public function leftJoin($table, $on, array $columns = array())
 	{
-		$this->join($table, $on, $columns, $type);
-
-		return $this;
+		return $this->join($table, $on, $columns, 'left');
 	}
 
 	/**
@@ -701,11 +699,9 @@ class Sql extends Query {
 	 * @param string $type
 	 * @return Query\Sql
 	 */
-	public function right_join($table, $on, array $columns = array(), $type = 'right')
+	public function rightJoin($table, $on, array $columns = array())
 	{
-		$this->join($table, $on, $columns, $type);
-
-		return $this;
+		return $this->join($table, $on, $columns, 'right');
 	}
 
 	public function limit($start, $count)
