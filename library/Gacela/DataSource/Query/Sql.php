@@ -678,6 +678,32 @@ class Sql extends Query {
 		return $this;
 	}
 
+	/**
+	 * A convenience wrapper for join
+	 * @param  string|array $table
+	 * @param  string $on
+	 * @param array $columns
+	 * @param string $type
+	 * @return Query\Sql
+	 */
+	public function leftJoin($table, $on, array $columns = array())
+	{
+		return $this->join($table, $on, $columns, 'left');
+	}
+
+	/**
+	 * A convenience wrapper for join
+	 * @param  string|array $table
+	 * @param  string $on
+	 * @param array $columns
+	 * @param string $type
+	 * @return Query\Sql
+	 */
+	public function rightJoin($table, $on, array $columns = array())
+	{
+		return $this->join($table, $on, $columns, 'right');
+	}
+
 	public function limit($start, $count)
 	{
 		$this->_limit = array($start, $count);
