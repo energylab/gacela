@@ -99,7 +99,7 @@ class Database extends DataSource {
 	 * @param array $dependents
 	 * @return
 	 */
-	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
+	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		$query = $this->getQuery();
 
@@ -235,9 +235,8 @@ class Database extends DataSource {
 		$stmt = $this->_driver()->prepare($this->_lastQuery['query']);
 
 		if($stmt->execute($this->_lastQuery['args']) === true) {
-			$return = $stmt->fetchAll(\PDO::FETCH_OBJ);
+			return $stmt;
 			//$this->_cache($resource->getName(), $key, $return);
-			return $return;
 		} else {
 			$error = $stmt->errorInfo();
 			$error = $error[2];

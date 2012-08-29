@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * @author noah
  * @date 4/20/11
  * @brief
- * 
+ *
  */
 
 require_once '../library/Gacela.php';
@@ -24,6 +24,30 @@ $gacela->registerDataSource(
 	)
 );
 
+$gacela->registerDataSource(
+	'wiki',
+	'database',
+	array(
+		'schema' => 'wiki',
+		'host' => 'localhost',
+		'user' => 'gacela',
+		'passwword' => 'gacela',
+		'dbtype' => 'mysql'
+	)
+);
+
+$gacela->registerDataSource(
+	'employees',
+	'database',
+	array(
+		'schema' => 'employees',
+		'host' => 'localhost',
+		'user' => 'gacela',
+		'passwword' => 'gacela',
+		'dbtype' => 'mysql'
+	)
+);
+
 $memcache = new Memcache;
 
 $memcache->addServer('127.0.0.1', 11211);
@@ -31,7 +55,7 @@ $memcache->addServer('127.0.0.1', 11211);
 //$gacela->enableCache($memcache);
 
 // Comment out to avoid using the config files and use the dynamic version instead
-$gacela->configPath(__DIR__.'/config');
+//$gacela->configPath(__DIR__.'/config');
 
 function debug($value)
 {

@@ -4,21 +4,19 @@
  * @date 3/7/11
  *
  *
-*/
+ */
 
-namespace Gacela;
+namespace Gacela\Collection;
 
-class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
-
-	protected $_col = null;
-
-	public function __construct(\Gacela\Mapper\Mapper $mapper, $data)
+class Arr extends Collection
+{
+	public function __construct(\Gacela\Mapper\Mapper $mapper, array $data)
 	{
-		if($data instanceof \PDOStatement) {
-			$this->_col = new \Gacela\Collection\Statement($mapper, $data);
-		} elseif (is_array($data)) {
-			$this->_col = new \Gacela\Collection\Arr($mapper, $data);
-		}
+		$this->_mapper = $mapper;
+
+		$this->_data = $data;
+
+		$this->_count = count($data);
 	}
 
 	public function asArray()
@@ -53,17 +51,17 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 		return $array;
 	}
 
-    /**
-     * Returns the number of elements in the collection.
-     *
-     * Implements Countable::count()
-     *
-     * @return int
-     */
-    public function count()
-    {
-        return $this->_count;
-    }
+	/**
+	 * Returns the number of elements in the collection.
+	 *
+	 * Implements Countable::count()
+	 *
+	 * @return int
+	 */
+	public function count()
+	{
+		return $this->_count;
+	}
 
 	public function current()
 	{
@@ -91,24 +89,24 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 	}
 
 	/**
-		* Check if an offset exists
-		* Required by the ArrayAccess implementation
-		*
-		* @param string $offset
-		* @return boolean
-		*/
+	 * Check if an offset exists
+	 * Required by the ArrayAccess implementation
+	 *
+	 * @param string $offset
+	 * @return boolean
+	 */
 	public function offsetExists($offset)
 	{
 		return isset($this->_data[(int) $offset]);
 	}
 
 	/**
-		* Get the row for the given offset
-		* Required by the ArrayAccess implementation
-		*
-		* @param string $offset
-		* @return $_modelClass
-		*/
+	 * Get the row for the given offset
+	 * Required by the ArrayAccess implementation
+	 *
+	 * @param string $offset
+	 * @return $_modelClass
+	 */
 	public function offsetGet($offset)
 	{
 		$this->_pointer = (int) $offset;
@@ -117,22 +115,22 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 	}
 
 	/**
-		* Does nothing
-		* Required by the ArrayAccess implementation
-		*
-		* @param string $offset
-		* @param mixed $value
-		*/
+	 * Does nothing
+	 * Required by the ArrayAccess implementation
+	 *
+	 * @param string $offset
+	 * @param mixed $value
+	 */
 	public function offsetSet($offset, $value)
 	{
 	}
 
 	/**
-		* Does nothing
-		* Required by the ArrayAccess implementation
-		*
-		* @param string $offset
-		*/
+	 * Does nothing
+	 * Required by the ArrayAccess implementation
+	 *
+	 * @param string $offset
+	 */
 	public function offsetUnset($offset)
 	{
 	}
@@ -169,13 +167,13 @@ class Collection implements \SeekableIterator, \Countable, \ArrayAccess {
 	}
 
 	/**
-		* Take the Iterator to position $position
-		* Required by interface SeekableIterator.
-		*
-		* @param int $position the position to seek to
-		* @return \Gacela\Collection
-		* @throws \Exception
-		*/
+	 * Take the Iterator to position $position
+	 * Required by interface SeekableIterator.
+	 *
+	 * @param int $position the position to seek to
+	 * @return \Gacela\Collection
+	 * @throws \Exception
+	 */
 	public function seek($position)
 	{
 		$position = (int) $position;
