@@ -126,6 +126,7 @@ class Gacela {
 			}
         } else {
             $namespaces = array_reverse($self->_namespaces);
+
             foreach ($namespaces as $ns => $path) {
             	if(substr($class, 0, 1) == '\\') {
             		$tmp = substr($class, 1);
@@ -135,15 +136,13 @@ class Gacela {
 
                 $file = $path.str_replace("\\", DIRECTORY_SEPARATOR, $tmp).'.php';
 
-                if($self->_findFile($file)) {
-                	$class = $ns.$class;
+				$tmp = $ns.$class;
 
-                	if(class_exists($class)) {
-                		return $class;
-                	} else {
-                		require $file;
-                    	return $class;
-                	}
+				if(class_exists($tmp)) {
+					return $class;
+				} elseif($self->_findFile($file)) {
+					require $file;
+					return $tmp;
                 }
             }
         }
