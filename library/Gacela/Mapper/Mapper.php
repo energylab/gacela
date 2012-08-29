@@ -72,7 +72,11 @@ abstract class Mapper implements iMapper {
 	 */
 	protected $_source = 'db';
 
-	protected function _collection(array $data)
+	/**
+	 * @param \PDOStatement | array $data
+	 * @return \Gacela\Collection
+	 */
+	protected function _collection($data)
 	{
 		$coll = $this->_singleton()->autoload('\\Collection');
 
@@ -107,7 +111,9 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _deleteResource(\Gacela\DataSource\Resource $resource, \stdClass $data)
 	{
-		$where = new \Gacela\Criteria();
+		$where = $this->_singleton()->autoload('Criteria');
+
+		$where = new $where;
 
 		$primary = $this->_primaryKey($resource->getPrimaryKey(), $data);
 
@@ -506,7 +512,9 @@ abstract class Mapper implements iMapper {
 				throw new \Exception('Oops! primary key is null');
 			}
 
-			$where = new \Gacela\Criteria;
+			$where = $this->_singleton()->autoload('Criteria');
+
+			$where = new $where;
 
 			foreach($primary as $k => $v) {
 				$where->equals($k, $v);
@@ -566,7 +574,8 @@ abstract class Mapper implements iMapper {
 		$assoc = $this->_associations[$name];
 
 		if($delete) {
-			$criteria = new \Gacela\Criteria();
+			$criteria = $this->_singleton()->autoload('Criteria');
+			$criteria = new $criteria;
 
 			foreach($assoc['meta']->keys as $key => $ref) {
 				$criteria->equals($ref, $data->$key);
@@ -763,7 +772,8 @@ abstract class Mapper implements iMapper {
 			$name = \Gacela\Inflector::singularize($name);
 		}
 
-		$criteria = new \Gacela\Criteria();
+		$criteria = $this->_singleton()->autoload('Criteria');
+		$criteria = new $criteria;
 
 		foreach($relation['meta']->keys as $key => $ref) {
 			$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
@@ -777,7 +787,7 @@ abstract class Mapper implements iMapper {
 			return $result;
 		}
 
-		throw new Exception('Invalid Relationship Type!');
+		throw new \Exception('Invalid Relationship Type!');
 	}
 
 	/**
@@ -836,9 +846,18 @@ abstract class Mapper implements iMapper {
 
 		$assoc = $this->_associations[$name];
 
-		$main = new \Gacela\Criteria;
 
-		$me = new \Gacela\Criteria;
+		$criteria = $this->_singleton()->autoload('Criteria');
+
+		/**
+		 * @var \Gacela\Criteria
+		 */
+		$main = new $criteria;
+
+		/**
+		 * @var \Gacela\Criteria
+		 */
+		$me = new $criteria;
 
 		foreach($assoc['meta']->keys as $key => $ref) {
 			$me->equals($ref, $data->$key);

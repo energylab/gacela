@@ -163,7 +163,9 @@ class Database extends DataSource {
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		return new Query\Sql($criteria);
+		$class = $this->_singleton()->autoload("\\DataSource\\Query\\Sql");
+
+		return new $class($criteria);
 	}
 
 	/**

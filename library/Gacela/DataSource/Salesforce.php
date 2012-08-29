@@ -34,7 +34,7 @@ class Salesforce extends DataSource
 	/**
 	 * Can be used to find a single Salesforce record. (\Gacela\Mapper\Mapper works this way).
 	 * Can also be used to retrieve an array of Salesforce records if an array of Id's is passed.
-	 * 
+	 *
 	 * @param array $primary
 	 * @param \Gacela\DataSource\Resource $resource
 	 * @param array $inherits
@@ -77,7 +77,9 @@ class Salesforce extends DataSource
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		return new Query\Soql($criteria);
+		$class = $this->_singleton()->autoload("\\DataSource\\Query\\Soql");
+
+		return new $class($criteria);
 	}
 
 	/**

@@ -19,6 +19,8 @@ class Criteria implements \IteratorAggregate {
 		return $this;
 	}
 
+	public function __construct() {}
+
 	public function criteria(\Gacela\Criteria $criteria, $or = false)
 	{
 		return $this->_addCriterion($criteria, array(null, null, $or));
