@@ -8,47 +8,13 @@
 
 namespace Gacela\Collection;
 
-class Arr extends Collection
-{
+class Arr extends Collection {
+
 	public function __construct(\Gacela\Mapper\Mapper $mapper, array $data)
 	{
-		$this->_mapper = $mapper;
-
-		$this->_data = $data;
+		parent::__construct($mapper, $data);
 
 		$this->_count = count($data);
-	}
-
-	public function asArray()
-	{
-		if(func_num_args() < 1)
-		{
-			throw new \Exception('Invalid number of args passed to \\Gacela\\Collection::asArray().');
-		}
-
-		if(func_num_args() == 1) {
-			$args = func_get_arg(0);
-		} else {
-			$args = func_get_args();
-		}
-
-		$array = array();
-		foreach($this as $row) {
-			if(!is_array($args)) {
-				$array[] = $row->$args;
-			} else {
-				$data = array();
-
-				foreach($args as $field) {
-					$data[$field] = $row->$field;
-				}
-
-				$array[] = $data;
-			}
-
-		}
-
-		return $array;
 	}
 
 	/**
@@ -60,9 +26,13 @@ class Arr extends Collection
 	 */
 	public function count()
 	{
-		return $this->_count;
+		return (int) $this->_count;
 	}
 
+	/**
+	 * @return \Gacela\Model\Model
+	 * @throws \Exception
+	 */
 	public function current()
 	{
 		if(!isset($this->_data[$this->_pointer])) {
@@ -71,68 +41,29 @@ class Arr extends Collection
 
 		$data = $this->_data[$this->_pointer];
 
-		if(is_object($data)) {
-			return $this->_mapper->load($data);
-		} elseif(is_integer($data)) {
+		if((array) array_keys($data) == $this->_mapper->getPrimaryKey()) {
 			return $this->_mapper->find($data);
+		} else {
+			return $this->_mapper->load($data);
 		}
 	}
 
+	/**
+	 * @return int
+	 */
 	public function key()
 	{
 		return $this->_pointer;
 	}
 
+	/**
+	 * @return \Gacela\Model\Model
+	 */
 	public function next()
 	{
 		++$this->_pointer;
-	}
-
-	/**
-	 * Check if an offset exists
-	 * Required by the ArrayAccess implementation
-	 *
-	 * @param string $offset
-	 * @return boolean
-	 */
-	public function offsetExists($offset)
-	{
-		return isset($this->_data[(int) $offset]);
-	}
-
-	/**
-	 * Get the row for the given offset
-	 * Required by the ArrayAccess implementation
-	 *
-	 * @param string $offset
-	 * @return $_modelClass
-	 */
-	public function offsetGet($offset)
-	{
-		$this->_pointer = (int) $offset;
 
 		return $this->current();
-	}
-
-	/**
-	 * Does nothing
-	 * Required by the ArrayAccess implementation
-	 *
-	 * @param string $offset
-	 * @param mixed $value
-	 */
-	public function offsetSet($offset, $value)
-	{
-	}
-
-	/**
-	 * Does nothing
-	 * Required by the ArrayAccess implementation
-	 *
-	 * @param string $offset
-	 */
-	public function offsetUnset($offset)
-	{
 	}
 
 	public function rewind()
@@ -143,7 +74,9 @@ class Arr extends Collection
 
 	public function search(array $value)
 	{
-		foreach($this->_data as $index => $row) {
+		$data = array();
+
+		foreach($this as $row) {
 			$rs = true;
 
 			foreach($value as $key => $val) {
@@ -158,12 +91,11 @@ class Arr extends Collection
 			}
 
 			if($rs === true) {
-				$this->seek($index);
-				return $this->current();
+				$data[] = $row;
 			}
 		}
 
-		return false;
+		return \Gacela::instance()->makeCollection($this->_mapper, $data);
 	}
 
 	/**
@@ -178,24 +110,27 @@ class Arr extends Collection
 	{
 		$position = (int) $position;
 		if ($position < 0 || $position > $this->_count) {
-			throw new \Exception("Illegal index $position");
+			throw new \OutOfBoundsException("Illegal index $position");
 		}
 
 		$this->_pointer = $position;
-		return $this;
 	}
 
 	public function slice($offset, $length = null)
 	{
 		$data = array_slice($this->_data, $offset, $length);
 
-		$col = get_class($this);
-
-		return new $col($this->_mapper, $data);
+		return \Gacela::instance()->makeCollection($this->_mapper, $data);
 	}
 
 	public function valid()
 	{
-		return $this->_pointer < $this->_count;
+		$valid = $this->_pointer < $this->_count;
+
+		if(!$valid) {
+			$this->_pointer = 0;
+		}
+
+		return $valid;
 	}
 }

@@ -70,7 +70,7 @@ class Gacela {
 		{
 			foreach($args as $key => $val)
 			{
-				$args[$key] = self::instance()->getDataSource('db')->quote($val);
+				$args[$key] = static::instance()->getDataSource('db')->quote($val);
 			}
 
 			$query = strtr($sql, $args);
@@ -93,11 +93,11 @@ class Gacela {
 	 */
 	public static function instance()
 	{
-		if(is_null(self::$_instance)) {
-			self::$_instance = new Gacela();
+		if(is_null(static::$_instance)) {
+			static::$_instance = new Gacela();
 		}
 
-		return self::$_instance;
+		return static::$_instance;
 	}
 
 	/**
@@ -296,6 +296,19 @@ class Gacela {
 		}
 
 		return $cached;
+	}
+
+	public function makeCollection($mapper, $data)
+	{
+		if($data instanceof \PDOStatement) {
+			$col = \Gacela::instance()->autoload("\\Collection\\Statement");
+		} elseif (is_array($data)) {
+			$col = \Gacela::instance()->autoload("\\Collection\\Arr");
+		} else {
+			throw new \Exception('Collection type is not defined!');
+		}
+
+		return new $col($mapper, $data);
 	}
 
 	/**

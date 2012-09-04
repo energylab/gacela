@@ -799,6 +799,11 @@ abstract class Mapper implements iMapper {
 		return $this->_fields;
 	}
 
+	public function getPrimaryKey()
+	{
+		return $this->_primaryKey;
+	}
+
 	/**
 	 *  Provides the Model with the names of related Models
 	 * @return An array of all the relation names whether as $_associations or $_foreignKeys meaning belongsTo or hasMany

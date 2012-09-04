@@ -17,21 +17,33 @@ class Resource {
 		$this->_meta = $meta;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getName()
 	{
 		return $this->_meta['name'];
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getFields()
 	{
 		return $this->_meta['columns'];
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getPrimaryKey()
 	{
 		return $this->_meta['primary'];
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getRelations()
 	{
 		return $this->_meta['relations'];
