@@ -106,7 +106,12 @@ class Gacela {
 	 */
     public function autoload($class)
     {
+		// Contains the path to the class
         $parts = explode("\\", $class);
+
+		// The class name has to be parsed differently from the namespace path
+		$name = array_pop($parts);
+
 		$self = self::instance();
 
         if(isset($self->_namespaces[$parts[0]])) {
@@ -116,9 +121,9 @@ class Gacela {
 				$path = $parts;
 				unset($path[0]);
 
-				$path = join(DIRECTORY_SEPARATOR, $path);
+				// According to PSR-0 - The underscore should be part of the directory structure for class names
+				$file = $self->_namespaces[$parts[0]].join(DIRECTORY_SEPARATOR, $path).DIRECTORY_SEPARATOR.str_replace('_', DIRECTORY_SEPARATOR, $name).'.php';
 
-				$file = $self->_namespaces[$parts[0]].$path.'.php';
 				if($self->_findFile($file)) {
 					require $file;
 					return $class;
@@ -128,26 +133,22 @@ class Gacela {
             $namespaces = array_reverse($self->_namespaces);
 
             foreach ($namespaces as $ns => $path) {
-            	if(substr($class, 0, 1) == '\\') {
-            		$tmp = substr($class, 1);
-            	} else {
-					$tmp = $class;
-            	}
 
-                $file = $path.str_replace("\\", DIRECTORY_SEPARATOR, $tmp).'.php';
+				// According to PSR-0 - The underscore should be part of the directory structure for class names
+                $file = $path.join(DIRECTORY_SEPARATOR, $parts).DIRECTORY_SEPARATOR.str_replace('_', DIRECTORY_SEPARATOR, $name).'.php';
 
-				$tmp = $ns.$class;
+				$_class = $ns.$class;
 
-				if(class_exists($tmp)) {
+				if(class_exists($_class)) {
 					return $class;
 				} elseif($self->_findFile($file)) {
 					require $file;
-					return $tmp;
+					return $_class;
                 }
             }
         }
 
-        return false;
+		throw new \Exception("Unable to find $class!");
     }
 
 	/**
