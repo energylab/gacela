@@ -103,7 +103,7 @@ class Arr extends Collection {
 	 * Required by interface SeekableIterator.
 	 *
 	 * @param int $position the position to seek to
-	 * @return \Gacela\Collection
+	 * @return \Gacela\Collection\Collection
 	 * @throws \Exception
 	 */
 	public function seek($position)

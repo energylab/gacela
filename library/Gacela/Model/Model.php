@@ -165,7 +165,7 @@ abstract class Model implements iModel {
 		} elseif(isset($this->_relations[$key])) {
 			$relation = $this->$key;
 
-			if($relation instanceof \Gacela\Collection) {
+			if($relation instanceof \Gacela\Collection\Collection) {
 				return count($relation) > 0;
 			} else {
 				foreach($this->_relations[$key] as $key => $ref) {

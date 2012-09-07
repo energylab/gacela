@@ -41,6 +41,12 @@ class Gacela {
         return file_exists($file) && is_readable($file);
     }
 
+	/**
+	 * @static
+	 * @param \Gacela\DataSource\Query\Query $query
+	 * @param bool $return
+	 * @return array|string
+	 */
 	public static function debug($query, $return = false)
 	{
 		if($query instanceof \Gacela\DataSource\Query\Query)
@@ -299,6 +305,14 @@ class Gacela {
 		return $cached;
 	}
 
+	/**
+	 * Collection factory method
+	 *
+	 * @param \Gacela\Mapper\Mapper $mapper
+	 * @param array $data
+	 * @return \Gacela\Collection\Collection
+	 * @throws Exception
+	 */
 	public function makeCollection($mapper, $data)
 	{
 		if($data instanceof \PDOStatement) {

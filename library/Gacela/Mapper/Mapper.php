@@ -74,7 +74,7 @@ abstract class Mapper implements iMapper {
 
 	/**
 	 * @param \PDOStatement | array $data
-	 * @return \Gacela\Collection
+	 * @return \Gacela\Collection\Collection
 	 */
 	protected function _collection($data)
 	{
@@ -156,7 +156,7 @@ abstract class Mapper implements iMapper {
 	/**
 	 * @param string $name
 	 * @param \stdClass $data
-	 * @return \Gacela\Collection
+	 * @return \Gacela\Collection\Collection
 	 */
 	protected function _findAssociation($name, \stdClass $data)
 	{
@@ -178,7 +178,7 @@ abstract class Mapper implements iMapper {
 		}
 
 		return \Gacela::instance()
-					->loadMapper(\Gacela\Inflector::singularize($name))
+					->loadMapper($this->_singularize($name))
 					->findAllByAssociation($this->_resource->getName(), $data);
 
 	}
@@ -314,8 +314,8 @@ abstract class Mapper implements iMapper {
 
 	protected function _initForeignKeys($relations)
 	{
-		$plural = \Gacela\Inflector::pluralize($this->_resourceName);
-		$single = \Gacela\Inflector::singularize($this->_resourceName);
+		$plural = $this->_pluralize($this->_resourceName);
+		$single = $this->_singularize($this->_resourceName);
 
 		if(in_array($plural, array_keys($relations))) {
 			unset($relations[$plural]);
@@ -354,7 +354,7 @@ abstract class Mapper implements iMapper {
 
 					$relations = $stuff['resource']->getRelations();
 
-					unset($relations[\Gacela\Inflector::singularize($this->_resourceName)]);
+					unset($relations[$this->_singularize($this->_resourceName)]);
 					unset($this->_foreignKeys[$name]);
 
 					$this->_initForeignKeys($relations);
@@ -366,7 +366,7 @@ abstract class Mapper implements iMapper {
 
 				$relations = $this->_inherits[$name]['resource']->getRelations();
 
-				unset($relations[\Gacela\Inflector::singularize($this->_resourceName)]);
+				unset($relations[$this->_singularize($this->_resourceName)]);
 
 				$this->_initForeignKeys($relations);
 
@@ -427,7 +427,7 @@ abstract class Mapper implements iMapper {
 			$class = end($class);
 			$class[0] = strtolower($class[0]);
 
-			$this->_resourceName = \Gacela\Inflector::pluralize($class);
+			$this->_resourceName = $this->_pluralize($class);
 		}
 
 		$this->_resource = $this->_source()->loadResource($this->_resourceName);
@@ -437,11 +437,6 @@ abstract class Mapper implements iMapper {
 		return $this;
 	}
 
-	protected function _singleton()
-	{
-		return \Gacela::instance();
-	}
-
 	/**
 	 * @param \stdClass $data
 	 * @return Model
@@ -449,6 +444,11 @@ abstract class Mapper implements iMapper {
 	protected function _load(\stdClass $data)
 	{
 		return new $this->_modelName($data);
+	}
+
+	protected function _pluralize($string)
+	{
+		return \Gacela\Inflector::pluralize($string);
 	}
 
 	/**
@@ -482,6 +482,14 @@ abstract class Mapper implements iMapper {
 		return $this->_source()->query($resource, $query, $args);
 	}
 
+	/**
+	 * @param $resource
+	 * @param $changed
+	 * @param $new
+	 * @param $old
+	 * @return array|bool|int
+	 * @throws \Exception
+	 */
 	protected function _saveResource($resource, $changed, $new, $old)
 	{
 		$data = $this->_dataToSave($resource, $changed, $new);
@@ -526,6 +534,22 @@ abstract class Mapper implements iMapper {
 		return array($changed, $new);
 	}
 
+	/**
+	 * @return \Gacela
+	 */
+	protected function _singleton()
+	{
+		return \Gacela::instance();
+	}
+
+	protected function _singularize($string)
+	{
+		return \Gacela\Inflector::singularize($string);
+	}
+
+	/**
+	 * @return \Gacela\DataSource\DataSource
+	 */
 	protected function _source()
 	{
 		return \Gacela::instance()->getDataSource($this->_source);
@@ -555,7 +579,7 @@ abstract class Mapper implements iMapper {
 	 */
 	public function addAssociation($association, $data, $delete = false)
 	{
-		if($association instanceof \Gacela\Collection) {
+		if($association instanceof \Gacela\Collection\Collection) {
 			$model = $association->current();
 		} else {
 			$model = $association;
@@ -564,7 +588,7 @@ abstract class Mapper implements iMapper {
 
 		$name = explode('\\', get_class($model));
 		$name = end($name);
-		$name = \Gacela\Inflector::pluralize($name);
+		$name = $this->_pluralize($name);
 		$name[0] = strtolower($name[0]);
 
 		if(!isset($this->_associations[$name])) {
@@ -716,7 +740,7 @@ abstract class Mapper implements iMapper {
 	/**
 	 *  Returns a Collection of Model objects based on the Criteria specified
 	 * @param \Gacela\Criteria|null $criteria
-	 * @return \Gacela\Collection
+	 * @return \Gacela\Collection\Collection
 	 */
 	public function findAll(\Gacela\Criteria $criteria = null)
 	{
@@ -734,7 +758,7 @@ abstract class Mapper implements iMapper {
 	/**
 	 * @param  $relation
 	 * @param array $data
-	 * @return \Gacela\Collection
+	 * @return \Gacela\Collection\Collection
 	 */
 	public function findAllByAssociation($relation, array $data)
 	{
@@ -769,7 +793,7 @@ abstract class Mapper implements iMapper {
 		$relation = $this->_foreignKeys[$name];
 
 		if($relation['meta']->type == 'hasMany') {
-			$name = \Gacela\Inflector::singularize($name);
+			$name = $this->_singularize($name);
 		}
 
 		$criteria = $this->_singleton()->autoload('Criteria');
@@ -833,7 +857,7 @@ abstract class Mapper implements iMapper {
 	 */
 	public function removeAssociation($association, $data)
 	{
-		if($association instanceof \Gacela\Collection) {
+		if($association instanceof \Gacela\Collection\Collection) {
 			$model = $association->current();
 		} else {
 			$model = $association;
@@ -842,7 +866,7 @@ abstract class Mapper implements iMapper {
 
 		$name = explode('\\', get_class($model));
 		$name = end($name);
-		$name = \Gacela\Inflector::pluralize($name);
+		$name = $this->_pluralize($name);
 		$name[0] = strtolower($name[0]);
 
 		if(!isset($this->_associations[$name])) {
