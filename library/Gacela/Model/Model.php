@@ -116,7 +116,7 @@ abstract class Model implements iModel {
 	public function __construct($data = array())
 	{
 		if(is_null(static::$_field)) {
-			static::$_field = $this->_singleton()->autoload("\\Field\\Field");
+			static::$_field = $this->_singleton()->autoload("Field\\Field");
 		}
 
 		if(is_object($data)) {

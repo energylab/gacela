@@ -1,8 +1,8 @@
 <?php
-/** 
+/**
  * @author noah
  * @date 4/30/11
- * 
+ *
 */
 
 namespace App\Mapper;
@@ -29,9 +29,7 @@ class Teacher extends Wizard {
 					->where('role = :role', array(':role' => 'teacher'))
 					->where('EXISTS (SELECT * FROM courses WHERE courses.wizardId = wizards.wizardId)');
 
-		$coll = $this->_singleton()->autoload('\\Collection');
-		
-		return new $coll(
+		return $this->_collection(
 						$this,
 						$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
 					);
@@ -51,7 +49,7 @@ class Teacher extends Wizard {
 
 				$coll = $this->_singleton()->autoload('\\Collection');
 
-		return new $coll(
+		return $this->_collection(
 						$this,
 						$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
 					);

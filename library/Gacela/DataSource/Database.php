@@ -46,17 +46,6 @@ class Database extends DataSource {
 		$query->join($relation['meta']->refTable, $on, $cols, $type);
 	}
 
-	protected function _driver()
-	{
-		if(empty($this->_driver)) {
-			$adapter = $this->_singleton()->autoload("\\DataSource\\Adapter\\".ucfirst($this->_config->dbtype));
-
-			$this->_driver = new $adapter($this->_config);
-		}
-
-		return $this->_driver;
-	}
-
 	public function beginTransaction()
 	{
 		return $this->_driver()->beginTransaction();
@@ -236,7 +225,11 @@ class Database extends DataSource {
 
 		$stmt = $this->_driver()->prepare($this->_lastQuery['query']);
 
-		if($stmt->execute($this->_lastQuery['args']) === true) {
+		foreach($this->_lastQuery['args'] as $param => $val) {
+			$stmt->bindValue($param, $val);
+		}
+
+		if($stmt->execute() === true) {
 			return $stmt;
 			//$this->_cache($resource->getName(), $key, $return);
 		} else {

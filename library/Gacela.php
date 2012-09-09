@@ -293,10 +293,6 @@ class Gacela {
 			$class = "\\Mapper\\" . $name;
 			$class = self::instance()->autoload($class);
 
-			if (!$class) {
-				throw new \Exception("Failed to find mapper ({$name})!");
-			}
-
 			$cached = new $class;
 
 			$this->cache('mapper_'.$name, $cached);
@@ -336,6 +332,10 @@ class Gacela {
 	{
 		$config['name'] = $name;
 		$config['type'] = $type;
+
+		if(in_array($type, array('mysql', 'mssql', 'postgresql', 'oracle'))) {
+			$type = 'database';
+		}
 
 		$class = self::instance()->autoload("\\DataSource\\".ucfirst($type));
 

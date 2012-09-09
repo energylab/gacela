@@ -12,7 +12,7 @@ abstract class Pdo extends Adapter {
 
 	protected function _loadConn()
 	{
-		$this->_config->dsn = $this->_config->dbtype.':dbname='.$this->_config->schema.';host='.$this->_config->host;
+		$this->_config->dsn = $this->_config->type.':dbname='.$this->_config->schema.';host='.$this->_config->host;
 
 		$this->_conn = new \PDO(
 						$this->_config->dsn,

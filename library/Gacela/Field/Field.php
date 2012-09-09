@@ -22,7 +22,7 @@ class Field {
 	 */
 	public static function validate($meta, $value)
 	{
-		$class = self::_class($meta->type);
+		$class = static::_class($meta->type);
 
 		return $class::validate($meta, $value);
 	}
@@ -35,7 +35,7 @@ class Field {
 	 */
 	public static function transform($meta, $value, $in = true)
 	{
-		$class = self::_class($meta->type);
+		$class = static::_class($meta->type);
 
 		return $class::transform($meta, $value, $in);
 	}
@@ -47,10 +47,10 @@ class Field {
 
 	protected static function _class($type)
 	{
-		if(!isset(self::$_classes[$type])) {
-			self::$_classes[$type] = self::_singleton()->autoload("\\Field\\".ucfirst($type));
+		if(!isset(static::$_classes[$type])) {
+			static::$_classes[$type] = static::_singleton()->autoload("\\Field\\".ucfirst($type));
 		}
 
-		return self::$_classes[$type];
+		return static::$_classes[$type];
 	}
 }

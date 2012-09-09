@@ -41,7 +41,7 @@ class Arr extends Collection {
 
 		$data = $this->_data[$this->_pointer];
 
-		if((array) array_keys($data) == $this->_mapper->getPrimaryKey()) {
+		if(array_keys((array) $data) == $this->_mapper->getPrimaryKey()) {
 			return $this->_mapper->find($data);
 		} else {
 			return $this->_mapper->load($data);
@@ -62,14 +62,11 @@ class Arr extends Collection {
 	public function next()
 	{
 		++$this->_pointer;
-
-		return $this->current();
 	}
 
 	public function rewind()
 	{
 		$this->_pointer = 0;
-		return $this;
 	}
 
 	public function search(array $value)
@@ -125,12 +122,6 @@ class Arr extends Collection {
 
 	public function valid()
 	{
-		$valid = $this->_pointer < $this->_count;
-
-		if(!$valid) {
-			$this->_pointer = 0;
-		}
-
-		return $valid;
+		return $this->_pointer < $this->_count;
 	}
 }

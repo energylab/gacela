@@ -61,7 +61,7 @@ abstract class DataSource implements iDataSource {
 	{
 		if(empty($this->_driver))
 		{
-			$adapter = $this->_singleton()->autoload("\\DataSource\\Adapter\\".ucfirst($this->_config->type));
+			$adapter = $this->_singleton()->autoload("DataSource\\Adapter\\".ucfirst($this->_config->type));
 
 			$this->_driver = new $adapter($this->_config);
 		}

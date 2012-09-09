@@ -78,9 +78,7 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _collection($data)
 	{
-		$coll = $this->_singleton()->autoload('\\Collection');
-
-		return new $coll($this,$data);
+		return $this->_singleton()->makeCollection($this, $data);
 	}
 
 	/**
@@ -177,7 +175,7 @@ abstract class Mapper implements iMapper {
 			}
 		}
 
-		return \Gacela::instance()
+		return $this->_singleton()
 					->loadMapper($this->_singularize($name))
 					->findAllByAssociation($this->_resource->getName(), $data);
 
@@ -202,7 +200,7 @@ abstract class Mapper implements iMapper {
 	protected function _init()
 	{
 		if(is_null(static::$_field)) {
-			static::$_field = $this->_singleton()->autoload("\\Field\\Field");
+			static::$_field = $this->_singleton()->autoload("Field\\Field");
 		}
 
 		// Everything loads in order based on what resources are needed first.
@@ -388,13 +386,16 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _initModel()
 	{
-		$classes = explode('\\', get_class($this));
+		if(is_null($this->_modelName)) {
+			$classes = explode('\\', get_class($this));
 
-		$pos = array_search('Mapper', $classes);
+			$pos = array_search('Mapper', $classes);
 
-		$classes[$pos] = 'Model';
+			$classes[$pos] = 'Model';
 
-		$this->_modelName = "\\".join("\\", $classes);
+			$this->_modelName = "\\".join("\\", $classes);
+		}
+
 
 		$this->_relations = array();
 		foreach($this->_foreignKeys as $key => $array) {
@@ -565,13 +566,12 @@ abstract class Mapper implements iMapper {
 	public function __wakeup()
 	{
 		if(is_null(static::$_field)) {
-			static::$_field = $this->_singleton()->autoload("\\Field\\Field");
+			static::$_field = $this->_singleton()->autoload("Field\\Field");
 		}
 	}
 
-
 	/**
-	 *  - Not Yet Implemented
+	 *
 	 * @param $association
 	 * @param $data
 	 * @param bool $delete
@@ -762,18 +762,16 @@ abstract class Mapper implements iMapper {
 	 */
 	public function findAllByAssociation($relation, array $data)
 	{
-		$coll = $this->_singleton()->autoload('\\Collection');
-
-		return new	 $coll(
-						$this,
-						$this->_source()->findAllByAssociation(
-							$this->_resource,
-							$this->_associations[$relation],
-							$data,
-							$this->_inherits,
-							$this->_dependents
-						)
-					);
+		return $this->_collection(
+			$this,
+			$this->_source()->findAllByAssociation(
+				$this->_resource,
+				$this->_associations[$relation],
+				$data,
+				$this->_inherits,
+				$this->_dependents
+			)
+		);
 	}
 
 	/**
@@ -803,7 +801,7 @@ abstract class Mapper implements iMapper {
 			$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
 		}
 
-		$result = \Gacela::instance()->loadMapper($name)->findAll($criteria);
+		$result = $this->_singleton()->loadMapper($name)->findAll($criteria);
 
 		if ($relation['meta']->type == 'belongsTo') {
 			return $result->current();

@@ -7,23 +7,21 @@ namespace Gacela\Collection;
  * Date: 8/28/12
  * Time: 7:32 AM
  */
-class Statement extends Collection {
-
+class Statement extends Collection
+{
 	protected $_current = null;
 
 	/**
 	 * @param \Gacela\Mapper\Mapper $mapper
 	 * @param \PDOStatement $data
 	 */
-	public function __construct(\Gacela\Mapper\Mapper $mapper, $data)
+	public function __construct(\Gacela\Mapper\Mapper $mapper, \PDOStatement $data)
 	{
 		parent::__construct($mapper, $data);
 
 		$this->_data->setFetchMode(\PDO::FETCH_OBJ);
 
 		$this->_count = $data->rowCount();
-
-		$this->_current = $this->_data->fetch();
 	}
 
 	/**
@@ -44,11 +42,15 @@ class Statement extends Collection {
 	 */
 	public function current()
 	{
+		if(is_null($this->_current)) {
+			$this->next();
+		}
+
 		if($this->_current == false) {
 			return $this->_mapper->find(null);
 		}
 
-		if((array) array_keys($this->_current) == $this->_mapper->getPrimaryKey()) {
+		if(array_keys((array) $this->_current) == $this->_mapper->getPrimaryKey()) {
 			return $this->_mapper->find($this->_current);
 		} else {
 			return $this->_mapper->load($this->_current);
@@ -71,8 +73,6 @@ class Statement extends Collection {
 		$this->_pointer++;
 
 		$this->_current = $this->_data->fetch();
-
-		return $this->current();
 	}
 
 	/**
@@ -80,11 +80,13 @@ class Statement extends Collection {
 	 */
 	public function rewind()
 	{
-		$this->_pointer = 0;
+		if($this->_current === false) {
+			$this->_pointer = 0;
 
-		while($row = $this->_data->fetch()) {}
+			$this->_data->execute();
 
-		return $this;
+			$this->_current = null;
+		}
 	}
 
 	/**
@@ -158,12 +160,6 @@ class Statement extends Collection {
 
 	public function valid()
 	{
-		$valid = $this->_pointer < $this->_count;
-
-		if(!$valid) {
-			$this->_pointer = 0;
-		}
-
-		return $valid;
+		return $this->_current !== false;
 	}
 }

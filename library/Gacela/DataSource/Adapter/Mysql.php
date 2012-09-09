@@ -47,8 +47,8 @@ class Mysql extends Pdo {
 
 			if(!$this->_columns) {
 				$sql = "SELECT *
-			FROM information_schema.COLUMNS
-			WHERE TABLE_SCHEMA = DATABASE()";
+						FROM information_schema.COLUMNS
+						WHERE TABLE_SCHEMA = DATABASE()";
 
 				$this->_columns = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
 
