@@ -426,12 +426,13 @@ abstract class Mapper implements iMapper {
 		if(is_null($this->_resourceName)) {
 			$class = explode('\\', get_class($this));
 			$class = end($class);
-			$class[0] = strtolower($class[0]);
+			$class = strtolower($class);
 
 			$this->_resourceName = $this->_pluralize($class);
 		}
 
 		$this->_resource = $this->_source()->loadResource($this->_resourceName);
+		$this->_resourceName = $this->_resource->getName();
 
 		$this->_fields = $this->_resource->getFields();
 

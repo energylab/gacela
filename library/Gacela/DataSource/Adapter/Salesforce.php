@@ -12,8 +12,6 @@ namespace Gacela\DataSource\Adapter;
 
 class Salesforce extends Adapter
 {
-	protected $_columns = null;
-
 	protected function _loadConn()
 	{
         if(!class_exists('\SforceEnterpriseClient'))
@@ -27,15 +25,37 @@ class Salesforce extends Adapter
 			$this->_conn->createConnection($this->_config->wsdl_path);
 			$this->_conn->login($this->_config->username, $this->_config->password);
 
-			$this->_columns = $this->describeSObjects($this->_config->objects);
+			$this->_columns = $this->_singleton()->cache($this->_config->schema.'_columns');
 
-			if(!is_array($this->_columns)) {
-				$this->_columns = array($this->_columns);
+			if(!$this->_columns) {
+				$this->_columns = $this->describeSObjects($this->_config->objects);
+
+				if(!is_array($this->_columns)) {
+					$this->_columns = array($this->_columns);
+				}
 			}
+
+
+			$this->_resources = $this->_singleton()->cache($this->_config->schema.'_resources');
+
+			if(!$this->_resources) {
+				$this->_resources = array();
+
+				foreach($this->_columns as $row) {
+					if(!in_array($row->TABLE_NAME, $this->_resources)) {
+						$this->_resources[] = $row->TABLE_NAME;
+					}
+				}
+			}
+
 		}
 	}
 
-	//put your code here
+	/**
+	 * @param string $name
+	 * @param bool $force
+	 * @return array
+	 */
 	public function load($name, $force = false)
 	{
 		$config = $this->_loadConfig($name, $force);
@@ -47,7 +67,7 @@ class Salesforce extends Adapter
 		$this->_loadConn();
 
 		$_meta = array(
-			'name' => $name,
+			'name' => null,
 			'primary' => array(),
 			'relations' => array(),
 			'columns' => array(),
@@ -58,11 +78,16 @@ class Salesforce extends Adapter
 		while(is_null($resource) AND current($this->_columns) !== false) {
 			$col = current($this->_columns);
 
-			if($col->name == $name) {
+			if(strtolower($col->name) == $name) {
 				$resource = $col;
+				$_meta['name'] = $col->name;
 			}
 
 			next($this->_columns);
+		}
+
+		if(is_null($_meta['name'])) {
+			throw new \Exception("Resource ($name) not found!");
 		}
 
 		reset($this->_columns);

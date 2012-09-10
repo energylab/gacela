@@ -10,38 +10,10 @@ namespace Gacela\DataSource\Adapter;
 
 class Mysql extends Pdo {
 
-	public static $_separator = "_";
-
-	protected $_relationships = null;
-
-	protected $_columns = null;
-
 	protected function _loadConn()
 	{
 		if(!$this->_conn) {
 			parent::_loadConn();
-
-			// Moved out of __construct to allow for lazy loading of config data
-			$this->_relationships = $this->_singleton()->cache($this->_config->schema.'_relationships');
-
-			if(!$this->_relationships) {
-				$sql = "
-				SELECT
-					TABLE_NAME AS keyTable,
-					GROUP_CONCAT(COLUMN_NAME) AS keyColumns,
-					REFERENCED_TABLE_NAME AS refTable,
-					GROUP_CONCAT(REFERENCED_COLUMN_NAME) AS refColumns,
-					CONSTRAINT_NAME AS constraintName
-				FROM information_schema.key_column_usage
-				WHERE TABLE_SCHEMA = DATABASE()
-				AND REFERENCED_TABLE_NAME IS NOT NULL
-				GROUP BY constraintName
-				";
-
-				$this->_relationships = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
-
-				$this->_singleton()->cache($this->_config->schema.'_relationships');
-			}
 
 			$this->_columns = $this->_singleton()->cache($this->_config->schema.'_columns');
 
@@ -54,6 +26,28 @@ class Mysql extends Pdo {
 
 				$this->_singleton()->cache($this->_config->schema.'_columns');
 			}
+		}
+
+		// Moved out of __construct to allow for lazy loading of config data
+		$this->_relationships = $this->_singleton()->cache($this->_config->schema.'_relationships');
+
+		if(!$this->_relationships) {
+			$sql = "
+				SELECT
+					TABLE_NAME AS keyTable,
+					GROUP_CONCAT(COLUMN_NAME) AS keyColumns,
+					REFERENCED_TABLE_NAME AS refTable,
+					GROUP_CONCAT(REFERENCED_COLUMN_NAME) AS refColumns,
+					CONSTRAINT_NAME AS constraintName
+				FROM information_schema.key_column_usage
+				WHERE TABLE_SCHEMA = DATABASE()
+				AND REFERENCED_TABLE_NAME IS NOT NULL
+				GROUP BY constraintName
+				";
+
+			$this->_relationships = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
+
+			$this->_singleton()->cache($this->_config->schema.'_relationships');
 		}
 	}
 
@@ -68,7 +62,7 @@ class Mysql extends Pdo {
 		$this->_loadConn();
 
 		$_meta = array(
-			'name' => $name,
+			'name' => null,
 			'columns' => array(),
 			'relations' => array(),
 			'primary' => array()
@@ -77,7 +71,11 @@ class Mysql extends Pdo {
 		// Setup Column meta information
 		foreach($this->_columns as $column) {
 
-			if($column->TABLE_NAME == $name) {
+			if(strtolower($column->TABLE_NAME) == $name) {
+				if(is_null($_meta['name'])) {
+					$_meta['name'] = $column->TABLE_NAME;
+				}
+
 				$meta = array_merge(
 					self::$_meta,
 					array(
@@ -132,9 +130,13 @@ class Mysql extends Pdo {
 			}
 		}
 
+		if(is_null($_meta['name'])) {
+			throw new \Exception("Resource ($name) not found!");
+		}
+
 		// Setup Relationships
 		foreach($this->_relationships as $rel) {
-			$key = explode(self::$_separator, $rel->constraintName);
+			$key = explode(static::$_separator, $rel->constraintName);
 
 			if(!isset($key[1])) {
 				throw new \Exception('Improper relationship definition: '.print_r($rel, true));

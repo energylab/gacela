@@ -10,6 +10,8 @@ namespace Gacela\DataSource\Adapter;
 
 abstract class Pdo extends Adapter {
 
+	public static $_separator = "_";
+
 	protected function _loadConn()
 	{
 		$this->_config->dsn = $this->_config->type.':dbname='.$this->_config->schema.';host='.$this->_config->host;

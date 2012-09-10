@@ -12,7 +12,11 @@ abstract class Adapter implements iAdapter {
 
 	protected $_config = null;
 
+	protected $_columns = null;
+
 	protected $_conn = null;
+
+	protected $_relationships = null;
 
 	protected static $_meta = array(
 		'type' => null,
