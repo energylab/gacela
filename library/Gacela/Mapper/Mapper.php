@@ -727,7 +727,13 @@ abstract class Mapper implements iMapper {
 		$primary = $this->_primaryKey($this->_primaryKey, $id);
 
 		if(!is_null($primary)) {
-			$data = current($this->_source()->find($primary, $this->_resource, $this->_inherits, $this->_dependents));
+			$rs = $this->_source()->find($primary, $this->_resource, $this->_inherits, $this->_dependents);
+
+			if($rs instanceof \PDOStatement) {
+				$data = $rs->fetchObject();
+			} elseif(is_array($rs)) {
+				$data = current($rs);
+			}
 		}
 
 		if(!isset($data) || empty($data)) {
