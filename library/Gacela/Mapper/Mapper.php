@@ -737,6 +737,8 @@ abstract class Mapper implements iMapper {
 			}
 		}
 
+		unset($rs);
+
 		if(!isset($data) || empty($data)) {
 			$data = new \stdClass();
 		}
@@ -751,15 +753,16 @@ abstract class Mapper implements iMapper {
 	 */
 	public function findAll(\Gacela\Criteria $criteria = null)
 	{
-		return $this->_collection(
-					$this->_source()
-						->findAll(
-							$this->_source()->getQuery($criteria),
-							$this->_resource,
-							$this->_inherits,
-							$this->_dependents
-						)
-				);
+		$data = $this->_source()
+			->findAll(
+				$this->_source()->getQuery($criteria),
+				$this->_resource,
+				$this->_inherits,
+				$this->_dependents
+			)
+			->fetchAll();
+
+		return $this->_collection($data);
 	}
 
 	/**
@@ -769,16 +772,16 @@ abstract class Mapper implements iMapper {
 	 */
 	public function findAllByAssociation($relation, array $data)
 	{
-		return $this->_collection(
-			$this,
-			$this->_source()->findAllByAssociation(
-				$this->_resource,
-				$this->_associations[$relation],
-				$data,
-				$this->_inherits,
-				$this->_dependents
-			)
-		);
+		$data = $this->_source()->findAllByAssociation(
+			$this->_resource,
+			$this->_associations[$relation],
+			$data,
+			$this->_inherits,
+			$this->_dependents
+		)
+		->fetchAll();
+
+		return $this->_collection($data);
 	}
 
 	/**

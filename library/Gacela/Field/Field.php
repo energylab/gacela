@@ -8,8 +8,8 @@
 
 namespace Gacela\Field;
 
-class Field {
-
+class Field
+{
 	protected static $_classes = array();
 
 	const NULL_CODE = 'null';

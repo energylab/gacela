@@ -8,14 +8,14 @@
 
 namespace Gacela\Field;
 
-class Float extends Field {
-
+class Float extends Field
+{
 	const TYPE_CODE = 'invalid_float';
 
 	public static function validate($meta, $value)
 	{
 		if(is_null($value)) {
-			if(!$this->null) {
+			if(!$meta->null) {
 				return self::NULL_CODE;
 			}
 
@@ -27,7 +27,7 @@ class Float extends Field {
 		} else {
 			if(!is_float($value)) {
 				return self::TYPE_CODE;
-			} elseif(strlen($value) <= $meta->precision) {
+			} elseif(strlen($value) >= $meta->precision) {
 				return self::LENGTH_CODE;
 			}
 

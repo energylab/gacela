@@ -225,6 +225,8 @@ class Database extends DataSource {
 
 		$stmt = $this->_driver()->prepare($this->_lastQuery['query']);
 
+		$stmt->setFetchMode(\PDO::FETCH_OBJ);
+
 		foreach($this->_lastQuery['args'] as $param => $val) {
 			$stmt->bindValue($param, $val);
 		}

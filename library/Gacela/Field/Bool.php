@@ -8,8 +8,8 @@
 
 namespace Gacela\Field;
 
-class Bool extends Field {
-
+class Bool extends Field
+{
 	const TYPE_CODE = 'invalid_bool';
 
 	public static function validate($meta, $value)
