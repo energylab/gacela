@@ -17,7 +17,9 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new Mysql;
+		\Gacela::instance()->configPath(__DIR__.'config');
+
+        $this->object = new Mysql(array());
     }
 
     /**
@@ -34,10 +36,7 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
      */
     public function testLoad()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+
     }
 }
 

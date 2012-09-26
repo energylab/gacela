@@ -272,7 +272,7 @@ class Gacela {
 		$array = include $path;
 
 		if(empty($array)) {
-			throw new Exception('Config array is empty for resource ('.$name.')! ');
+			throw new \Exception('Config array is empty for resource ('.$name.')! ');
 		}
 
 		return $array;

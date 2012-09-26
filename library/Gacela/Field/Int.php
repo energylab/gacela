@@ -13,7 +13,6 @@ namespace Gacela\Field;
  */
 class Int extends Field
 {
-
 	const TYPE_CODE = 'invalid_int';
 
 	/**
