@@ -11,10 +11,17 @@ namespace Gacela\Field;
 /**
  * Error Codes - 'null', 'not_int'
  */
-class Int extends Field {
+class Int extends Field
+{
 
 	const TYPE_CODE = 'invalid_int';
 
+	/**
+	 * @static
+	 * @param $meta
+	 * @param $value
+	 * @return bool|string
+	 */
 	public static function validate($meta, $value)
 	{
 		if(is_null($value)) {
@@ -40,6 +47,13 @@ class Int extends Field {
 		}
 	}
 
+	/**
+	 * @static
+	 * @param $meta
+	 * @param $value
+	 * @param bool $in
+	 * @return int|mixed|null
+	 */
 	public static function transform($meta, $value, $in = true)
 	{
 		if(ctype_digit($value)) {
