@@ -14,37 +14,34 @@ $gacela->registerNamespace('App', __DIR__.'/App');
 
 $gacela->registerDataSource(
 	'db',
-	'database',
+	'mysql',
 	array(
 		'schema' => 'gacela',
 		'host' => 'localhost',
 		'password' => 'gacela',
 		'user' => 'gacela',
-		'dbtype' => 'mysql'
 	)
 );
 
 $gacela->registerDataSource(
 	'wiki',
-	'database',
+	'mysql',
 	array(
 		'schema' => 'wiki',
 		'host' => 'localhost',
 		'user' => 'gacela',
 		'passwword' => 'gacela',
-		'dbtype' => 'mysql'
 	)
 );
 
 $gacela->registerDataSource(
 	'employees',
-	'database',
+	'mysql',
 	array(
 		'schema' => 'employees',
 		'host' => 'localhost',
 		'user' => 'gacela',
 		'passwword' => 'gacela',
-		'dbtype' => 'mysql'
 	)
 );
 

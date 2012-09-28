@@ -17,9 +17,15 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-		\Gacela::instance()->configPath(__DIR__.'config');
-
-        $this->object = new Mysql(array());
+		$this->object = new Mysql(
+			array(
+				'schema' => 'test',
+				'host' => 'localhost',
+				'password' => 'gacela',
+				'user' => 'gacela',
+				'type' => 'mysql'
+			)
+		);
     }
 
     /**
@@ -30,13 +36,53 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
     {
     }
 
-    /**
-     * @covers Gacela\DataSource\Adapter\Mysql::load
-     * @todo   Implement testLoad().
-     */
-    public function testLoad()
-    {
+	public function providerInt()
+	{
+		return array
+		(
+			array('utiny',  0, 255, 3, true),
+			array('tiny', -128, 127, 4, false),
+			array('usmall',0, 65535, 5, true),
+			array('small', -32768, 32767 , 6, false),
+			array('umedium', 0, 16777215, 8, true),
+			array('medium', -8388608, 8388607, 9, false),
+			array('uint', 0, 4294967295, 10, true),
+			array('int', -2147483648, 2147483647, 11, false),
+			array('ubig', 0, 18446744073709551615, 20, true),
+			array('big', -9223372036854775808, 9223372036854775807, 20, false)
+		);
+	}
 
-    }
+	public function providerType()
+	{
+
+	}
+
+	/**
+	 * @dataProvider providerType
+	 * @param $name
+	 * @param $type
+	 */
+	public function testLoadType($name, $type)
+	{
+
+	}
+
+	/**
+	 * @dataProvider providerInt
+	 */
+	public function testLoadInt($col, $min, $max, $length, $unsigned)
+	{
+		$meta = $this->object->load('ints', true);
+
+		$column = $meta['columns'][$col];
+
+		$this->assertEquals($min, $column->min);
+		$this->assertEquals($max, $column->max);
+		$this->assertEquals($length, $column->length);
+		$this->assertEquals($unsigned, $column->unsigned);
+
+		exit;
+	}
 }
 

@@ -104,14 +104,12 @@ class Mysql extends Pdo {
 						$meta['scale'] = 15;
 					}
 
-				} elseif (preg_match('/^(([a-zA-Z]*)int)\((\d+)\)/', $column->COLUMN_TYPE, $matches)) {
-					// Use $matches[2] to determine size of the field for validation.
-					if($matches[2] == 'tiny' && $matches[3] == 1) {
-						$meta['type'] = 'bool';
-					} else {
-						$meta['type'] = 'int';
-						$meta['length'] = $matches[3];
-					}
+				} elseif($column->COLUMN_TYPE == 'tinyint(1)') {
+					$meta['type'] = 'bool';
+				} elseif (stripos($column->DATA_TYPE, 'int')) {
+					$meta['type'] = 'int';
+
+					//$size = substr($column->DATA_TYPE)
 				} elseif(preg_match('/^(([a-zA-Z]*)text)/', $column->COLUMN_TYPE, $matches)) {
 					// Use $matches[2] to determine size of the field for validation.
 					$meta['type'] = 'string';

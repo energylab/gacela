@@ -28,7 +28,9 @@ abstract class Adapter implements iAdapter {
 		'primary' => false,
 		'default' => false,
 		'values' => array(),
-		'null' => true
+		'null' => true,
+		'min' => null,
+		'max' => null
 	);
 
 	protected function _loadConfig($name, $skip = false)
