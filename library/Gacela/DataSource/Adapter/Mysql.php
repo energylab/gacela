@@ -90,9 +90,9 @@ class Mysql extends Pdo {
 					$meta['unsigned'] = true;
 				}
 
-				if (preg_match('/^((?:var)?char)\((\d+)\)/', $column->COLUMN_TYPE, $matches)) {
+				if (stripos($column->DATA_TYPE, 'char') !== false || stripos($column->DATA_TYPE, 'text') !== false) {
 					$meta['type'] = 'string';
-					$meta['length'] = $matches[2];
+					$meta['length'] = $column->CHARACTER_MAXIMUM_LENGTH;
 				} elseif (preg_match('/^float|decimal|double(?:\((\d+),(\d+)\))?$/', $column->COLUMN_TYPE, $matches)) {
 					$meta['type'] = 'float';
 
@@ -106,14 +106,41 @@ class Mysql extends Pdo {
 
 				} elseif($column->COLUMN_TYPE == 'tinyint(1)') {
 					$meta['type'] = 'bool';
-				} elseif (stripos($column->DATA_TYPE, 'int')) {
+				} elseif (stripos($column->DATA_TYPE, 'int') !== false) {
 					$meta['type'] = 'int';
+					$meta['length'] = $column->NUMERIC_PRECISION;
 
-					//$size = substr($column->DATA_TYPE)
-				} elseif(preg_match('/^(([a-zA-Z]*)text)/', $column->COLUMN_TYPE, $matches)) {
-					// Use $matches[2] to determine size of the field for validation.
-					$meta['type'] = 'string';
-				} elseif(preg_match('/(enum)\((\'.*?\')\)/', $column->COLUMN_TYPE, $matches)) {
+					$size = substr($column->DATA_TYPE, 0, strlen($column->DATA_TYPE)-3);
+
+					switch($size) {
+						case 'tiny':
+							$size = 8;
+							break;
+						case 'small':
+							$size = 16;
+							break;
+						case 'medium':
+							$size = 24;
+							break;
+						case 'big':
+							$size = 64;
+							break;
+						default:
+							$size = 32;
+							break;
+					}
+
+					if($meta['unsigned']) {
+						$meta['min'] = 0;
+
+						$meta['max'] = bcsub(bcpow(2, $size), 1);
+					} else {
+						$meta['min'] = -bcdiv(bcpow(2, $size), 2);
+
+						$meta['max'] = abs($meta['min'])-1;
+					}
+				}
+				elseif(preg_match('/(enum)\((\'.*?\')\)/', $column->COLUMN_TYPE, $matches)) {
 					$meta['type'] = 'enum';
 					$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
 				} elseif(preg_match('/(date*|timestamp|time)/', $column->COLUMN_TYPE, $matches)) {

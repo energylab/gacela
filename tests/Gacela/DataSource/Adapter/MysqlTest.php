@@ -62,7 +62,9 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 			array('smallint', 'int'),
 			array('mediumint', 'int'),
 			array('bigint', 'int'),
-			array('bool', 'bool')
+			array('bool', 'bool'),
+			array('time', 'time'),
+			array('set', 'set')
 		);
 	}
 
@@ -73,7 +75,11 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testLoadType($name, $type)
 	{
+		$meta = $this->object->load('types', true);
 
+		$col = $meta['columns'][$name];
+
+		$this->assertEquals($type, $col->type);
 	}
 
 	/**
