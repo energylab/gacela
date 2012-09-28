@@ -55,7 +55,15 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 
 	public function providerType()
 	{
-
+		return array(
+			array('int', 'int'),
+			array('integer', 'int'),
+			array('tinyint', 'int'),
+			array('smallint', 'int'),
+			array('mediumint', 'int'),
+			array('bigint', 'int'),
+			array('bool', 'bool')
+		);
 	}
 
 	/**
