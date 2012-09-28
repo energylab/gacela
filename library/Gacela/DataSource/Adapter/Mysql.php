@@ -8,7 +8,8 @@
 
 namespace Gacela\DataSource\Adapter;
 
-class Mysql extends Pdo {
+class Mysql extends Pdo
+{
 
 	protected function _loadConn()
 	{
@@ -93,7 +94,13 @@ class Mysql extends Pdo {
 				if (stripos($column->DATA_TYPE, 'char') !== false || stripos($column->DATA_TYPE, 'text') !== false) {
 					$meta['type'] = 'string';
 					$meta['length'] = $column->CHARACTER_MAXIMUM_LENGTH;
-				} elseif (preg_match('/^float|decimal|double(?:\((\d+),(\d+)\))?$/', $column->COLUMN_TYPE, $matches)) {
+				} elseif(preg_match('/(enum)\((\'.*?\')\)/', $column->COLUMN_TYPE, $matches)) {
+					$meta['type'] = 'enum';
+					$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
+				} elseif(preg_match('/(set)\((\'.*?\')\)/', $column->COLUMN_TYPE, $matches)) {
+					$meta['type'] = 'set';
+					$meta['values'] = explode(', ', str_replace("'", "", $matches[2]));
+				} elseif(preg_match('/^float|decimal|double(?:\((\d+),(\d+)\))?$/', $column->COLUMN_TYPE, $matches)) {
 					$meta['type'] = 'float';
 
 					if(isset($matches[1])) {
@@ -139,12 +146,10 @@ class Mysql extends Pdo {
 
 						$meta['max'] = abs($meta['min'])-1;
 					}
-				}
-				elseif(preg_match('/(enum)\((\'.*?\')\)/', $column->COLUMN_TYPE, $matches)) {
-					$meta['type'] = 'enum';
-					$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
-				} elseif(preg_match('/(date*|timestamp|time)/', $column->COLUMN_TYPE, $matches)) {
+				} elseif(in_array($column->DATA_TYPE, array('datetime', 'date', 'timestamp'))) {
 					$meta['type'] = 'date';
+				} elseif($column->DATA_TYPE === 'time') {
+					$meta['type'] = 'time';
 				}
 
 				$_meta['columns'][$column->COLUMN_NAME] = (object) $meta;
