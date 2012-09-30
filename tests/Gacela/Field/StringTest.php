@@ -24,15 +24,12 @@ class StringTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateNull()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertEquals(String::NULL_CODE, String::validate($this->object, null));
     }
 
 	public function testValidateLength()
 	{
-		$this->markTestIncomplete();
+		$this->assertEquals(String::LENGTH_CODE, String::validate($this->object, 'This is a string longer than 10 characters.'));
 	}
 
     /**
@@ -41,9 +38,8 @@ class StringTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransform()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$string = 'I am a very fine string';
+
+        $this->assertEquals($string, String::transform($this->object, $string));
     }
 }
