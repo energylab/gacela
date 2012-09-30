@@ -10,6 +10,8 @@ namespace Gacela\Field;
 
 class Time extends Field
 {
+	const FORMAT_CODE = 'invalid_format';
+	const TIME_CODE = 'invalid_time';
 
 	public static function validate($meta, $value)
 	{
@@ -21,29 +23,33 @@ class Time extends Field
 			return self::NULL_CODE;
 		}
 
+		if(!is_string($value) || !stristr($value, ':')) {
+			return self::FORMAT_CODE;
+		}
+
+		$parts = explode(':', $value);
+
+		if(!count($parts) === 3) {
+			return self::FORMAT_CODE;
+		}
+
+		foreach($parts as $k => $v) {
+			if(is_null($v)) {
+				return self::TIME_CODE;
+			}
+
+			if($k === 0 && ($v < 0 || $v > 24)) {
+				return self::TIME_CODE;
+			} elseif(in_array($k, array(1,2)) && ($v < 0 || $v > 60)) {
+				return self::TIME_CODE;
+			}
+		}
+
 		return true;
 	}
 
 	public static function transform($meta, $value, $in = true)
 	{
-		if($in && ctype_digit($value)) {
-			return date('H:i:s', $value);
-		} elseif($in && !ctype_digit($value)) {
-			return $value;
-		} elseif(!$in && !ctype_digit($value)) {
-			if(stripos($value, 'current') !== false || (stripos($meta->default, 'current') !== false && empty($value))) {
-				return time();
-			}
-
-			$rs = strtotime($value);
-
-			if($rs === false) {
-				return null;
-			}
-
-			return $rs;
-		} elseif(!$in && ctype_digit($value)) {
-			return $value;
-		}
+		return $value;
 	}
 }

@@ -21,7 +21,6 @@ abstract class Adapter implements iAdapter {
 	protected static $_meta = array(
 		'type' => null,
 		'length' => null,
-		'precision' => null,
 		'scale' => null,
 		'unsigned' => false,
 		'sequenced' => false,

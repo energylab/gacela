@@ -6,49 +6,130 @@ namespace Gacela\Field;
  */
 class IntTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var Int
-     */
-    protected $object;
+	protected $meta = null;
 
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
-    protected function setUp()
-    {
-        $this->object = new Int;
-    }
+	protected function setUp()
+	{
+		$this->meta = (object) array(
+			'min' => 1,
+			'max' => 5,
+			'type' => 'int',
+			'length' => 3,
+			'sequenced' => false,
+			'null' => false
+		);
+	}
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-    }
+	public function providerBoundsCode()
+	{
+		return array(
+			array(0),
+			array(6)
+		);
+	}
+
+	public function providerPass()
+	{
+		return array(
+			array(0x3),
+			array(2),
+			array(4)
+		);
+	}
+
+	public function providerTransform()
+	{
+		return array(
+			array(0xF, 15),
+			array(24, 24),
+			array("25", 25),
+			array("26.3", 26),
+			array(27.5, 27),
+			array(null, null),
+			array(false, null),
+			array('', null),
+			array("", null)
+		);
+	}
+
+	public function providerTypeCode()
+	{
+		return array(
+			array('hello'),
+			array("23"),
+			array(23.5),
+			array('0xFF'),
+			array(array(5)),
+			array(array("5"))
+		);
+	}
+
+	/**
+	 * @dataProvider providerBoundsCode
+	 */
+	public function testValidateBoundsCode($val)
+	{
+		$this->assertEquals(
+			Int::BOUNDS_CODE,
+			Int::validate($this->meta,$val)
+		);
+	}
+
+	public function testValidateNullCode()
+	{
+		$this->assertEquals(
+			Int::NULL_CODE,
+			Int::validate(
+				$this->meta,
+				null
+			)
+		);
+	}
+
+	public function testValidateLengthCode()
+	{
+		$this->assertEquals(Int::LENGTH_CODE, Int::validate($this->meta, 1234));
+	}
+
+	/**
+	 * @param $value
+	 * @dataProvider providerTypeCode
+	 */
+	public function testValidateTypeCode($value)
+	{
+		$this->assertEquals(Int::TYPE_CODE, Int::validate($this->meta, $value));
+	}
 
     /**
      * @covers Gacela\Field\Int::validate
-     * @todo   Implement testValidate().
+     * @dataProvider providerPass
      */
-    public function testValidate()
+    public function testValidatePassInts($value)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertTrue(Int::validate($this->meta, $value));
     }
+
+	public function testValidatePassNull()
+	{
+		$this->meta->null = true;
+
+		$this->assertTrue(Int::validate($this->meta, null));
+	}
+
+	public function testValidatePassSequenced()
+	{
+		$this->meta->sequenced = true;
+		$this->meta->null = false;
+
+		$this->assertTrue(Int::validate($this->meta, null));
+	}
 
     /**
      * @covers Gacela\Field\Int::transform
-     * @todo   Implement testTransform().
+     * @dataProvider providerTransform
      */
-    public function testTransform()
+    public function testTransform($provided, $expected)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertEquals($expected, Int::transform($this->meta, $provided));
     }
 }

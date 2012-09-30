@@ -1,19 +1,20 @@
 <?php
 /**
- * @author noah
- * @date 3/19/11
+ * @author Noah Goodrich
+ * @date 6/9/11
  *
  *
 */
 
 namespace Gacela\Field;
 
-class String extends Field
+class Decimal extends Field
 {
+	const TYPE_CODE = 'invalid_decimal';
 
 	public static function validate($meta, $value)
 	{
-		if(empty($value)) {
+		if(is_null($value)) {
 			if(!$meta->null) {
 				return self::NULL_CODE;
 			}
@@ -21,15 +22,11 @@ class String extends Field
 			return $meta->null;
 		}
 
-		if(strlen($value) <= $meta->length) {
-			return true;
-		} else {
-			return self::LENGTH_CODE;
-		}
+
 	}
 
 	public static function transform($meta, $value, $in = true)
 	{
-		return $value;
+
 	}
 }

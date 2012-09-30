@@ -99,17 +99,24 @@ class Mysql extends Pdo
 					$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
 				} elseif(preg_match('/(set)\((\'.*?\')\)/', $column->COLUMN_TYPE, $matches)) {
 					$meta['type'] = 'set';
-					$meta['values'] = explode(', ', str_replace("'", "", $matches[2]));
-				} elseif(preg_match('/^float|decimal|double(?:\((\d+),(\d+)\))?$/', $column->COLUMN_TYPE, $matches)) {
-					$meta['type'] = 'float';
-
-					if(isset($matches[1])) {
-						$meta['precision'] = $matches[1];
-						$meta['scale'] = $matches[2];
-					} else {
-						$meta['precision'] = 53;
-						$meta['scale'] = 15;
-					}
+					$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
+				} elseif($column->DATA_TYPE == 'decimal') {
+					$meta = array_merge(
+						$meta,
+						array(
+							'type' => 'decimal',
+							'length' => $column->NUMERIC_PRECISION,
+							'scale' => $column->NUMERIC_SCALE
+						)
+					);
+				}elseif(in_array($column->DATA_TYPE, array('float', 'double'))) {
+					$meta = array_merge(
+						$meta,
+						array(
+							'type' => 'float',
+							'length' => $column->NUMERIC_PRECISION
+						)
+					);
 
 				} elseif($column->COLUMN_TYPE == 'tinyint(1)') {
 					$meta['type'] = 'bool';

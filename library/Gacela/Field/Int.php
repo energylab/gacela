@@ -14,6 +14,7 @@ namespace Gacela\Field;
 class Int extends Field
 {
 	const TYPE_CODE = 'invalid_int';
+	const BOUNDS_CODE = 'out_of_bounds';
 
 	/**
 	 * @static
@@ -35,15 +36,15 @@ class Int extends Field
 			}
 		}
 
-		if(is_int($value) && strlen($value) <= $meta->length) {
-			return true;
-		} else {
-			if(!is_int($value)) {
-				return self::TYPE_CODE;
-			}
-
-			return false;
+		if(!is_int($value)) {
+			return self::TYPE_CODE;
+		} elseif(strlen(abs($value)) > $meta->length) {
+			return self::LENGTH_CODE;
+		} elseif($value < $meta->min || $value > $meta->max) {
+			return self::BOUNDS_CODE;
 		}
+
+		return true;
 	}
 
 	/**
@@ -55,7 +56,7 @@ class Int extends Field
 	 */
 	public static function transform($meta, $value, $in = true)
 	{
-		if(ctype_digit($value)) {
+		if(!is_int($value) && is_numeric($value)) {
 			$value = (int) $value;
 		} elseif($value === '' || $value === false) {
 			$value = null;

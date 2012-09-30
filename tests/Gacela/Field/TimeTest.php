@@ -7,55 +7,119 @@ namespace Gacela\Field;
 class TimeTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Float
+     * @var Time
      */
     protected $object;
 
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
-    protected function setUp()
-    {
-        $this->object = new Time;
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-    }
-
-	public function provider()
+	protected function _meta()
 	{
+		$not_null = (object) array
+		(
+			'type' => 'time',
+			'null' => false
+		);
+
+		$null = clone $not_null;
+
+		$null->null = true;
+
+		return array($not_null, $null);
+	}
+
+	public function providerInvalidFormat()
+	{
+		list($not_null, $null) = $this->_meta();
+
 		return array(
-			array('')
+			array($not_null, time(), false),
+			array($null, new \DateTime(), false)
 		);
 	}
 
-    /**
-     * @covers Gacela\Field\Float::validate
-     * @todo   Implement testValidate().
-     */
-    public function testValidate()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
+	public function providerInvalidTime()
+	{
+		list($not, $null) = $this->_meta();
+
+		return array(
+			array($not, '25:00:00', false),
+			array($null, '23:75:00', true),
+			array($not, '12:30:90', false)
+		);
+	}
+
+	public function providerNull()
+	{
+		list($not, $null) = $this->_meta();
+
+		return array(
+			array($not, null, false)
+		);
+	}
+
+	public function providerPass()
+	{
+		list($not_null, $null) = $this->_meta();
+
+		return array(
+			array($null, '20:00:00', true),
+			array($not_null, '15:00:00', false),
+			array($null, null, false)
+		);
+	}
+
+	public function providerTransform()
+	{
+		return array_merge($this->providerPass(), $this->providerInvalidFormat(), $this->providerInvalidTime(), $this->providerNull());
+	}
 
     /**
-     * @covers Gacela\Field\Float::transform
-     * @dataProvider provider
+     * @covers Gacela\Field\Time::validate
+     * @dataProvider providerPass
      */
-    public function testTransform()
+    public function testValidatePass($meta, $value, $in)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertTrue(Time::validate($meta, $value));
+    }
+
+	/**
+	 * @param $meta
+	 * @param $value
+	 * @param $in
+	 * @covers Gacela\Field\Time::validate
+	 * @dataProvider providerInvalidFormat
+	 */
+	public function testValidateInvalidFormat($meta, $value, $in)
+	{
+		$this->assertEquals(Time::FORMAT_CODE, Time::validate($meta, $value));
+	}
+
+	/**
+	 * @param $meta
+	 * @param $value
+	 * @param $in
+	 * @covers Gacela\Field\Time::validate
+	 * @dataProvider providerInvalidTime
+	 */
+	public function testValidateInvalidTime($meta, $value, $in)
+	{
+		$this->assertEquals(Time::TIME_CODE, Time::validate($meta, $value));
+	}
+
+	/**
+	 * @covers Gacela\Field\Time::validate
+	 * @dataProvider providerNull
+	 */
+	public function testValidateNull($meta, $value, $in)
+	{
+		$this->assertEquals(Time::NULL_CODE, Time::validate($meta, $value));
+	}
+
+	/**
+     * @covers Gacela\Field\Time::transform
+     * @dataProvider providerTransform
+     */
+    public function testTransform($meta, $value, $in)
+    {
+		$this->assertEquals($value, Time::transform($meta, $value, $in));
     }
 }
