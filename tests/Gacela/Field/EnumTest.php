@@ -17,38 +17,52 @@ class EnumTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new Enum;
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
+        $this->object = (object) array(
+			'type' => 'enum',
+			'values' => array('one', 2, 'three', 4),
+			'null' => false
+		);
     }
 
     /**
      * @covers Gacela\Field\Enum::validate
      * @todo   Implement testValidate().
      */
-    public function testValidate()
+    public function testValidateValueCode()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertEquals(Enum::VALUE_CODE, Enum::validate($this->object, 'four'));
     }
+
+	public function testValidateNullCode()
+	{
+		$this->assertEquals(Enum::NULL_CODE, Enum::validate($this->object, null));
+	}
+
+	public function testValidatePass()
+	{
+		$this->assertTrue(Enum::validate($this->object, 'one'));
+	}
+
+	public function testValidatePassNull()
+	{
+		$this->object->null = true;
+
+		$this->assertTrue(Enum::validate($this->object, null));
+	}
 
     /**
      * @covers Gacela\Field\Enum::transform
-     * @todo   Implement testTransform().
      */
-    public function testTransform()
+    public function testTransformIn()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertEquals(2, Enum::transform($this->object, 2, true));
     }
+
+	/**
+	 * @covers Gacela\Field\Enum::transform
+	 */
+	public function testTransformOut()
+	{
+		$this->assertEquals('three', Enum::transform($this->object, 'three', false));
+	}
 }

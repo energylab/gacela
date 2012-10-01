@@ -19,7 +19,8 @@ class SetTest extends \PHPUnit_Framework_TestCase
     {
         $this->object = (object) array(
 			'type' => 'set',
-			'values' => array(1, 'one', 'two', 2)
+			'values' => array(1, 'one', 'two', 2),
+			'null' => false
 		);
     }
 
@@ -33,6 +34,15 @@ class SetTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	public function providerPass()
+	{
+		return array(
+			array('one', 'one'),
+			array(2, '2'),
+			array(array(1, 2), "1,2"),
+			array(array('one', 2), "one,2")
+		);
+	}
 
     /**
      * @covers Gacela\Field\Set::validate
@@ -43,14 +53,48 @@ class SetTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(Set::VALUE_CODE, Set::validate($this->object, $value));
     }
 
+	/**
+	 * @covers Gacela\Field\Set::validate
+	 */
+	public function testValidateNullCode()
+	{
+		$this->assertEquals(Set::NULL_CODE, Set::validate($this->object, null));
+	}
+
+	/**
+	 * @covers Gacela\Field\Set::validate
+	 * @dataProvider providerPass
+	 */
+	public function testValidatePass($value)
+	{
+		$this->assertTrue(Set::validate($this->object, $value));
+	}
+
+	/**
+	 * @covers Gacela\Field\Set::validate
+	 */
+	public function testValidatePassNull()
+	{
+		$this->object->null = true;
+
+		$this->assertTrue(Set::validate($this->object, null));
+	}
+
     /**
      * @covers Gacela\Field\Set::transform
+	 * @dataProvider providerPass
      */
-    public function testTransform()
+    public function testTransformIn($in, $out)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertEquals($out, Set::transform($this->object, $in, true));
     }
+
+	/**
+	 * @covers Gacela\Field\Set::transform
+	 * @dataProvider providerPass
+	 */
+	public function testTransformOut($value)
+	{
+		$this->assertEquals($value, Set::transform($this->object, $value, false));
+	}
 }

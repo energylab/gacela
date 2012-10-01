@@ -17,7 +17,7 @@ class Set extends Field
 
 		if(is_null($value) && !$meta->null) {
 			return self::NULL_CODE;
-		} elseif(!is_array($value) && !in_array($value, $meta->values)) {
+		} elseif(!is_null($value) && !is_array($value) && !in_array($value, $meta->values)) {
 			return self::VALUE_CODE;
 		} elseif(is_array($value) && count(array_diff($value, $meta->values)) > 0) {
 			return  self::VALUE_CODE;
@@ -30,7 +30,7 @@ class Set extends Field
 	{
 		// For the database, it translates to a comma delimited string for sets
 		if($in) {
-			if(is_string($value)) {
+			if(is_scalar($value)) {
 				$value = array($value);
 			}
 
