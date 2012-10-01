@@ -15,9 +15,9 @@ class Enum extends Field
 	public static function validate($meta, $value)
 	{
 		if(is_null($value) && !$meta->null) {
-			return self::NULL_CODE;
+			return static::NULL_CODE;
 		} elseif(!is_null($value) && !in_array($value, $meta->values)) {
-			return  self::VALUE_CODE;
+			return  static::VALUE_CODE;
 		}
 
 		return true;

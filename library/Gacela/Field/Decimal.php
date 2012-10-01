@@ -17,13 +17,13 @@ class Decimal extends Field
 	public static function validate($meta, $value)
 	{
 		if(is_null($value) && !$meta->null) {
-			return self::NULL_CODE;
+			return static::NULL_CODE;
 		} elseif(!is_numeric($value) && !is_null($value)) {
-			return self::TYPE_CODE;
+			return static::TYPE_CODE;
 		} elseif(strlen($value) > $meta->length) {
-			return self::LENGTH_CODE;
+			return static::LENGTH_CODE;
 		} elseif(($pos = strpos($value, '.')) !== false && strlen(substr($value, $pos+1)) > $meta->scale) {
-			return self::SCALE_CODE;
+			return static::SCALE_CODE;
 		}
 
 		return true;

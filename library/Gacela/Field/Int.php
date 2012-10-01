@@ -29,7 +29,7 @@ class Int extends Field
 				return true;
 			} else {
 				if(!$meta->null) {
-					return self::NULL_CODE;
+					return static::NULL_CODE;
 				}
 
 				return $meta->null;
@@ -37,11 +37,11 @@ class Int extends Field
 		}
 
 		if(!is_int($value)) {
-			return self::TYPE_CODE;
+			return static::TYPE_CODE;
 		} elseif(strlen(abs($value)) > $meta->length) {
-			return self::LENGTH_CODE;
+			return static::LENGTH_CODE;
 		} elseif($value < $meta->min || $value > $meta->max) {
-			return self::BOUNDS_CODE;
+			return static::BOUNDS_CODE;
 		}
 
 		return true;

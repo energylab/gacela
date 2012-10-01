@@ -25,7 +25,22 @@ class DateTest extends \PHPUnit_Framework_TestCase
 
 	public function providerPass()
 	{
-		return array();
+		return array(
+			array(strtotime('Jan 1, 101')),
+			array(strtotime('12/31/2999')),
+			array(time()),
+			array(strtotime('Feb 29, 2033'))
+		);
+	}
+
+	public function providerTransformIn()
+	{
+
+	}
+
+	public function providerTransformOut()
+	{
+
 	}
 
     /**
@@ -47,16 +62,19 @@ class DateTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue(Date::validate($this->object, null));
 	}
 
-
 	/**
      * @covers Gacela\Field\Date::transform
-     * @todo   Implement testTransform().
      */
-    public function testTransform()
+    public function testTransformIn($expected, $val)
     {
         // Remove the following lines when you implement this test.
         $this->markTestIncomplete(
           'This test has not been implemented yet.'
         );
     }
+
+	public function testTransformOut($expected, $val)
+	{
+
+	}
 }

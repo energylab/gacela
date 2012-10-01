@@ -16,11 +16,11 @@ class Set extends Field
 	{
 
 		if(is_null($value) && !$meta->null) {
-			return self::NULL_CODE;
+			return static::NULL_CODE;
 		} elseif(!is_null($value) && !is_array($value) && !in_array($value, $meta->values)) {
-			return self::VALUE_CODE;
+			return static::VALUE_CODE;
 		} elseif(is_array($value) && count(array_diff($value, $meta->values)) > 0) {
-			return  self::VALUE_CODE;
+			return  static::VALUE_CODE;
 		}
 
 		return true;

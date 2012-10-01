@@ -40,13 +40,17 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 		$this->relations = $meta['relations'];
     }
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-    }
+	public function providerBinary()
+	{
+		return array(
+			array('binary', 255),
+			array('varbinary', 255),
+			array('tinyblob', 255),
+			array('blob', 65535),
+			array('mediumblob', 16777215),
+			array('longblob', 4294967295)
+		);
+	}
 
 	public function providerDate()
 	{
@@ -106,9 +110,15 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
-	public function testLoadBinary()
+	/**
+	 * @param $col
+	 * @param $length
+	 * @dataProvider providerBinary
+	 */
+	public function testLoadBinary($col, $length)
 	{
-		$this->markTestIncomplete();
+		$this->assertAttributeEquals('binary', 'type', $this->cols[$col]);
+		$this->assertAttributeEquals($length, 'length', $this->cols[$col]);
 	}
 
 	/**
@@ -132,6 +142,9 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 		$this->assertAttributeEquals($scale, 'scale', $this->cols[$col]);
 	}
 
+	/**
+	 *
+	 */
 	public function testLoadEnum()
 	{
 		$this->assertAttributeEquals('enum', 'type', $this->cols['enum']);

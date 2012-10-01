@@ -14,18 +14,22 @@ class Date extends Field
 
 	public static function validate($meta, $value)
 	{
+		$return = true;
+
+		$value = (string) $value;
+
 		if(empty($value) && !$meta->null) {
-			return self::NULL_CODE;
-		} elseif(!is_null($value) && ((string) (int) $value !== $value || $value <= PHP_INT_MAX || $value >= ~PHP_INT_MAX)) {
-			return self::TYPE_CODE;
+			$return = static::NULL_CODE;
+		} elseif(!empty($value) && ((string) (int) $value !== $value || $value > PHP_INT_MAX || $value < ~PHP_INT_MAX)) {
+			$return = static::TYPE_CODE;
 		}
 
-		return true;
+		return $return;
 	}
 
 	public static function transform($meta, $value, $in = true)
 	{
-		if($in && ctype_digit($value)) {
+		if($in && is_numeric($value)) {
 			return date('c', $value);
 		} elseif($in && !ctype_digit($value)) {
 			return $value;

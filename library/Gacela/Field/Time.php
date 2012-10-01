@@ -20,28 +20,28 @@ class Time extends Field
 		}
 
 		if(empty($value) && !$meta->null) {
-			return self::NULL_CODE;
+			return static::NULL_CODE;
 		}
 
 		if(!is_string($value) || !stristr($value, ':')) {
-			return self::FORMAT_CODE;
+			return static::FORMAT_CODE;
 		}
 
 		$parts = explode(':', $value);
 
 		if(!count($parts) === 3) {
-			return self::FORMAT_CODE;
+			return static::FORMAT_CODE;
 		}
 
 		foreach($parts as $k => $v) {
 			if(is_null($v)) {
-				return self::TIME_CODE;
+				return static::TIME_CODE;
 			}
 
 			if($k === 0 && ($v < 0 || $v > 24)) {
-				return self::TIME_CODE;
+				return static::TIME_CODE;
 			} elseif(in_array($k, array(1,2)) && ($v < 0 || $v > 60)) {
-				return self::TIME_CODE;
+				return static::TIME_CODE;
 			}
 		}
 

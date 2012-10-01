@@ -16,7 +16,7 @@ class Float extends Field
 	{
 		if(is_null($value)) {
 			if(!$meta->null) {
-				return self::NULL_CODE;
+				return static::NULL_CODE;
 			}
 
 			return $meta->null;
@@ -26,9 +26,9 @@ class Float extends Field
 			return true;
 		} else {
 			if(!is_float($value)) {
-				return self::TYPE_CODE;
+				return static::TYPE_CODE;
 			} elseif(strlen($value) >= $meta->precision) {
-				return self::LENGTH_CODE;
+				return static::LENGTH_CODE;
 			}
 
 			return false;

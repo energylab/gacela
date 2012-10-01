@@ -15,9 +15,9 @@ class Bool extends Field
 	public static function validate($meta, $value)
 	{
 		if(is_null($value) && !$meta->null) {
-			return self::NULL_CODE;
+			return static::NULL_CODE;
 		} elseif(!is_null($value) && !is_bool($value)) {
-			return  self::TYPE_CODE;
+			return  static::TYPE_CODE;
 		}
 
 		return true;

@@ -94,6 +94,9 @@ class Mysql extends Pdo
 				if (stripos($column->DATA_TYPE, 'char') !== false || stripos($column->DATA_TYPE, 'text') !== false) {
 					$meta['type'] = 'string';
 					$meta['length'] = $column->CHARACTER_MAXIMUM_LENGTH;
+				} elseif(stripos($column->DATA_TYPE, 'binary') !== false || stripos($column->DATA_TYPE, 'blob') !== false) {
+					$meta['type'] = 'binary';
+					$meta['length'] = $column->CHARACTER_MAXIMUM_LENGTH;
 				} elseif(preg_match('/(enum)\((\'.*?\')\)/', $column->COLUMN_TYPE, $matches)) {
 					$meta['type'] = 'enum';
 					$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
