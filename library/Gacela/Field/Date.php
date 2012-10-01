@@ -8,16 +8,16 @@
 
 namespace Gacela\Field;
 
-class Date extends Field {
+class Date extends Field
+{
+	const TYPE_CODE = 'invalid_date';
 
 	public static function validate($meta, $value)
 	{
-		if(empty($value) && $meta->null) {
-			return true;
-		}
-
 		if(empty($value) && !$meta->null) {
 			return self::NULL_CODE;
+		} elseif(!is_null($value) && ((string) (int) $value !== $value || $value <= PHP_INT_MAX || $value >= ~PHP_INT_MAX)) {
+			return self::TYPE_CODE;
 		}
 
 		return true;

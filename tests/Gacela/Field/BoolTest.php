@@ -23,27 +23,84 @@ class BoolTest extends \PHPUnit_Framework_TestCase
 		);
     }
 
+	public function provider()
+	{
+		return array(
+			array(0, 0, false),
+			array(false, 0, false),
+			array(1, 1, true),
+			array(true, 1, true)
+		);
+	}
+
+	public function providerPass()
+	{
+		return array(
+			array(true),
+			array(false)
+		);
+	}
+
+	public function providerTypeCode()
+	{
+		return array(
+			array('String'),
+			array(2),
+			array(-1),
+			array(0xF),
+			array(0),
+			array(1)
+		);
+	}
+
     /**
      * @covers Gacela\Field\Bool::validate
-     * @todo   Implement testValidate().
+	 *
      */
-    public function testValidate()
+    public function testValidateNullCode()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertEquals(Bool::NULL_CODE, Bool::validate($this->object, null));
     }
+
+	/**
+	 * @dataProvider providerTypeCode
+	 */
+	public function testValidateTypeCode($val)
+	{
+		$this->assertEquals(Bool::TYPE_CODE, Bool::validate($this->object, $val));
+	}
+
+	/**
+	 * @dataProvider providerPass
+	 */
+	public function testValidatePass($val)
+	{
+		$this->assertTrue(Bool::validate($this->object, $val));
+	}
+
+	public function testValidatePassNull()
+	{
+		$this->object->null = true;
+
+		$this->assertTrue(Bool::validate($this->object, null));
+	}
 
     /**
      * @covers Gacela\Field\Bool::transform
-     * @todo   Implement testTransform().
+	 * @dataProvider provider
      */
-    public function testTransform()
+    public function testTransformIn($val, $in, $out)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertEquals($in, Bool::transform($this->object, $val, true));
     }
+
+	/**
+	 * @covers Gacela\Field\Bool::transform
+	 * @dataProvider provider
+	 */
+	public function testTransformOut($val, $in, $out)
+	{
+		$this->assertEquals($out, Bool::transform($this->object, $val, false));
+	}
+
 }

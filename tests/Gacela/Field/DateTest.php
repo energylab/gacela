@@ -17,30 +17,38 @@ class DateTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new Date;
+        $this->object = (object) array(
+			'type' => 'date',
+			'null' => false
+		);
     }
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-    }
+	public function providerPass()
+	{
+		return array();
+	}
 
     /**
      * @covers Gacela\Field\Date::validate
-     * @todo   Implement testValidate().
+	 * @dataProvider providerPass
      */
-    public function testValidate()
+    public function testValidatePass($time)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertTrue(Date::validate($this->object, $time));
     }
 
-    /**
+	/**
+	 * @covers Gacela\Field\Date::validate
+	 */
+	public function testValidatePassNull()
+	{
+		$this->object->null = true;
+
+		$this->assertTrue(Date::validate($this->object, null));
+	}
+
+
+	/**
      * @covers Gacela\Field\Date::transform
      * @todo   Implement testTransform().
      */

@@ -14,35 +14,23 @@ class Bool extends Field
 
 	public static function validate($meta, $value)
 	{
-		if(is_null($value)) {
-			if(!$meta->null) {
-				return self::NULL_CODE;
-			}
-
-			return $meta->null;
-		}
-
-		if(!is_bool($value)) {
+		if(is_null($value) && !$meta->null) {
+			return self::NULL_CODE;
+		} elseif(!is_null($value) && !is_bool($value)) {
 			return  self::TYPE_CODE;
-		} else {
-			return true;
 		}
+
+		return true;
 	}
 
 	public static function transform($meta, $value, $in = true)
 	{
 		if($in && is_bool($value)) {
 			$value === true ? $value = 1 : $value = 0;
-			return $value;
-		} elseif($in && ctype_digit($value)) {
-			return $value;
-		} elseif(!$in) {
-			if(is_bool($value)) {
-				return $value;
-			} else {
-				$value == 0 ? $value = false : $value = true;
-				return $value;
-			}
+		} elseif(!$in && is_int($value)) {
+			$value == 0 ? $value = false : $value = true;
 		}
+
+		return $value;
 	}
 }
