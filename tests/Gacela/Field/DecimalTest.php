@@ -18,9 +18,31 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
-	public function providerTransform()
+	public function providerPass()
 	{
+		return array(
+			array('15.003'),
+			array(1536225648.52136),
+			array(123456789012345),
+			array(1.12345),
+			array("987.321")
+		);
+	}
 
+	/**
+	 * @covers Gacela\Field\Decimal::transform
+	 */
+	public function testTransformIsString()
+	{
+		$this->assertInternalType('string', Decimal::transform($this->meta, 123.45));
+	}
+
+	/**
+	 * @covers Gacela\Field\Decimal::transform
+	 */
+	public function testTransform()
+	{
+		$this->assertEquals(strval(15.0003), Decimal::transform($this->meta, 15.0003));
 	}
 
 	public function testValidateNullCode()
@@ -36,23 +58,27 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
 
 	public function testValidateLengthCode()
 	{
-		$this->assertEquals(Decimal::LENGTH_CODE, Decimal::validate($this->meta, 1234));
+		$this->assertEquals(Decimal::LENGTH_CODE, Decimal::validate($this->meta, 1234567890123456));
+	}
+
+	public function testValidateScaleCode()
+	{
+		$this->assertEquals(Decimal::SCALE_CODE, Decimal::validate($this->meta, 12.555675));
 	}
 
 	/**
 	 * @param $value
-	 * @dataProvider providerTypeCode
 	 */
-	public function testValidateTypeCode($value)
+	public function testValidateTypeCode()
 	{
-		$this->assertEquals(Decimal::TYPE_CODE, Decimal::validate($this->meta, $value));
+		$this->assertEquals(Decimal::TYPE_CODE, Decimal::validate($this->meta, '1 @m 4n alnum 5tr1ng'));
 	}
 
     /**
      * @covers Gacela\Field\Decimal::validate
      * @dataProvider providerPass
      */
-    public function testValidatePassDecimals($value)
+    public function testValidatePass($value)
     {
 		$this->assertTrue(Decimal::validate($this->meta, $value));
     }
@@ -63,13 +89,4 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertTrue(Decimal::validate($this->meta, null));
 	}
-
-    /**
-     * @covers Gacela\Field\Decimal::transform
-     * @dataProvider providerTransform
-     */
-    public function testTransform($provided, $expected)
-    {
-		$this->assertEquals($expected, Decimal::transform($this->meta, $provided));
-    }
 }

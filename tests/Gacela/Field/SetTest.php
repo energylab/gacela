@@ -17,32 +17,34 @@ class SetTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new Set;
+        $this->object = (object) array(
+			'type' => 'set',
+			'values' => array(1, 'one', 'two', 2)
+		);
     }
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-    }
+	public function providerValueCode()
+	{
+		return array(
+			array(3),
+			array('three'),
+			array(array(1, 3)),
+			array(array('two', 4))
+		);
+	}
+
 
     /**
      * @covers Gacela\Field\Set::validate
-     * @todo   Implement testValidate().
+	 * @dataProvider providerValueCode
      */
-    public function testValidate()
+    public function testValidateValueCode($value)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertEquals(Set::VALUE_CODE, Set::validate($this->object, $value));
     }
 
     /**
      * @covers Gacela\Field\Set::transform
-     * @todo   Implement testTransform().
      */
     public function testTransform()
     {

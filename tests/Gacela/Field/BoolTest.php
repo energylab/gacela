@@ -17,15 +17,10 @@ class BoolTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new Bool;
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
+        $this->object = (object) array(
+			'null' => false,
+			'type' => 'bool'
+		);
     }
 
     /**
