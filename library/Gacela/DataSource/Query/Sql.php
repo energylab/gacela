@@ -64,9 +64,11 @@ class Sql extends Query {
 	{
 		$value = trim($value);
 
-		if(strpos($value, ')') == strlen($value)-1 AND strpos($value, '(') !== false) {
+		if(strrpos($value, ')') == strlen($value)-1 AND strpos($value, '(') !== false) {
 			return true;
 		}
+
+		return false;
 	}
 
 	protected function _param($field, $args)

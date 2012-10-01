@@ -8,5 +8,5 @@ namespace Gacela\DataSource\Adapter;
 
 interface iAdapter {
 
-	public function load($name);
+	public function load($name, $force = false);
 }
