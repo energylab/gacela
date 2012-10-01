@@ -13,19 +13,13 @@ class String extends Field
 
 	public static function validate($meta, $value)
 	{
-		if(empty($value)) {
-			if(!$meta->null) {
-				return self::NULL_CODE;
-			}
-
-			return $meta->null;
-		}
-
-		if(strlen($value) <= $meta->length) {
-			return true;
-		} else {
+		if(empty($value) && !$meta->null) {
+			return self::NULL_CODE;
+		} elseif(strlen($value) > $meta->length) {
 			return self::LENGTH_CODE;
 		}
+
+		return true;
 	}
 
 	public static function transform($meta, $value, $in = true)

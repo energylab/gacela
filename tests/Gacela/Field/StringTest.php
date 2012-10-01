@@ -22,24 +22,43 @@ class StringTest extends \PHPUnit_Framework_TestCase
      * @covers Gacela\Field\String::validate
      * @todo   Implement testValidate().
      */
-    public function testValidateNull()
+    public function testValidateNullCode()
     {
 		$this->assertEquals(String::NULL_CODE, String::validate($this->object, null));
     }
 
-	public function testValidateLength()
+	public function testValidateLengthCode()
 	{
 		$this->assertEquals(String::LENGTH_CODE, String::validate($this->object, 'This is a string longer than 10 characters.'));
+	}
+
+	public function testValidatePass()
+	{
+		$this->assertTrue(String::validate($this->object, 'I am short'));
+	}
+
+	public function testValidatePassNull()
+	{
+		$this->object->null = true;
+
+		$this->assertTrue(String::validate($this->object, null));
 	}
 
     /**
      * @covers Gacela\Field\String::transform
      * @todo   Implement testTransform().
      */
-    public function testTransform()
+    public function testTransformIn()
     {
 		$string = 'I am a very fine string';
 
-        $this->assertEquals($string, String::transform($this->object, $string));
+        $this->assertEquals($string, String::transform($this->object, $string, true));
     }
+
+	public function testTransformOut()
+	{
+		$string = 'New String';
+
+		$this->assertEquals($string, String::transform($this->object, $string, false));
+	}
 }
