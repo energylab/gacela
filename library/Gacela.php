@@ -7,17 +7,14 @@
  *
 */
 
-class Gacela {
+class Gacela
+{
 
 	protected static $_instance;
 
 	protected $_cache = null;
 
 	protected $_cached = array();
-
-	protected $_cacheData = false;
-
-	protected $_cacheSchema = false;
 
 	protected $_config = null;
 
@@ -31,6 +28,34 @@ class Gacela {
 
         $this->registerNamespace('Gacela', __DIR__.'/Gacela');
     }
+
+	/**
+	 * @param  $key
+	 * @param null $object
+	 * @return object|bool
+	 */
+	protected function _cache($key, $object = null)
+	{
+		if(!is_object($this->_cache)) {
+			if(is_null($object)) {
+				if(isset($this->_cached[$key])) {
+					return $this->_cached[$key];
+				}
+
+				return false;
+			} else {
+				$this->_cached[$key] = $object;
+
+				return true;
+			}
+		} else {
+			if(is_null($object)) {
+				return $this->_cache->get($key);
+			} else {
+				return $this->_cache->set($key, $object);
+			}
+		}
+	}
 
 	/**
 	 * @param  $file
@@ -157,36 +182,14 @@ class Gacela {
 		throw new \Exception("Unable to find $class!");
     }
 
-	/**
-	 * @param  $key
-	 * @param null $object
-	 * @return object|bool
-	 */
-	public function cache($key, $object = null, $replace = false)
+	public function cacheMetaData($key, $value = null)
 	{
-		if(!$this->_cacheData AND ($this->_cacheSchema === false OR (stristr($key, 'resource_') === false AND stristr($key, 'mapper_') === false))) {
-			if(is_null($object)) {
-				if(isset($this->_cached[$key])) {
-					return $this->_cached[$key];
-				}
 
-				return false;
-			} else {
-				$this->_cached[$key] = $object;
+	}
 
-				return true;
-			}
-		} else {
-			if(is_null($object)) {
-				return $this->_cache->get($key);
-			} else {
-				if($replace) {
-					return $this->_cache->replace($key, $object);
-				} else {
-					return $this->_cache->set($key, $object);
-				}
-			}
-		}
+	public function cacheData($key, $value = null)
+	{
+
 	}
 
 	/**
@@ -215,7 +218,7 @@ class Gacela {
 	 * @param  Memcache|array $servers
 	 * @return Gacela
 	 */
-	public function enableCache($servers, $schema = true, $data = true)
+	public function enableCache($servers)
 	{
 		if($servers instanceof Memcache) {
 			$this->_cache = $servers;
@@ -226,9 +229,6 @@ class Gacela {
 				$this->_cache->addServer($server[0], $server[1]);
 			}
 		}
-
-		$this->_cacheSchema = $schema;
-		$this->_cacheData = $data;
 
 		return $this;
 	}
