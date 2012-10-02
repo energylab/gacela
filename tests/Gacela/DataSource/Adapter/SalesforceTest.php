@@ -17,7 +17,7 @@ class SalesforceTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new Salesforce;
+        //$this->object = new Salesforce;
     }
 
     /**
