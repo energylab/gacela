@@ -17,28 +17,53 @@ class FloatTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new Float;
+        $this->object = (object) array(
+			'type' => 'float',
+			'length' => 12,
+			'null' => false
+		);
     }
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-    }
+	public function providerTransform()
+	{
+		return array(
+			array(12.34, 12.34),
+			array('1', 1),
+			array("1234.12345", 1234.12345),
+			array(1234567.1234)
+		);
+	}
+
+	public function providerTypeCode()
+	{
+		return array(
+			array('String'),
+			array(1),
+			array(array()),
+			array(new \stdClass())
+		);
+	}
+
+	public function testValidatePassNull()
+	{
+		$this->object->null = true;
+
+		$this->assertTrue(Float::validate($this->object, null));
+	}
 
     /**
      * @covers Gacela\Field\Float::validate
-     * @todo   Implement testValidate().
+     * @dataProvider providerTypeCode
      */
-    public function testValidate()
+    public function testValidateTypeCode($value)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertEquals(Float::TYPE_CODE, Float::validate($this->object, $value));
     }
+
+	public function testValidateNullCode()
+	{
+		$this->assertEquals(Float::NULL_CODE, Float::validate($this->object, null));
+	}
 
     /**
      * @covers Gacela\Field\Float::transform

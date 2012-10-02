@@ -8,7 +8,8 @@
 
 namespace Gacela\Model;
 
-abstract class Model implements iModel {
+abstract class Model implements iModel
+{
 
 	protected static $_field = null;
 

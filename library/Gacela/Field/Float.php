@@ -14,29 +14,17 @@ class Float extends Field
 
 	public static function validate($meta, $value)
 	{
-		if(is_null($value)) {
-			if(!$meta->null) {
-				return static::NULL_CODE;
-			}
-
-			return $meta->null;
+		if(is_null($value) && !$meta->null) {
+			return static::NULL_CODE;
+		} elseif(!is_null($value) && !is_double($value)) {
+			return static::TYPE_CODE;
 		}
 
-		if(is_float($value) && strlen($value) <= $meta->precision) {
-			return true;
-		} else {
-			if(!is_float($value)) {
-				return static::TYPE_CODE;
-			} elseif(strlen($value) >= $meta->precision) {
-				return static::LENGTH_CODE;
-			}
-
-			return false;
-		}
+		return true;
 	}
 
 	public static function transform($meta, $value, $in = true)
 	{
-		return (float) $value;
+		return (double) $value;
 	}
 }
