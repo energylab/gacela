@@ -196,5 +196,10 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->assertAttributeEquals('time', 'type', $this->cols['time']);
 	}
+
+	public function testColumnsCached()
+	{
+		$this->assertInternalType('array', \Gacela::instance()->cacheMetaData('test_columns'));
+	}
 }
 

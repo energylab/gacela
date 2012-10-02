@@ -19,7 +19,7 @@ class BinaryTest extends \PHPUnit_Framework_TestCase
     {
         $this->object = (object) array(
 			'type' => 'binary',
-			'length' => 255,
+			'length' => 10,
 			'null' => false
 		);
     }
@@ -30,7 +30,7 @@ class BinaryTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateLengthCode()
     {
-
+		$this->assertEquals(Binary::LENGTH_CODE, Binary::validate($this->object, 'I am a long bit of data'));
     }
 
 	public function testValidateNullCode()
@@ -51,9 +51,8 @@ class BinaryTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransform()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$value = 'value';
+
+        $this->assertEquals($value, Binary::transform($this->object, $value));
     }
 }

@@ -9,6 +9,11 @@ class GacelaTest extends PHPUnit_Framework_TestCase
      */
     protected $object;
 
+	/**
+	 * @var \Memcache
+	 */
+	protected $memcache = null;
+
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
@@ -16,6 +21,10 @@ class GacelaTest extends PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->object = Gacela::instance();
+
+		$this->memcache = new Memcache;
+
+		$this->memcache->addServer('127.0.0.1', 11211);
     }
 
     /**
@@ -24,18 +33,9 @@ class GacelaTest extends PHPUnit_Framework_TestCase
      */
     protected function tearDown()
     {
-    }
+		Gacela::reset();
 
-    /**
-     * @covers Gacela::debug
-     * @todo   Implement testDebug().
-     */
-    public function testDebug()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->memcache->flush();
     }
 
     /**
@@ -44,10 +44,7 @@ class GacelaTest extends PHPUnit_Framework_TestCase
      */
     public function testInstance()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertInstanceOf('Gacela', Gacela::instance());
     }
 
     /**
@@ -63,16 +60,36 @@ class GacelaTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Gacela::cache
-     * @todo   Implement testCache().
+     * @covers Gacela::cacheMetaData
      */
-    public function testCache()
+    public function testCacheMetaDataWithoutMemcache()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$array = array(
+			array('var1' => 1, 'var2' => 2, 'var3' => 3),
+			array('var1' => 999, 'var2' => 'something else', 'var3' => 'more')
+		);
+
+        $this->object->cacheMetaData('test', $array);
+
+		$this->assertEquals($array, $this->object->cacheMetaData('test'));
     }
+
+	/**
+	 * @covers Gacela::cacheMetaData
+	 */
+	public function testCacheMetaDataWithMemcache()
+	{
+		$array = array(
+			array('var1' => 1, 'var2' => 2, 'var3' => 3),
+			array('var1' => 999, 'var2' => 'something else', 'var3' => 'more')
+		);
+
+		$this->object->enableCache($this->memcache);
+
+		$this->object->cacheMetaData('test', $array);
+
+		$this->assertEquals($array, $this->object->cacheMetaData('test'));
+	}
 
     /**
      * @covers Gacela::configPath
@@ -103,18 +120,6 @@ class GacelaTest extends PHPUnit_Framework_TestCase
      * @todo   Implement testGetDataSource().
      */
     public function testGetDataSource()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela::incrementCache
-     * @todo   Implement testIncrementCache().
-     */
-    public function testIncrementCache()
     {
         // Remove the following lines when you implement this test.
         $this->markTestIncomplete(

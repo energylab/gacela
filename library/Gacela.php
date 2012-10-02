@@ -9,7 +9,6 @@
 
 class Gacela
 {
-
 	protected static $_instance;
 
 	protected $_cache = null;
@@ -131,6 +130,11 @@ class Gacela
 		return static::$_instance;
 	}
 
+	public static function reset()
+	{
+		self::$_instance = null;
+	}
+
 	/**
 	 * @param  string $class
 	 * @return bool|string
@@ -184,12 +188,12 @@ class Gacela
 
 	public function cacheMetaData($key, $value = null)
 	{
-
+		return $this->_cache($key, $value);
 	}
 
 	public function cacheData($key, $value = null)
 	{
-
+		throw new \Exception('Not Implemented!');
 	}
 
 	/**
@@ -245,15 +249,6 @@ class Gacela
 		}
 
 		return $this->_sources[$name];
-	}
-
-	public function incrementCache($key)
-	{
-		if(!$this->_cacheData) {
-			$this->_cached[$key]++;
-		} else {
-			$this->_cache->increment($key);
-		}
 	}
 
 	public function loadConfig($name)

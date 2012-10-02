@@ -25,7 +25,7 @@ class Salesforce extends Adapter
 			$this->_conn->createConnection($this->_config->wsdl_path);
 			$this->_conn->login($this->_config->username, $this->_config->password);
 
-			$this->_columns = $this->_singleton()->cache($this->_config->schema.'_columns');
+			$this->_columns = $this->_singleton()->cacheMetaData($this->_config->schema.'_columns');
 
 			if(!$this->_columns) {
 				$this->_columns = $this->describeSObjects($this->_config->objects);
@@ -33,21 +33,9 @@ class Salesforce extends Adapter
 				if(!is_array($this->_columns)) {
 					$this->_columns = array($this->_columns);
 				}
+
+				$this->_singleton()->cacheMetaData($this->_config->schema.'_columns', $this->_columns);
 			}
-
-
-			$this->_resources = $this->_singleton()->cache($this->_config->schema.'_resources');
-
-			if(!$this->_resources) {
-				$this->_resources = array();
-
-				foreach($this->_columns as $row) {
-					if(!in_array($row->TABLE_NAME, $this->_resources)) {
-						$this->_resources[] = $row->TABLE_NAME;
-					}
-				}
-			}
-
 		}
 	}
 

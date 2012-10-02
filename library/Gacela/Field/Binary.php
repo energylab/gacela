@@ -23,6 +23,8 @@ class Binary extends Field
 	{
 		if(empty($value) && !$meta->null) {
 			return static::NULL_CODE;
+		} elseif(!empty($value) && strlen($value) > $meta->length) {
+			return static::LENGTH_CODE;
 		}
 
 		return true;
@@ -36,14 +38,6 @@ class Binary extends Field
 	 */
 	public static function transform($meta, $value, $in = true)
 	{
-		if(is_null($value)) {
-			return $value;
-		}
-
-		if($in) {
-			return base64_encode($value);
-		} else {
-			return base64_decode($value);
-		}
+		return $value;
 	}
 }
