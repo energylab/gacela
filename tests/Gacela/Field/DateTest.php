@@ -19,7 +19,8 @@ class DateTest extends \PHPUnit_Framework_TestCase
     {
         $this->object = (object) array(
 			'type' => 'date',
-			'null' => false
+			'null' => false,
+			'default' => 'current'
 		);
     }
 
@@ -35,12 +36,34 @@ class DateTest extends \PHPUnit_Framework_TestCase
 
 	public function providerTransformIn()
 	{
+		$now = time();
+		$yesterday = strtotime('-1 day');
+		$past = strtotime('-500 years');
+		$future = strtotime('+500 years');
 
+		return array(
+			array(date('c', $now), $now),
+			array(date('c', $yesterday), $yesterday),
+			array(date('c', $past), $past),
+			array(date('c', $future), $future),
+			array('Random String', 'Random String')
+		);
 	}
 
 	public function providerTransformOut()
 	{
+		$now = time();
+		$yesterday = strtotime('-1 day');
+		$past = strtotime('-500 years');
+		$future = strtotime('+500 years');
 
+		return array(
+			array($now, date('c', $now)),
+			array($yesterday, $yesterday),
+			array($past, $past),
+			array($future, date('c', $future)),
+			array(null, 'Random String')
+		);
 	}
 
     /**
@@ -62,19 +85,32 @@ class DateTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue(Date::validate($this->object, null));
 	}
 
+	public function testValidateNullCode()
+	{
+		$this->assertEquals(Date::NULL_CODE, Date::validate($this->object, null));
+	}
+
+	public function testValidateTypeCode()
+	{
+		$this->assertEquals(Date::TYPE_CODE, Date::validate($this->object, date('c')));
+	}
+
 	/**
      * @covers Gacela\Field\Date::transform
+	 * @dataProvider providerTransformIn
      */
     public function testTransformIn($expected, $val)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->assertEquals($expected, Date::transform($this->object, $val, true));
     }
 
+	/**
+	 * @param $expected
+	 * @param $val
+	 * @dataProvider providerTransformOut
+	 */
 	public function testTransformOut($expected, $val)
 	{
-
+		$this->assertEquals($expected, Date::transform($this->object, $val, false));
 	}
 }

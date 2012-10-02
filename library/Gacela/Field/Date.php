@@ -12,6 +12,11 @@ class Date extends Field
 {
 	const TYPE_CODE = 'invalid_date';
 
+	protected static function _isTimestamp($value)
+	{
+		return (string) (int) $value === $value && $value <= PHP_INT_MAX && $value >= ~PHP_INT_MAX;
+	}
+
 	public static function validate($meta, $value)
 	{
 		$return = true;
@@ -20,7 +25,7 @@ class Date extends Field
 
 		if(empty($value) && !$meta->null) {
 			$return = static::NULL_CODE;
-		} elseif(!empty($value) && ((string) (int) $value !== $value || $value > PHP_INT_MAX || $value < ~PHP_INT_MAX)) {
+		} elseif(!empty($value) && !static::_isTimestamp($value)) {
 			$return = static::TYPE_CODE;
 		}
 
@@ -30,23 +35,19 @@ class Date extends Field
 	public static function transform($meta, $value, $in = true)
 	{
 		if($in && is_numeric($value)) {
-			return date('c', $value);
-		} elseif($in && !ctype_digit($value)) {
-			return $value;
-		} elseif(!$in && !ctype_digit($value)) {
+			$value = date('c', $value);
+		} elseif(!$in && !is_numeric($value)) {
 			if(stripos($value, 'current') !== false || (stripos($meta->default, 'current') !== false && empty($value))) {
-				return time();
+				$value = time();
+			} else {
+				$value = strtotime($value);
+
+				if($value === false) {
+					return null;
+				}
 			}
-
-			$rs = strtotime($value);
-
-			if($rs === false) {
-				return null;
-			}
-
-			return $rs;
-		} elseif(!$in && ctype_digit($value)) {
-			return $value;
 		}
+
+		return $value;
 	}
 }

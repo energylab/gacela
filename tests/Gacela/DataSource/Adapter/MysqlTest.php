@@ -43,7 +43,7 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 	public function providerBinary()
 	{
 		return array(
-			array('binary', 255),
+			array('binary', 75),
 			array('varbinary', 255),
 			array('tinyblob', 255),
 			array('blob', 65535),
