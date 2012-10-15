@@ -15,7 +15,7 @@ class Mysql extends Pdo
 		if(!$this->_conn) {
 			parent::_loadConn();
 
-			$this->_columns = $this->_singleton()->cacheMetaData($this->_config->schema.'_columns');
+			$this->_columns = $this->_singleton->cacheMetaData($this->_config->schema.'_columns');
 
 			if(!$this->_columns) {
 				$sql = "SELECT *
@@ -24,12 +24,12 @@ class Mysql extends Pdo
 
 				$this->_columns = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
 
-				$this->_singleton()->cacheMetaData($this->_config->schema.'_columns', $this->_columns);
+				$this->_singleton->cacheMetaData($this->_config->schema.'_columns', $this->_columns);
 			}
 		}
 
 		// Moved out of __construct to allow for lazy loading of config data
-		$this->_relationships = $this->_singleton()->cacheMetaData($this->_config->schema.'_relationships');
+		$this->_relationships = $this->_singleton->cacheMetaData($this->_config->schema.'_relationships');
 
 		if(!$this->_relationships) {
 			$sql = "
@@ -47,7 +47,7 @@ class Mysql extends Pdo
 
 			$this->_relationships = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
 
-			$this->_singleton()->cacheMetaData($this->_config->schema.'_relationships', $this->_relationships);
+			$this->_singleton->cacheMetaData($this->_config->schema.'_relationships', $this->_relationships);
 		}
 	}
 
@@ -92,10 +92,10 @@ class Mysql extends Pdo
 
 				if (stripos($column->DATA_TYPE, 'char') !== false || stripos($column->DATA_TYPE, 'text') !== false) {
 					$meta['type'] = 'string';
-					$meta['length'] = $column->CHARACTER_MAXIMUM_LENGTH;
+					$meta['length'] = (int) $column->CHARACTER_MAXIMUM_LENGTH;
 				} elseif(stripos($column->DATA_TYPE, 'binary') !== false || stripos($column->DATA_TYPE, 'blob') !== false) {
 					$meta['type'] = 'binary';
-					$meta['length'] = $column->CHARACTER_MAXIMUM_LENGTH;
+					$meta['length'] = (int) $column->CHARACTER_MAXIMUM_LENGTH;
 				} elseif(preg_match('/(enum)\((\'.*?\')\)/', $column->COLUMN_TYPE, $matches)) {
 					$meta['type'] = 'enum';
 					$meta['values'] = explode(',', str_replace("'", "", $matches[2]));
@@ -107,8 +107,8 @@ class Mysql extends Pdo
 						$meta,
 						array(
 							'type' => 'decimal',
-							'length' => $column->NUMERIC_PRECISION,
-							'scale' => $column->NUMERIC_SCALE
+							'length' => (int) $column->NUMERIC_PRECISION,
+							'scale' => (int) $column->NUMERIC_SCALE
 						)
 					);
 				}elseif(in_array($column->DATA_TYPE, array('float', 'double'))) {
@@ -116,7 +116,7 @@ class Mysql extends Pdo
 						$meta,
 						array(
 							'type' => 'float',
-							'length' => $column->NUMERIC_PRECISION
+							'length' => (int) $column->NUMERIC_PRECISION
 						)
 					);
 
@@ -124,7 +124,7 @@ class Mysql extends Pdo
 					$meta['type'] = 'bool';
 				} elseif (stripos($column->DATA_TYPE, 'int') !== false) {
 					$meta['type'] = 'int';
-					$meta['length'] = $column->NUMERIC_PRECISION;
+					$meta['length'] = (int) $column->NUMERIC_PRECISION;
 
 					$size = substr($column->DATA_TYPE, 0, strlen($column->DATA_TYPE)-3);
 
@@ -147,13 +147,15 @@ class Mysql extends Pdo
 					}
 
 					if($meta['unsigned']) {
-						$meta['min'] = 0;
+						$meta['min'] = '0';
 
 						$meta['max'] = bcsub(bcpow(2, $size), 1);
 					} else {
-						$meta['min'] = -bcdiv(bcpow(2, $size), 2);
+						$tmp = bcdiv(bcpow(2, $size), 2);
 
-						$meta['max'] = abs($meta['min'])-1;
+						$meta['min'] = '-'.$tmp;
+
+						$meta['max'] = bcsub($tmp, '1');
 					}
 				} elseif(in_array($column->DATA_TYPE, array('datetime', 'date', 'timestamp'))) {
 					$meta['type'] = 'date';

@@ -8,8 +8,15 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
 {
 	protected $meta = null;
 
+	/**
+	 * @var Decimal
+	 */
+	protected $object;
+
 	protected function setUp()
 	{
+		$this->object = new Decimal;
+
 		$this->meta = (object) array(
 			'type' => 'decimal',
 			'length' => 15,
@@ -34,7 +41,7 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testTransformIsString()
 	{
-		$this->assertInternalType('string', Decimal::transform($this->meta, 123.45));
+		$this->assertInternalType('string', $this->object->transform($this->meta, 123.45));
 	}
 
 	/**
@@ -42,14 +49,14 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testTransform()
 	{
-		$this->assertEquals(strval(15.0003), Decimal::transform($this->meta, 15.0003));
+		$this->assertSame(strval(15.0003), $this->object->transform($this->meta, 15.0003));
 	}
 
 	public function testValidateNullCode()
 	{
 		$this->assertEquals(
 			Decimal::NULL_CODE,
-			Decimal::validate(
+			$this->object->validate(
 				$this->meta,
 				null
 			)
@@ -58,12 +65,12 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
 
 	public function testValidateLengthCode()
 	{
-		$this->assertEquals(Decimal::LENGTH_CODE, Decimal::validate($this->meta, 1234567890123456));
+		$this->assertEquals(Decimal::LENGTH_CODE, $this->object->validate($this->meta, 1234567890123456));
 	}
 
 	public function testValidateScaleCode()
 	{
-		$this->assertEquals(Decimal::SCALE_CODE, Decimal::validate($this->meta, 12.555675));
+		$this->assertEquals(Decimal::SCALE_CODE, $this->object->validate($this->meta, 12.555675));
 	}
 
 	/**
@@ -71,7 +78,7 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidateTypeCode()
 	{
-		$this->assertEquals(Decimal::TYPE_CODE, Decimal::validate($this->meta, '1 @m 4n alnum 5tr1ng'));
+		$this->assertEquals(Decimal::TYPE_CODE, $this->object->validate($this->meta, '1 @m 4n alnum 5tr1ng'));
 	}
 
     /**
@@ -80,13 +87,13 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidatePass($value)
     {
-		$this->assertTrue(Decimal::validate($this->meta, $value));
+		$this->assertTrue($this->object->validate($this->meta, $value));
     }
 
 	public function testValidatePassNull()
 	{
 		$this->meta->null = true;
 
-		$this->assertTrue(Decimal::validate($this->meta, null));
+		$this->assertTrue($this->object->validate($this->meta, null));
 	}
 }

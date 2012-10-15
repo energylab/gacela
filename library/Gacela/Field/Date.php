@@ -12,12 +12,12 @@ class Date extends Field
 {
 	const TYPE_CODE = 'invalid_date';
 
-	protected static function _isTimestamp($value)
+	protected function _isTimestamp($value)
 	{
 		return (string) (int) $value === $value && $value <= PHP_INT_MAX && $value >= ~PHP_INT_MAX;
 	}
 
-	public static function validate($meta, $value)
+	public function validate($meta, $value)
 	{
 		$return = true;
 
@@ -25,14 +25,14 @@ class Date extends Field
 
 		if(empty($value) && !$meta->null) {
 			$return = static::NULL_CODE;
-		} elseif(!empty($value) && !static::_isTimestamp($value)) {
+		} elseif(!empty($value) && !$this->_isTimestamp($value)) {
 			$return = static::TYPE_CODE;
 		}
 
 		return $return;
 	}
 
-	public static function transform($meta, $value, $in = true)
+	public function transform($meta, $value, $in = true)
 	{
 		if($in && is_numeric($value)) {
 			$value = date('c', $value);

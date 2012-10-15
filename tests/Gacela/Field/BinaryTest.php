@@ -7,9 +7,14 @@ namespace Gacela\Field;
 class BinaryTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Binary
+     * @var \stdClass
      */
-    protected $object;
+    protected $meta;
+
+	/**
+	 * @var Binary
+	 */
+	protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -17,7 +22,9 @@ class BinaryTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = (object) array(
+		$this->object = new Binary;
+
+        $this->meta = (object) array(
 			'type' => 'binary',
 			'length' => 10,
 			'null' => false
@@ -25,34 +32,34 @@ class BinaryTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Gacela\Field\Binary::validate
+     * @covers Gacela\Field\$this->object->validate
      * @todo   Implement testValidate().
      */
     public function testValidateLengthCode()
     {
-		$this->assertEquals(Binary::LENGTH_CODE, Binary::validate($this->object, 'I am a long bit of data'));
+		$this->assertEquals(Binary::LENGTH_CODE, $this->object->validate($this->meta, 'I am a long bit of data'));
     }
 
 	public function testValidateNullCode()
 	{
-		$this->assertEquals(Binary::NULL_CODE, Binary::validate($this->object, null));
+		$this->assertEquals(Binary::NULL_CODE, $this->object->validate($this->meta, null));
 	}
 
 	public function testValidatePassNull()
 	{
-		$this->object->null = true;
+		$this->meta->null = true;
 
-		$this->assertTrue(Binary::validate($this->object, null));
+		$this->assertTrue($this->object->validate($this->meta, null));
 	}
 
     /**
-     * @covers Gacela\Field\Binary::transform
+     * @covers Gacela\Field\$this->object->transform
      * @todo   Implement testTransform().
      */
     public function testTransform()
     {
 		$value = 'value';
 
-        $this->assertEquals($value, Binary::transform($this->object, $value));
+        $this->assertSame($value, $this->object->transform($this->meta, $value));
     }
 }

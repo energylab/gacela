@@ -18,6 +18,8 @@ abstract class Adapter implements iAdapter {
 
 	protected $_relationships = null;
 
+	protected $_singleton = null;
+
 	protected static $_meta = array(
 		'type' => null,
 		'length' => null,
@@ -39,7 +41,7 @@ abstract class Adapter implements iAdapter {
 		}
 
 		// Pull from the config file if enabled
-		$config = $this->_singleton()->loadConfig($name);
+		$config = $this->_singleton->loadConfig($name);
 
 		if(is_array($config)) {
 			$_meta = array_merge(
@@ -66,11 +68,6 @@ abstract class Adapter implements iAdapter {
 		return null;
 	}
 
-	protected function _singleton()
-	{
-		return \Gacela::instance();
-	}
-
 	abstract protected function _loadConn();
 
 	public function __call($method, $args)
@@ -84,8 +81,10 @@ abstract class Adapter implements iAdapter {
 		return $method->invokeArgs($this->_conn, $args);
 	}
 
-	public function __construct($config)
+	public function __construct(\Gacela $gacela, $config)
 	{
+		$this->_singleton = $gacela;
+
 		$this->_config = (object) $config;
 	}
 

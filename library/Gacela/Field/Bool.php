@@ -12,7 +12,7 @@ class Bool extends Field
 {
 	const TYPE_CODE = 'invalid_bool';
 
-	public static function validate($meta, $value)
+	public function validate($meta, $value)
 	{
 		if(is_null($value) && !$meta->null) {
 			return static::NULL_CODE;
@@ -23,7 +23,7 @@ class Bool extends Field
 		return true;
 	}
 
-	public static function transform($meta, $value, $in = true)
+	public function transform($meta, $value, $in = true)
 	{
 		if($in && is_bool($value)) {
 			$value === true ? $value = 1 : $value = 0;

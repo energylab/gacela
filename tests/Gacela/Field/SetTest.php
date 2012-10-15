@@ -86,7 +86,7 @@ class SetTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransformIn($in, $out)
     {
-		$this->assertEquals($out, Set::transform($this->object, $in, true));
+		$this->assertSame($out, Set::transform($this->object, $in, true));
     }
 
 	/**
@@ -95,6 +95,6 @@ class SetTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testTransformOut($value)
 	{
-		$this->assertEquals($value, Set::transform($this->object, $value, false));
+		$this->assertSame($value, Set::transform($this->object, $value, false));
 	}
 }

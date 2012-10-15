@@ -52,13 +52,13 @@ class StringTest extends \PHPUnit_Framework_TestCase
     {
 		$string = 'I am a very fine string';
 
-        $this->assertEquals($string, String::transform($this->object, $string, true));
+        $this->assertSame($string, String::transform($this->object, $string, true));
     }
 
 	public function testTransformOut()
 	{
 		$string = 'New String';
 
-		$this->assertEquals($string, String::transform($this->object, $string, false));
+		$this->assertSame($string, String::transform($this->object, $string, false));
 	}
 }

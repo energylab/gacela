@@ -13,30 +13,18 @@ namespace Gacela\Field;
 
 class Binary extends Field
 {
-
-	/**
-	 * @static
-	 * @param  $value
-	 * @return bool
-	 */
-	public static function validate($meta, $value)
+	public function validate($meta, $value)
 	{
 		if(empty($value) && !$meta->null) {
-			return static::NULL_CODE;
+			return self::NULL_CODE;
 		} elseif(!empty($value) && strlen($value) > $meta->length) {
-			return static::LENGTH_CODE;
+			return self::LENGTH_CODE;
 		}
 
 		return true;
 	}
 
-	/**
-	 * @static
-	 * @param  $value
-	 * @param bool $in
-	 * @return mixed
-	 */
-	public static function transform($meta, $value, $in = true)
+	public function transform($meta, $value, $in = true)
 	{
 		return $value;
 	}

@@ -120,6 +120,6 @@ class TimeTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransform($meta, $value, $in)
     {
-		$this->assertEquals($value, Time::transform($meta, $value, $in));
+		$this->assertSame($value, Time::transform($meta, $value, $in));
     }
 }

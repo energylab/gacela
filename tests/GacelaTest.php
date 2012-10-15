@@ -179,11 +179,8 @@ class GacelaTest extends PHPUnit_Framework_TestCase
      * @covers Gacela::registerNamespace
      * @todo   Implement testRegisterNamespace().
      */
-    public function testRegisterNamespace()
+    public function testRegisterNamespace($namespace, $path)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->markTestIncomplete();
     }
 }

@@ -7,9 +7,14 @@ namespace Gacela\Field;
 class BoolTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Bool
+     * @var \stdClass
      */
-    protected $object;
+    protected $meta;
+
+	/**
+	 * @var Bool
+	 */
+	protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -17,7 +22,9 @@ class BoolTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = (object) array(
+		$this->object = new Bool;
+
+        $this->meta = (object) array(
 			'null' => false,
 			'type' => 'bool'
 		);
@@ -59,7 +66,7 @@ class BoolTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateNullCode()
     {
-		$this->assertEquals(Bool::NULL_CODE, Bool::validate($this->object, null));
+		$this->assertEquals(Bool::NULL_CODE, $this->object->validate($this->meta, null));
     }
 
 	/**
@@ -67,7 +74,7 @@ class BoolTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidateTypeCode($val)
 	{
-		$this->assertEquals(Bool::TYPE_CODE, Bool::validate($this->object, $val));
+		$this->assertEquals(Bool::TYPE_CODE, $this->object->validate($this->meta, $val));
 	}
 
 	/**
@@ -75,14 +82,14 @@ class BoolTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidatePass($val)
 	{
-		$this->assertTrue(Bool::validate($this->object, $val));
+		$this->assertTrue($this->object->validate($this->meta, $val));
 	}
 
 	public function testValidatePassNull()
 	{
-		$this->object->null = true;
+		$this->meta->null = true;
 
-		$this->assertTrue(Bool::validate($this->object, null));
+		$this->assertTrue($this->object->validate($this->meta, null));
 	}
 
     /**
@@ -91,7 +98,7 @@ class BoolTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransformIn($val, $in, $out)
     {
-		$this->assertEquals($in, Bool::transform($this->object, $val, true));
+		$this->assertSame($in, $this->object->transform($this->meta, $val, true));
     }
 
 	/**
@@ -100,7 +107,7 @@ class BoolTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testTransformOut($val, $in, $out)
 	{
-		$this->assertEquals($out, Bool::transform($this->object, $val, false));
+		$this->assertSame($out, $this->object->transform($this->meta, $val, false));
 	}
 
 }

@@ -8,7 +8,8 @@
 
 namespace Gacela\DataSource;
 
-class Resource {
+class Resource
+{
 
 	protected $_meta = array();
 

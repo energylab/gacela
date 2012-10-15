@@ -15,6 +15,10 @@ interface iMapper {
 
 	public function count($criteria = null);
 
+	public function getFields();
+
+	public function getRelations();
+
 	public function find($id);
 
 	public function findAll(\Gacela\Criteria $criteria = null);

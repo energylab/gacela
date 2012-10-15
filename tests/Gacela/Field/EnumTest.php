@@ -7,9 +7,14 @@ namespace Gacela\Field;
 class EnumTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Enum
+     * @var \stdClass
      */
-    protected $object;
+    protected $meta;
+
+	/**
+	 * @var Enum
+	 */
+	protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -17,7 +22,9 @@ class EnumTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = (object) array(
+		$this->object = new Enum;
+
+        $this->meta = (object) array(
 			'type' => 'enum',
 			'values' => array('one', 2, 'three', 4),
 			'null' => false
@@ -30,24 +37,24 @@ class EnumTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateValueCode()
     {
-        $this->assertEquals(Enum::VALUE_CODE, Enum::validate($this->object, 'four'));
+        $this->assertEquals(Enum::VALUE_CODE, $this->object->validate($this->meta, 'four'));
     }
 
 	public function testValidateNullCode()
 	{
-		$this->assertEquals(Enum::NULL_CODE, Enum::validate($this->object, null));
+		$this->assertEquals(Enum::NULL_CODE, $this->object->validate($this->meta, null));
 	}
 
 	public function testValidatePass()
 	{
-		$this->assertTrue(Enum::validate($this->object, 'one'));
+		$this->assertTrue($this->object->validate($this->meta, 'one'));
 	}
 
 	public function testValidatePassNull()
 	{
-		$this->object->null = true;
+		$this->meta->null = true;
 
-		$this->assertTrue(Enum::validate($this->object, null));
+		$this->assertTrue($this->object->validate($this->meta, null));
 	}
 
     /**
@@ -55,7 +62,7 @@ class EnumTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransformIn()
     {
-        $this->assertEquals(2, Enum::transform($this->object, 2, true));
+        $this->assertSame(2, $this->object->transform($this->meta, 2, true));
     }
 
 	/**
@@ -63,6 +70,6 @@ class EnumTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testTransformOut()
 	{
-		$this->assertEquals('three', Enum::transform($this->object, 'three', false));
+		$this->assertSame('three', $this->object->transform($this->meta, 'three', false));
 	}
 }

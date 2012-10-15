@@ -17,6 +17,8 @@ class Gacela
 
 	protected $_config = null;
 
+	protected $_fields = array();
+
 	protected $_namespaces = array();
 
 	protected $_sources = array();
@@ -150,7 +152,7 @@ class Gacela
 		$self = self::instance();
 
         if(isset($self->_namespaces[$parts[0]])) {
-        	if(class_exists($class)) {
+        	if(class_exists($class, false)) {
 				return $class;
 			} else {
 				$path = $parts;
@@ -172,10 +174,10 @@ class Gacela
 				// According to PSR-0 - The underscore should be part of the directory structure for class names
                 $file = $path.join(DIRECTORY_SEPARATOR, $parts).DIRECTORY_SEPARATOR.str_replace('_', DIRECTORY_SEPARATOR, $name).'.php';
 
-				$_class = $ns.$class;
+				$_class = $ns.'\\'.$class;
 
-				if(class_exists($_class)) {
-					return $class;
+				if(class_exists($_class, false)) {
+					return $_class;
 				} elseif($self->_findFile($file)) {
 					require $file;
 					return $_class;
@@ -251,6 +253,21 @@ class Gacela
 		return $this->_sources[$name];
 	}
 
+	/**
+	 * @param $meta
+	 * @return Gacela\Field\Field
+	 */
+	public function getField($meta)
+	{
+		if(!isset($this->_fields[$meta->type])) {
+			$class = $this->autoload("\\Field\\".ucfirst($meta->type));
+
+			$this->_fields[$meta->type] = new $class;
+		}
+
+		return $this->_fields[$meta->type];
+	}
+
 	public function loadConfig($name)
 	{
 		if(is_null($this->_config))
@@ -282,15 +299,14 @@ class Gacela
 	{
 		$name = ucfirst($name);
 
-		$cached = $this->cache('mapper_'.$name);
+		$cached = $this->cacheMetaData('mapper_'.$name);
 
 		if ($cached === false || is_null($cached)) {
 			$class = "\\Mapper\\" . $name;
-			$class = self::instance()->autoload($class);
 
-			$cached = new $class;
+			$cached = new $class($this);
 
-			$this->cache('mapper_'.$name, $cached);
+			$this->cacheMetaData('mapper_'.$name, $cached);
 		}
 
 		return $cached;
@@ -332,13 +348,9 @@ class Gacela
 			$type = 'database';
 		}
 
-		$class = self::instance()->autoload("\\DataSource\\".ucfirst($type));
+		$class = "\\DataSource\\".ucfirst($type);
 
-		if(!$class) {
-			throw new \Exception('Failed to load DataSource ('.$name.')');
-		}
-
-		$this->_sources[$name] = new $class($config);
+		$this->_sources[$name] = new $class($this, $config);
 
 		return $this;
 	}

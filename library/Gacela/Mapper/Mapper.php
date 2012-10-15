@@ -7,7 +7,8 @@
 
 namespace Gacela\Mapper;
 
-abstract class Mapper implements iMapper {
+abstract class Mapper implements iMapper
+{
 
 	protected static $_deletedField = 'isDeleted';
 
@@ -78,7 +79,7 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _collection($data)
 	{
-		return $this->_singleton()->makeCollection($this, $data);
+		return $this->_singleton->makeCollection($this, $data);
 	}
 
 	/**
@@ -109,7 +110,7 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _deleteResource(\Gacela\DataSource\Resource $resource, \stdClass $data)
 	{
-		$where = $this->_singleton()->autoload('Criteria');
+		$where = $this->_singleton->autoload('Criteria');
 
 		$where = new $where;
 
@@ -175,7 +176,7 @@ abstract class Mapper implements iMapper {
 			}
 		}
 
-		return $this->_singleton()
+		return $this->_singleton
 					->loadMapper($this->_singularize($name))
 					->findAllByAssociation($this->_resource->getName(), $data);
 
@@ -200,7 +201,7 @@ abstract class Mapper implements iMapper {
 	protected function _init()
 	{
 		if(is_null(static::$_field)) {
-			static::$_field = $this->_singleton()->autoload("Field\\Field");
+			static::$_field = $this->_singleton->autoload("Field\\Field");
 		}
 
 		// Everything loads in order based on what resources are needed first.
@@ -445,7 +446,7 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _load(\stdClass $data)
 	{
-		return new $this->_modelName($data);
+		return new $this->_modelName($this->_singleton, $this, $data);
 	}
 
 	protected function _pluralize($string)
@@ -522,7 +523,7 @@ abstract class Mapper implements iMapper {
 				throw new \Exception('Oops! primary key is null');
 			}
 
-			$where = $this->_singleton()->autoload('Criteria');
+			$where = $this->_singleton->autoload('Criteria');
 
 			$where = new $where;
 
@@ -536,14 +537,6 @@ abstract class Mapper implements iMapper {
 		return array($changed, $new);
 	}
 
-	/**
-	 * @return \Gacela
-	 */
-	protected function _singleton()
-	{
-		return \Gacela::instance();
-	}
-
 	protected function _singularize($string)
 	{
 		return \Gacela\Inflector::singularize($string);
@@ -554,11 +547,13 @@ abstract class Mapper implements iMapper {
 	 */
 	protected function _source()
 	{
-		return \Gacela::instance()->getDataSource($this->_source);
+		return $this->_singleton->getDataSource($this->_source);
 	}
 
-	public function __construct()
+	public function __construct(\Gacela $gacela)
 	{
+		$this->_singleton = $gacela;
+
 		$this->_init();
 
 		$this->init();
@@ -567,7 +562,7 @@ abstract class Mapper implements iMapper {
 	public function __wakeup()
 	{
 		if(is_null(static::$_field)) {
-			static::$_field = $this->_singleton()->autoload("Field\\Field");
+			static::$_field = $this->_singleton->autoload("Field\\Field");
 		}
 	}
 
@@ -599,7 +594,7 @@ abstract class Mapper implements iMapper {
 		$assoc = $this->_associations[$name];
 
 		if($delete) {
-			$criteria = $this->_singleton()->autoload('Criteria');
+			$criteria = $this->_singleton->autoload('Criteria');
 			$criteria = new $criteria;
 
 			foreach($assoc['meta']->keys as $key => $ref) {
@@ -804,14 +799,14 @@ abstract class Mapper implements iMapper {
 			$name = $this->_singularize($name);
 		}
 
-		$criteria = $this->_singleton()->autoload('Criteria');
+		$criteria = $this->_singleton->autoload('Criteria');
 		$criteria = new $criteria;
 
 		foreach($relation['meta']->keys as $key => $ref) {
 			$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
 		}
 
-		$result = $this->_singleton()->loadMapper($name)->findAll($criteria);
+		$result = $this->_singleton->loadMapper($name)->findAll($criteria);
 
 		if ($relation['meta']->type == 'belongsTo') {
 			return $result->current();
@@ -884,7 +879,7 @@ abstract class Mapper implements iMapper {
 		$assoc = $this->_associations[$name];
 
 
-		$criteria = $this->_singleton()->autoload('Criteria');
+		$criteria = $this->_singleton->autoload('Criteria');
 
 		/**
 		 * @var \Gacela\Criteria

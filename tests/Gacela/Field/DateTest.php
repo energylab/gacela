@@ -7,9 +7,11 @@ namespace Gacela\Field;
 class DateTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Date
+     * @var \stdClass
      */
-    protected $object;
+    protected $meta;
+
+	protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -17,7 +19,9 @@ class DateTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = (object) array(
+		$this->object = new Date;
+
+        $this->meta = (object) array(
 			'type' => 'date',
 			'null' => false,
 			'default' => 'current'
@@ -72,7 +76,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidatePass($time)
     {
-        $this->assertTrue(Date::validate($this->object, $time));
+        $this->assertTrue($this->object->validate($this->meta, $time));
     }
 
 	/**
@@ -80,19 +84,19 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidatePassNull()
 	{
-		$this->object->null = true;
+		$this->meta->null = true;
 
-		$this->assertTrue(Date::validate($this->object, null));
+		$this->assertTrue($this->object->validate($this->meta, null));
 	}
 
 	public function testValidateNullCode()
 	{
-		$this->assertEquals(Date::NULL_CODE, Date::validate($this->object, null));
+		$this->assertEquals(Date::NULL_CODE, $this->object->validate($this->meta, null));
 	}
 
 	public function testValidateTypeCode()
 	{
-		$this->assertEquals(Date::TYPE_CODE, Date::validate($this->object, date('c')));
+		$this->assertEquals(Date::TYPE_CODE, $this->object->validate($this->meta, date('c')));
 	}
 
 	/**
@@ -101,7 +105,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransformIn($expected, $val)
     {
-        $this->assertEquals($expected, Date::transform($this->object, $val, true));
+        $this->assertSame($expected, $this->object->transform($this->meta, $val, true));
     }
 
 	/**
@@ -111,6 +115,6 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testTransformOut($expected, $val)
 	{
-		$this->assertEquals($expected, Date::transform($this->object, $val, false));
+		$this->assertSame($expected, $this->object->transform($this->meta, $val, false));
 	}
 }

@@ -130,6 +130,6 @@ class IntTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransform($provided, $expected)
     {
-		$this->assertEquals($expected, Int::transform($this->meta, $provided));
+		$this->assertSame($expected, Int::transform($this->meta, $provided));
     }
 }
