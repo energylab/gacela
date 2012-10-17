@@ -20,6 +20,8 @@ class GacelaTest extends PHPUnit_Framework_TestCase
     {
         $this->object = Gacela::instance();
 
+		$this->object->registerNamespace('Test', __DIR__);
+
 		$this->memcache = new Memcache;
 
 		$this->memcache->addServer('127.0.0.1', 11211);
@@ -37,6 +39,19 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 			$this->memcache->flush();
 		}
     }
+
+	public function providerAutoload()
+	{
+		return array(
+			array('Mapper\User', 'Test\Mapper\User'),
+			array('Model\User', 'Test\Model\User'),
+			array('Test\Mapper\Customer', 'Test\Mapper\Customer'),
+			array('Test\Model\Customer', 'Test\Model\Customer'),
+			array('Gacela\DataSource\DataSource', 'Gacela\DataSource\DataSource'),
+			array('Field\Bool', 'Gacela\Field\Bool'),
+			array('Field\Field', 'Test\Field\Field')
+		);
+	}
 
 	public function providerSources()
 	{
@@ -73,15 +88,22 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 
     /**
      * @covers Gacela::autoload
-     * @todo   Implement testAutoload().
+	 * @dataProvider providerAutoload
      */
-    public function testAutoload()
+    public function testAutoload($class, $qualified)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertSame($qualified, $this->object->autoload($class));
     }
+
+	/**
+	 * @covers Gacela::enableCache
+	 */
+	public function testEnableCache()
+	{
+		$this->object->enableCache($this->memcache);
+
+		$this->assertAttributeInstanceOf('\Memcache','_cache', $this->object);
+	}
 
     /**
      * @covers Gacela::cacheMetaData
@@ -122,18 +144,6 @@ class GacelaTest extends PHPUnit_Framework_TestCase
      * @todo   Implement testConfigPath().
      */
     public function testConfigPath()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela::enableCache
-     * @todo   Implement testEnableCache().
-     */
-    public function testEnableCache()
     {
         // Remove the following lines when you implement this test.
         $this->markTestIncomplete(
@@ -228,7 +238,7 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 
 		);
 
-		$expected = array('Gacela' => '/var/www/gacela/library/Gacela/');
+		$expected = array('Gacela' => '/var/www/gacela/library/Gacela/', 'Test' => __DIR__.'/');
 
 		foreach($array as $ns) {
 			$this->object->registerNamespace($ns[0], $ns[1]);

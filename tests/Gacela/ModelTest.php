@@ -18,7 +18,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
 		$data = (object) array();
 
-        $this->object = new \Test\Model\User(\Gacela::instance(), new \Test\Mapper\User(\Gacela::instance()), $data);
+		$gacela = Gacela::instance();
+
+		$gacela->registerNamespace('Test', '/var/www/gacela/tests');
+
+        $this->object = new Test\Model\User($gacela, new Test\Mapper\User($gacela), $data);
     }
 
     /**
