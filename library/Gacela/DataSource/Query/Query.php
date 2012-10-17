@@ -8,7 +8,8 @@
 
 namespace Gacela\DataSource\Query;
 
-abstract class Query {
+abstract class Query
+{
 
 	protected $_binds = array();
 
