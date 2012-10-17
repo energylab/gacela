@@ -57,7 +57,7 @@ abstract class Model implements iModel
 				$value = $meta->default;
 			}
 
-			$this->_data->$name = $this->_gacela->getField($meta)->transform($meta, $value, false);
+			$this->_data->$name = $this->_gacela->getField($meta->type)->transform($meta, $value, false);
 		}
 
 		$extras = array_diff(array_keys($data), array_keys($this->_fields));
@@ -76,7 +76,7 @@ abstract class Model implements iModel
 
 			$this->_changed[] = $key;
 
-			$this->_data->$key = $this->_gacela->getField($this->_fields[$key])->transform($this->_fields[$key], $val, false);
+			$this->_data->$key = $this->_gacela->getField($this->_fields[$key]->type)->transform($this->_fields[$key], $val, false);
 		} else {
 			$this->_data->$key = $val;
 		}
@@ -260,10 +260,9 @@ abstract class Model implements iModel
 			$this->setData($data);
 		}
 
-		$field = static::$_field;
 		foreach($this->_fields as $key => $meta) {
 
-			$rs = $field::validate($meta, $this->_data->$key);
+			$rs = $this->_gacela->getField($meta->type)->validate($meta, $this->_data->$key);
 
 			if($rs !== true) {
 				$this->_errors[$key] = $rs;

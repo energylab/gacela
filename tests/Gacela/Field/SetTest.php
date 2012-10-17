@@ -6,10 +6,13 @@ namespace Gacela\Field;
  */
 class SetTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var Set
-     */
-    protected $object;
+
+    protected $meta;
+
+	/**
+	 * @var Set
+	 */
+	protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -17,7 +20,9 @@ class SetTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = (object) array(
+		$this->object = new Set;
+
+        $this->meta = (object) array(
 			'type' => 'set',
 			'values' => array(1, 'one', 'two', 2),
 			'null' => false
@@ -50,7 +55,7 @@ class SetTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateValueCode($value)
     {
-        $this->assertEquals(Set::VALUE_CODE, Set::validate($this->object, $value));
+        $this->assertEquals(Set::VALUE_CODE, $this->object->validate($this->meta, $value));
     }
 
 	/**
@@ -58,7 +63,7 @@ class SetTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidateNullCode()
 	{
-		$this->assertEquals(Set::NULL_CODE, Set::validate($this->object, null));
+		$this->assertEquals(Set::NULL_CODE, $this->object->validate($this->meta, null));
 	}
 
 	/**
@@ -67,7 +72,7 @@ class SetTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidatePass($value)
 	{
-		$this->assertTrue(Set::validate($this->object, $value));
+		$this->assertTrue($this->object->validate($this->meta, $value));
 	}
 
 	/**
@@ -75,9 +80,9 @@ class SetTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidatePassNull()
 	{
-		$this->object->null = true;
+		$this->meta->null = true;
 
-		$this->assertTrue(Set::validate($this->object, null));
+		$this->assertTrue($this->object->validate($this->meta, null));
 	}
 
     /**
@@ -86,7 +91,7 @@ class SetTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransformIn($in, $out)
     {
-		$this->assertSame($out, Set::transform($this->object, $in, true));
+		$this->assertSame($out, $this->object->transform($this->meta, $in, true));
     }
 
 	/**
@@ -95,6 +100,6 @@ class SetTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testTransformOut($value)
 	{
-		$this->assertSame($value, Set::transform($this->object, $value, false));
+		$this->assertSame($value, $this->object->transform($this->meta, $value, false));
 	}
 }

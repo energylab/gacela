@@ -27,8 +27,10 @@ class Bool extends Field
 	{
 		if($in && is_bool($value)) {
 			$value === true ? $value = 1 : $value = 0;
-		} elseif(!$in && is_int($value)) {
-			$value == 0 ? $value = false : $value = true;
+		} elseif($in && ctype_digit($value)) {
+			$value = (int) $value;
+		} elseif(!$in && !is_bool($value)) {
+			$value = (bool) $value;
 		}
 
 		return $value;

@@ -38,6 +38,22 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 		$this->memcache->flush();
     }
 
+	public function providerGetField()
+	{
+		return array(
+			array('Binary'),
+			array('Bool'),
+			array('Date'),
+			array('Decimal'),
+			array('Enum'),
+			array('Float'),
+			array('Int'),
+			array('Set'),
+			array('String'),
+			array('Time')
+		);
+	}
+
     /**
      * @covers Gacela::instance
      * @todo   Implement testInstance().
@@ -88,7 +104,7 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 
 		$this->object->cacheMetaData('test', $array);
 
-		$this->assertEquals($array, $this->object->cacheMetaData('test'));
+		$this->assertSame($array, $this->object->cacheMetaData('test'));
 	}
 
     /**
@@ -126,6 +142,15 @@ class GacelaTest extends PHPUnit_Framework_TestCase
           'This test has not been implemented yet.'
         );
     }
+
+	/**
+	 * @param $type
+	 * @dataProvider providerGetField
+	 */
+	public function testGetField($type)
+	{
+		$this->assertInstanceOf("\\Gacela\\Field\\".$type, $this->object->getField($type));
+	}
 
     /**
      * @covers Gacela::loadConfig
@@ -177,10 +202,23 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 
     /**
      * @covers Gacela::registerNamespace
-     * @todo   Implement testRegisterNamespace().
      */
-    public function testRegisterNamespace($namespace, $path)
+    public function testRegisterNamespace()
     {
-		$this->markTestIncomplete();
+		$array = array(
+			array('Test1', __DIR__, __DIR__.'/'),
+			array('App', '/var/www/app/', '/var/www/app/')
+
+		);
+
+		$expected = array('Gacela' => '/var/www/gacela/library/Gacela/');
+
+		foreach($array as $ns) {
+			$this->object->registerNamespace($ns[0], $ns[1]);
+
+			$expected[$ns[0]] = $ns[2];
+		}
+
+		$this->assertAttributeSame($expected, '_namespaces', $this->object);
     }
 }

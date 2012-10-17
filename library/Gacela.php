@@ -257,15 +257,17 @@ class Gacela
 	 * @param $meta
 	 * @return Gacela\Field\Field
 	 */
-	public function getField($meta)
+	public function getField($type)
 	{
-		if(!isset($this->_fields[$meta->type])) {
-			$class = $this->autoload("\\Field\\".ucfirst($meta->type));
+		if(!isset($this->_fields[$type])) {
+			$class = $this->autoload("Field\\".ucfirst($type));
 
-			$this->_fields[$meta->type] = new $class;
+			$this->_fields[$type] = new $class;
 		}
 
-		return $this->_fields[$meta->type];
+
+
+		return $this->_fields[$type];
 	}
 
 	public function loadConfig($name)

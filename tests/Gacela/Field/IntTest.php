@@ -10,6 +10,8 @@ class IntTest extends \PHPUnit_Framework_TestCase
 
 	protected function setUp()
 	{
+		$this->object = new Int;
+
 		$this->meta = (object) array(
 			'min' => 1,
 			'max' => 5,
@@ -69,26 +71,17 @@ class IntTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidateBoundsCode($val)
 	{
-		$this->assertEquals(
-			Int::BOUNDS_CODE,
-			Int::validate($this->meta,$val)
-		);
+		$this->assertEquals(Int::BOUNDS_CODE, $this->object->validate($this->meta,$val));
 	}
 
 	public function testValidateNullCode()
 	{
-		$this->assertEquals(
-			Int::NULL_CODE,
-			Int::validate(
-				$this->meta,
-				null
-			)
-		);
+		$this->assertEquals(Int::NULL_CODE, $this->object->validate($this->meta,null));
 	}
 
 	public function testValidateLengthCode()
 	{
-		$this->assertEquals(Int::LENGTH_CODE, Int::validate($this->meta, 1234));
+		$this->assertEquals(Int::LENGTH_CODE, $this->object->validate($this->meta, 1234));
 	}
 
 	/**
@@ -97,7 +90,7 @@ class IntTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidateTypeCode($value)
 	{
-		$this->assertEquals(Int::TYPE_CODE, Int::validate($this->meta, $value));
+		$this->assertEquals(Int::TYPE_CODE, $this->object->validate($this->meta, $value));
 	}
 
     /**
@@ -106,14 +99,14 @@ class IntTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidatePassInts($value)
     {
-		$this->assertTrue(Int::validate($this->meta, $value));
+		$this->assertTrue($this->object->validate($this->meta, $value));
     }
 
 	public function testValidatePassNull()
 	{
 		$this->meta->null = true;
 
-		$this->assertTrue(Int::validate($this->meta, null));
+		$this->assertTrue($this->object->validate($this->meta, null));
 	}
 
 	public function testValidatePassSequenced()
@@ -121,7 +114,7 @@ class IntTest extends \PHPUnit_Framework_TestCase
 		$this->meta->sequenced = true;
 		$this->meta->null = false;
 
-		$this->assertTrue(Int::validate($this->meta, null));
+		$this->assertTrue($this->object->validate($this->meta, null));
 	}
 
     /**
@@ -130,6 +123,6 @@ class IntTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransform($provided, $expected)
     {
-		$this->assertSame($expected, Int::transform($this->meta, $provided));
+		$this->assertSame($expected, $this->object->transform($this->meta, $provided));
     }
 }

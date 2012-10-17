@@ -11,7 +11,7 @@ namespace Gacela\Field;
 class String extends Field
 {
 
-	public static function validate($meta, $value)
+	public function validate($meta, $value)
 	{
 		if(empty($value) && !$meta->null) {
 			return static::NULL_CODE;
@@ -22,7 +22,7 @@ class String extends Field
 		return true;
 	}
 
-	public static function transform($meta, $value, $in = true)
+	public function transform($meta, $value, $in = true)
 	{
 		return $value;
 	}

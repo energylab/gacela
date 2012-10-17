@@ -7,11 +7,18 @@ namespace Gacela\Field;
 class StringTest extends \PHPUnit_Framework_TestCase
 {
 
+	protected $meta;
+
+	/**
+	 * @var String
+	 */
 	protected $object;
 
 	protected function setUp()
 	{
-		$this->object = (object) array(
+		$this->object = new String;
+
+		$this->meta = (object) array(
 			'type' => 'string',
 			'length' => 10,
 			'null' => false
@@ -24,24 +31,24 @@ class StringTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateNullCode()
     {
-		$this->assertEquals(String::NULL_CODE, String::validate($this->object, null));
+		$this->assertEquals(String::NULL_CODE, $this->object->validate($this->meta, null));
     }
 
 	public function testValidateLengthCode()
 	{
-		$this->assertEquals(String::LENGTH_CODE, String::validate($this->object, 'This is a string longer than 10 characters.'));
+		$this->assertEquals(String::LENGTH_CODE, $this->object->validate($this->meta, 'This is a string longer than 10 characters.'));
 	}
 
 	public function testValidatePass()
 	{
-		$this->assertTrue(String::validate($this->object, 'I am short'));
+		$this->assertTrue($this->object->validate($this->meta, 'I am short'));
 	}
 
 	public function testValidatePassNull()
 	{
-		$this->object->null = true;
+		$this->meta->null = true;
 
-		$this->assertTrue(String::validate($this->object, null));
+		$this->assertTrue($this->object->validate($this->meta, null));
 	}
 
     /**
@@ -52,13 +59,13 @@ class StringTest extends \PHPUnit_Framework_TestCase
     {
 		$string = 'I am a very fine string';
 
-        $this->assertSame($string, String::transform($this->object, $string, true));
+        $this->assertSame($string, $this->object->transform($this->meta, $string, true));
     }
 
 	public function testTransformOut()
 	{
 		$string = 'New String';
 
-		$this->assertSame($string, String::transform($this->object, $string, false));
+		$this->assertSame($string, $this->object->transform($this->meta, $string, false));
 	}
 }

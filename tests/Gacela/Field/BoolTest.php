@@ -33,6 +33,8 @@ class BoolTest extends \PHPUnit_Framework_TestCase
 	public function provider()
 	{
 		return array(
+			array('0', 0, false),
+			array('1', 1, true),
 			array(0, 0, false),
 			array(false, 0, false),
 			array(1, 1, true),

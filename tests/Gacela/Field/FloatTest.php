@@ -7,9 +7,14 @@ namespace Gacela\Field;
 class FloatTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Float
+     * @var \stdClass
      */
-    protected $object;
+    protected $meta;
+
+	/**
+	 * @var Float
+	 */
+	protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -17,7 +22,9 @@ class FloatTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = (object) array(
+		$this->object = new Float;
+
+        $this->meta = (object) array(
 			'type' => 'float',
 			'length' => 12,
 			'null' => false
@@ -46,9 +53,9 @@ class FloatTest extends \PHPUnit_Framework_TestCase
 
 	public function testValidatePassNull()
 	{
-		$this->object->null = true;
+		$this->meta->null = true;
 
-		$this->assertTrue(Float::validate($this->object, null));
+		$this->assertTrue($this->object->validate($this->meta, null));
 	}
 
     /**
@@ -57,12 +64,12 @@ class FloatTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateTypeCode($value)
     {
-        $this->assertEquals(Float::TYPE_CODE, Float::validate($this->object, $value));
+        $this->assertEquals(Float::TYPE_CODE, $this->object->validate($this->meta, $value));
     }
 
 	public function testValidateNullCode()
 	{
-		$this->assertEquals(Float::NULL_CODE, Float::validate($this->object, null));
+		$this->assertEquals(Float::NULL_CODE, $this->object->validate($this->meta, null));
 	}
 
     /**

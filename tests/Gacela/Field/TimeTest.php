@@ -6,10 +6,13 @@ namespace Gacela\Field;
  */
 class TimeTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var Time
-     */
-    protected $object;
+
+    protected $meta;
+
+	/**
+	 * @var Time
+	 */
+	protected $object;
 
 	protected function _meta()
 	{
@@ -24,6 +27,11 @@ class TimeTest extends \PHPUnit_Framework_TestCase
 		$null->null = true;
 
 		return array($not_null, $null);
+	}
+
+	protected function setUp()
+	{
+		$this->object = new Time;
 	}
 
 	public function providerInvalidFormat()
@@ -78,7 +86,7 @@ class TimeTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidatePass($meta, $value, $in)
     {
-		$this->assertTrue(Time::validate($meta, $value));
+		$this->assertTrue($this->object->validate($meta, $value));
     }
 
 	/**
@@ -90,7 +98,7 @@ class TimeTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidateInvalidFormat($meta, $value, $in)
 	{
-		$this->assertEquals(Time::FORMAT_CODE, Time::validate($meta, $value));
+		$this->assertEquals(Time::FORMAT_CODE, $this->object->validate($meta, $value));
 	}
 
 	/**
@@ -102,7 +110,7 @@ class TimeTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidateInvalidTime($meta, $value, $in)
 	{
-		$this->assertEquals(Time::TIME_CODE, Time::validate($meta, $value));
+		$this->assertEquals(Time::TIME_CODE, $this->object->validate($meta, $value));
 	}
 
 	/**
@@ -111,7 +119,7 @@ class TimeTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testValidateNull($meta, $value, $in)
 	{
-		$this->assertEquals(Time::NULL_CODE, Time::validate($meta, $value));
+		$this->assertEquals(Time::NULL_CODE, $this->object->validate($meta, $value));
 	}
 
 	/**
@@ -120,6 +128,6 @@ class TimeTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransform($meta, $value, $in)
     {
-		$this->assertSame($value, Time::transform($meta, $value, $in));
+		$this->assertSame($value, $this->object->transform($meta, $value, $in));
     }
 }

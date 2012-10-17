@@ -12,7 +12,7 @@ class Set extends Field
 {
 	const VALUE_CODE = 'invalid_value';
 
-	public static function validate($meta, $value)
+	public function validate($meta, $value)
 	{
 
 		if(is_null($value) && !$meta->null) {
@@ -26,7 +26,7 @@ class Set extends Field
 		return true;
 	}
 
-	public static function transform($meta, $value, $in = true)
+	public function transform($meta, $value, $in = true)
 	{
 		// For the database, it translates to a comma delimited string for sets
 		if($in) {

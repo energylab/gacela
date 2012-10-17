@@ -22,7 +22,7 @@ class Int extends Field
 	 * @param $value
 	 * @return bool|string
 	 */
-	public static function validate($meta, $value)
+	public function validate($meta, $value)
 	{
 		if(is_null($value)) {
 			if($meta->sequenced) {
@@ -54,7 +54,7 @@ class Int extends Field
 	 * @param bool $in
 	 * @return int|mixed|null
 	 */
-	public static function transform($meta, $value, $in = true)
+	public function transform($meta, $value, $in = true)
 	{
 		if(!is_int($value) && is_numeric($value)) {
 			$value = (int) $value;

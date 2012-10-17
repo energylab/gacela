@@ -13,7 +13,7 @@ class Time extends Field
 	const FORMAT_CODE = 'invalid_format';
 	const TIME_CODE = 'invalid_time';
 
-	public static function validate($meta, $value)
+	public function validate($meta, $value)
 	{
 		if(empty($value) && $meta->null) {
 			return true;
@@ -48,7 +48,7 @@ class Time extends Field
 		return true;
 	}
 
-	public static function transform($meta, $value, $in = true)
+	public function transform($meta, $value, $in = true)
 	{
 		return $value;
 	}
