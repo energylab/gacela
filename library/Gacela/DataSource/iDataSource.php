@@ -14,7 +14,7 @@ interface iDataSource {
 	 * @abstract
 	 * @param array $config
 	 */
-	public function __construct(array $config);
+	public function __construct(\Gacela $gacela, \Gacela\DataSource\Adapter\iAdapter $adapter, array $config);
 
 	/**
 	 * @abstract

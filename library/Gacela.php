@@ -247,7 +247,7 @@ class Gacela
 	public function getDataSource($name)
 	{
 		if(!isset($this->_sources[$name])) {
-			throw new Exception("Invalid Data Source {$name} Referenced");
+			throw new Gacela\Exception("Invalid Data Source {$name} Referenced");
 		}
 
 		return $this->_sources[$name];
@@ -264,8 +264,6 @@ class Gacela
 
 			$this->_fields[$type] = new $class;
 		}
-
-
 
 		return $this->_fields[$type];
 	}
@@ -346,13 +344,15 @@ class Gacela
 		$config['name'] = $name;
 		$config['type'] = $type;
 
-		if(in_array($type, array('mysql', 'mssql', 'postgresql', 'oracle'))) {
+		if(in_array($type, array('mysql', 'mssql', 'postgres', 'oracle'))) {
 			$type = 'database';
 		}
 
-		$class = "\\DataSource\\".ucfirst($type);
+		$class = $this->autoload("DataSource\\".ucfirst($type));
 
-		$this->_sources[$name] = new $class($this, $config);
+		$adapter = $this->autoload("DataSource\\Adapter\\".ucfirst($config['type']));
+
+		$this->_sources[$name] = new $class($this, new $adapter($this, (object) $config), $config);
 
 		return $this;
 	}

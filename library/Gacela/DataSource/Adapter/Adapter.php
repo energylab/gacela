@@ -8,7 +8,8 @@
 
 namespace Gacela\DataSource\Adapter;
 
-abstract class Adapter implements iAdapter {
+abstract class Adapter implements iAdapter
+{
 
 	protected $_config = null;
 

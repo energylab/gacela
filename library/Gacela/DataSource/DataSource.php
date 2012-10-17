@@ -15,13 +15,21 @@ abstract class DataSource implements iDataSource
 
 	protected $_resources = array();
 
-	protected $_driver;
+	/**
+	 * @var \Gacela\DataSource\Adapter\Adapter
+	 */
+	protected $_adapter;
+
+	/**
+	 * @var \Gacela
+	 */
+	protected $_gacela;
 
 	protected $_lastQuery = array();
 
 	protected function _cache($name, $key, $data = null)
 	{
-		$instance = $this->_singleton();
+		$instance = $this->_gacela;
 
 		$version = $instance->cache($name . '_version');
 
@@ -47,7 +55,7 @@ abstract class DataSource implements iDataSource
 
 	protected function _incrementCache($name)
 	{
-		$instance = $this->_singleton();
+		$instance = $this->_gacela;
 
 		$cached = $instance->cache($name.'_version');
 
@@ -56,18 +64,6 @@ abstract class DataSource implements iDataSource
 		}
 
 		$instance->incrementCache($name.'_version');
-	}
-
-	protected function _driver()
-	{
-		if(empty($this->_driver))
-		{
-			$adapter = $this->_singleton()->autoload("DataSource\\Adapter\\".ucfirst($this->_config->type));
-
-			$this->_driver = new $adapter($this->_config);
-		}
-
-		return $this->_driver;
 	}
 
 	protected function _setLastQuery($query, $args = null)
@@ -82,13 +78,12 @@ abstract class DataSource implements iDataSource
 		return hash('whirlpool', serialize(array($this->_lastQuery['query'], $this->_lastQuery['args'])));
 	}
 
-	protected function _singleton()
+	public function __construct(\Gacela $gacela, \Gacela\DataSource\Adapter\iAdapter $adapter, array $config)
 	{
-		return \Gacela::instance();
-	}
+		$this->_gacela = $gacela;
 
-	public function __construct(array $config)
-	{
+		$this->_adapter = $adapter;
+
 		$this->_config = (object) $config;
 	}
 
@@ -126,7 +121,7 @@ abstract class DataSource implements iDataSource
 		$string .= ';';
 
 		if($write) {
-			$handle = fopen($this->_singleton()->configPath().$name.'.php', 'w+');
+			$handle = fopen($this->_gacela->configPath().$name.'.php', 'w+');
 
 			if(!fwrite($handle, $string)) {
 				return false;
@@ -151,14 +146,14 @@ abstract class DataSource implements iDataSource
 	 */
 	public function loadResource($name, $force = false)
 	{
-		$cached = $this->_singleton()->cache('resource_'.$name);
+		$cached = $this->_gacela->cacheMetaData('resource_'.$name);
 
-		if($cached === false || is_null($cached))  {
-			$class = $this->_singleton()->autoload("\\DataSource\\Resource");
+		if(!$cached || $force)  {
+			$class = $this->_gacela->autoload("DataSource\\Resource");
 
-			$cached = new $class($this->_driver()->load($name, $force));
+			$cached = new $class($this->_adapter->load($name, $force));
 
-			$this->_singleton()->cache('resource_'.$name, $cached);
+			$this->_gacela->cacheMetaData($this->_config->name.'_resource_'.$name, $cached);
 		}
 
 		return $cached;
