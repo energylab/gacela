@@ -94,10 +94,8 @@ abstract class Mapper implements iMapper
 
 		$data = array_intersect_key((array) $new, $fields, array_flip($changed));
 
-		$field = static::$_field;
-
 		foreach($data as $key => $val) {
-			$data[$key] = $field::transform($fields[$key], $val);
+			$data[$key] = $this->_singleton->getField($fields[$key]->type)->transform($fields[$key], $val);
 		}
 
 		return $data;
@@ -200,10 +198,6 @@ abstract class Mapper implements iMapper
 	 */
 	protected function _init()
 	{
-		if(is_null(static::$_field)) {
-			static::$_field = $this->_singleton->autoload("Field\\Field");
-		}
-
 		// Everything loads in order based on what resources are needed first.
 		$this->_initResource()
 			->_initPrimaryKey()
@@ -557,13 +551,6 @@ abstract class Mapper implements iMapper
 		$this->_init();
 
 		$this->init();
-	}
-
-	public function __wakeup()
-	{
-		if(is_null(static::$_field)) {
-			static::$_field = $this->_singleton->autoload("Field\\Field");
-		}
 	}
 
 	/**

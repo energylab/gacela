@@ -32,8 +32,7 @@ class BinaryTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Gacela\Field\$this->object->validate
-     * @todo   Implement testValidate().
+     * @covers Gacela\Field\Binary::validate
      */
     public function testValidateLengthCode()
     {
@@ -53,7 +52,7 @@ class BinaryTest extends \PHPUnit_Framework_TestCase
 	}
 
     /**
-     * @covers Gacela\Field\$this->object->transform
+     * @covers Gacela\Field\Binary::transform
      * @todo   Implement testTransform().
      */
     public function testTransform()
