@@ -11,18 +11,6 @@ namespace Gacela\DataSource;
 
 class Salesforce extends DataSource
 {
-	protected function _driver()
-	{
-		if(empty($this->_driver))
-		{
-			$adapter = $this->_singleton()->autoload("\\DataSource\\Adapter\\".ucfirst($this->_config->type));
-
-			$this->_driver = new $adapter($this->_config);
-		}
-
-		return $this->_driver;
-	}
-
 	/**
 	 * @abstract
 	 * @param  $name
@@ -47,7 +35,7 @@ class Salesforce extends DataSource
 			$primary = array($primary['Id']);
 		}
 
-		$return = $this->_driver()->retrieve(join(',', array_keys($resource->getFields())), $resource->getName(), $primary);
+		$return = $this->_adapter->retrieve(join(',', array_keys($resource->getFields())), $resource->getName(), $primary);
 
 		if(is_null($return) OR is_object($return)) {
 			$return = array($return);
@@ -77,7 +65,7 @@ class Salesforce extends DataSource
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		$class = $this->_singleton()->autoload("\\DataSource\\Query\\Soql");
+		$class = $this->_gacela->autoload("DataSource\\Query\\Soql");
 
 		return new $class($criteria);
 	}
@@ -110,7 +98,7 @@ class Salesforce extends DataSource
 		}
 
 		try {
-			$return = $this->_driver()->query($this->_lastQuery['query']);
+			$return = $this->_adapter->query($this->_lastQuery['query']);
 
 			if(isset($return->records)) {
 				$return = $return->records;

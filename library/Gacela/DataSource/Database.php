@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Noah Goodrich
- * @date May 7, 2011
+ * @date Oct 18, 2012
  *
 */
 
@@ -9,6 +9,10 @@ namespace Gacela\DataSource;
 
 class Database extends DataSource
 {
+	/**
+	 * @var \Gacela\DataSource\Adapter\Pdo
+	 */
+	protected $_adapter;
 
 	protected function _buildFinder(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
@@ -61,7 +65,7 @@ class Database extends DataSource
 	 * @see Gacela\DataSource\iDataSource::delete()
 	 * @throws \Exception
 	 * @param  $name
-	 * @param Gacela\Criteria $where
+	 * @param \Gacela\DataSource\Query\Sql $where
 	 * @return bool
 	 */
 	public function delete($name, \Gacela\DataSource\Query\Query $where)
@@ -84,7 +88,7 @@ class Database extends DataSource
 
 	/**
 	 * @param array $primary
-	 * @param Resource\Resource $resource
+	 * @param Resource $resource
 	 * @param array $inherits
 	 * @param array $dependents
 	 * @return
@@ -105,7 +109,7 @@ class Database extends DataSource
 
 	/**
 	 * @param \Gacela\Criteria|null $criteria
-	 * @param Resource\Resource $resource
+	 * @param Resource $resource
 	 * @param array $inherits
 	 * @param array $dependents
 	 * @return
@@ -118,7 +122,7 @@ class Database extends DataSource
 	}
 
 	/**
-	 * @param Resource\Resource $resource
+	 * @param Resource $resource
 	 * @param array $relation
 	 * @param array $data
 	 * @param array $inherits
@@ -149,21 +153,24 @@ class Database extends DataSource
 	}
 
 	/**
-	 * @see \Gacela\DataSource\iDataSource::getQuery()
+	 * @param \Gacela\Criteria
+	 * @return Query\Sql
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		$class = $this->_singleton()->autoload("\\DataSource\\Query\\Sql");
+		$class = $this->_gacela->autoload("DataSource\\Query\\Sql");
 
 		return new $class($criteria);
 	}
 
 	/**
-	 * @see Gacela\DataSource\iDataSource::insert()
+	 * @param string
+	 * @param Query\Sql
+	 * @param array
 	 */
 	public function insert($name, $data, $binds = array())
 	{
-		if($data instanceof \Gacela\DataSource\Query\Query) {
+		if($data instanceof Query\Sql) {
 			list($sql, $binds) = $data->assemble();
 		} elseif(is_array($data)) {
 			list($sql, $binds) = $this->getQuery()->insert($name, $data)->assemble();
@@ -200,7 +207,7 @@ class Database extends DataSource
 					'</pre>'
 				);
 			}
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 			if($this->_adapter->inTransaction()) {
 				$this->rollbackTransaction();
 			}
@@ -286,7 +293,7 @@ class Database extends DataSource
 					$this->rollbackTransaction();
 				}
 
-				throw new \Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');
+				throw new \Gacela\Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');
 			}
 		} catch (\PDOException $e) {
 			if($this->_adapter->inTransaction()) {

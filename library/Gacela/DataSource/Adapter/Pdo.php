@@ -8,7 +8,8 @@
  */
 namespace Gacela\DataSource\Adapter;
 
-abstract class Pdo extends Adapter {
+abstract class Pdo extends Adapter
+{
 
 	public static $_separator = "_";
 
@@ -23,6 +24,33 @@ abstract class Pdo extends Adapter {
 						property_exists($this->_config, 'options') ? $this->_config->options : null
 					);
 
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function inTransaction()
+	{
+		return $this->__call('inTransaction', array());
+	}
+
+	/**
+	 * @param null $name
+	 * @return string
+	 */
+	public function lastInsertId($name = null)
+	{
+		return $this->__call('lastInsertId', array($name));
+	}
+
+	/**
+	 * @param $statement
+	 * @param array $options
+	 * @return \PDOStatement
+	 */
+	public function prepare($statement, array $options = array())
+	{
+		return $this->__call('prepare', array($statement, $options));
 	}
 
 }

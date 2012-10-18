@@ -8,7 +8,8 @@
 
 namespace Gacela\DataSource\Query;
 
-class Sql extends Query {
+class Sql extends Query
+{
 
 	protected  $_operators = array(
 		'equals' => '=',
@@ -561,6 +562,10 @@ class Sql extends Query {
 		return array($this->_sql, $this->_binds);
 	}
 
+	/**
+	 * @param array $binds
+	 * @return Sql
+	 */
 	public function bind(array $binds)
 	{
 		foreach($binds as $key => $val) {
@@ -572,7 +577,7 @@ class Sql extends Query {
 
 	/**
 	 * @param  $name
-	 * @return Database
+	 * @return Sql
 	 */
 	public function delete($name)
 	{
@@ -584,8 +589,7 @@ class Sql extends Query {
 	/**
 	 * @param  $tableName
 	 * @param array $columns
-	 * @param null $schema
-	 * @return Database
+	 * @return Sql
 	 */
 	public function from($tableName, array $columns = array())
 	{
@@ -606,7 +610,7 @@ class Sql extends Query {
 
 	/**
 	 * @param  string $column
-	 * @return Query\Sql
+	 * @return Sql
 	 */
 	public function groupBy($column)
 	{
@@ -617,6 +621,12 @@ class Sql extends Query {
 		return $this;
 	}
 
+	/**
+	 * @param $stmt
+	 * @param array $value
+	 * @param bool $or
+	 * @return Sql
+	 */
 	public function having($stmt, $value = array(), $or = false)
 	{
 		$this->_having[] = array($stmt, $value, $or);
@@ -624,6 +634,14 @@ class Sql extends Query {
 		return $this;
 	}
 
+	/**
+	 * @param $field
+	 * @param array $values
+	 * @param bool $not
+	 * @param bool $or
+	 * @return Sql
+	 * @throws \Exception
+	 */
 	public function in($field, array $values, $not = false, $or = false)
 	{
 		if(!count($values)) {
@@ -661,7 +679,7 @@ class Sql extends Query {
 	 * @param  string $on
 	 * @param array $columns
 	 * @param string $type
-	 * @return Query\Sql
+	 * @return Sql
 	 */
 	public function join($table, $on, array $columns = array(), $type = 'inner')
 	{
@@ -704,6 +722,11 @@ class Sql extends Query {
 		return $this->join($table, $on, $columns, 'right');
 	}
 
+	/**
+	 * @param $start
+	 * @param $count
+	 * @return Sql
+	 */
 	public function limit($start, $count)
 	{
 		$this->_limit = array($start, $count);
@@ -714,7 +737,7 @@ class Sql extends Query {
 	/**
 	 * @param string
 	 * @param string
-	 * @return Query\Sql
+	 * @return Sql
 	 */
 	public function orderBy($column, $direction = 'ASC')
 	{
@@ -722,6 +745,10 @@ class Sql extends Query {
 		return $this;
 	}
 
+	/**
+	 * @param array $queries
+	 * @return Sql
+	 */
 	public function union(array $queries)
 	{
 		$this->_union = $queries;
@@ -730,8 +757,9 @@ class Sql extends Query {
 	}
 
 	/**
-	 * @param Name of the table (resource) you wish to update
-	 * @param An associative array of the fields and data to update
+	 * @param $tableName Name of the table (resource) you wish to update
+	 * @param $data An associative array of the fields and data to update
+	 * @return Sql
 	 */
 	public function update($tableName, $data)
 	{
@@ -744,7 +772,7 @@ class Sql extends Query {
 	 * @param  $stmt
 	 * @param array $value
 	 * @param bool $or
-	 * @return Query\Sql
+	 * @return Sql
 	 */
 	public function where($stmt, $value = array(), $or = false)
 	{

@@ -36,7 +36,7 @@ interface iDataSource {
 	/**
 	 * @abstract
 	 * @param \Gacela\Criteria $criteria
-	 * @return \Gacela\DataSource\Query\Query
+	 * @return Query\Query
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null);
 
