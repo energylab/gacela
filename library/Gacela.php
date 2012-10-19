@@ -299,14 +299,18 @@ class Gacela
 	{
 		$name = ucfirst($name);
 
+		if(stripos($name, 'Mapper') === false) {
+			$name = "Mapper\\" . $name;
+		}
+
+		$name = $this->autoload($name);
+
 		$cached = $this->cacheMetaData('mapper_'.$name);
 
-		if ($cached === false || is_null($cached)) {
-			$class = "\\Mapper\\" . $name;
+		if (!$cached) {
+			$cached = new $name($this);
 
-			$cached = new $class($this);
-
-			$this->cacheMetaData('mapper_'.$name, $cached);
+			$this->cacheMetaData('mapper_'.str_replace('\\', '_', $name), $cached);
 		}
 
 		return $cached;

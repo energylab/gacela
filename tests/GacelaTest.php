@@ -78,6 +78,15 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 		);
 	}
 
+	public function providerMapper()
+	{
+		return array(
+			array('User', 'Test\Mapper\User'),
+			array('Mapper\Order', 'Test\Mapper\Order'),
+			array('Test\Mapper\Customer', 'Test\Mapper\Customer')
+		);
+	}
+
     /**
      * @covers Gacela::instance
      */
@@ -205,14 +214,11 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 
     /**
      * @covers Gacela::loadMapper
-     * @todo   Implement testLoadMapper().
+     * @dataProvider providerMapper
      */
-    public function testLoadMapper()
+    public function testLoadMapper($name, $expected)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertInstanceOf($expected, $this->object->loadMapper($name));
     }
 
     /**

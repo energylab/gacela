@@ -6,10 +6,6 @@ use Gacela\Mapper as M;
 
 class User extends M\Mapper
 {
-	protected $_resourceName = 'users';
-
-	protected $_resource = array();
-
 	protected function _init()
 	{
 		return $this;
