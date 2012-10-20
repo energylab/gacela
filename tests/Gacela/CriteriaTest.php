@@ -21,167 +21,140 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-    }
-
-    /**
      * @covers Gacela\Criteria::criteria
      * @todo   Implement testCriteria().
      */
     public function testCriteria()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$criteria = clone $this->object;
+
+		$criteria->isNull('test2');
+
+		$this->object->criteria($criteria);
+
+		$this->assertAttributeSame(array(array($criteria, null, null, false)), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::equals
-     * @todo   Implement testEquals().
      */
     public function testEquals()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->object->equals('test', 'test');
+
+        $this->assertAttributeSame(array(array('equals', 'test', 'test')), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::getIterator
-     * @todo   Implement testGetIterator().
      */
     public function testGetIterator()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertInstanceOf('\ArrayObject', $this->object->getIterator());
     }
 
     /**
      * @covers Gacela\Criteria::greaterThan
-     * @todo   Implement testGreaterThan().
      */
     public function testGreaterThan()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->object->greaterThan('test', 53);
+
+		$this->assertAttributeSame(array(array('greaterThan', 'test', 53)), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::in
-     * @todo   Implement testIn().
      */
     public function testIn()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$arr = array(1,2,3);
+
+		$this->object->in('test', $arr);
+
+        $this->assertAttributeSame(array(array('in', 'test', $arr)), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::isNull
-     * @todo   Implement testIsNull().
      */
     public function testIsNull()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $this->object->isNull('test');
+
+		$this->assertAttributeSame(array(array('null', 'test', false)), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::isNotNull
-     * @todo   Implement testIsNotNull().
      */
     public function testIsNotNull()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->object->isNotNull('test');
+
+		$this->assertAttributeSame(array(array('notNull', 'test')), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::lessThan
-     * @todo   Implement testLessThan().
      */
     public function testLessThan()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->object->lessThan('test', 53);
+
+		$this->assertAttributeSame(array(array('lessThan', 'test', 53)), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::like
-     * @todo   Implement testLike().
      */
     public function testLike()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->object->like('test', 'Harry');
+
+		$this->assertAttributeSame(array(array('like', 'test', 'Harry')), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::limit
-     * @todo   Implement testLimit().
      */
     public function testLimit()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->object->limit(0,50);
+
+		$this->assertAttributeSame(array(array('limit', 0, 50)), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::notEquals
-     * @todo   Implement testNotEquals().
      */
     public function testNotEquals()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->object->notEquals('test', 'test');
+
+		$this->assertAttributeSame(array(array('notEquals', 'test', 'test')), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::notIn
-     * @todo   Implement testNotIn().
      */
     public function testNotIn()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$arr = array(1,2,3);
+
+		$this->object->notIn('test', $arr);
+
+		$this->assertAttributeSame(array(array('notIn', 'test', $arr)), '_criteria', $this->object);
     }
 
     /**
      * @covers Gacela\Criteria::notLike
-     * @todo   Implement testNotLike().
      */
     public function testNotLike()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->object->notLike('test', 'Harry');
+
+		$this->assertAttributeSame(array(array('notLike', 'test', 'Harry')), '_criteria', $this->object);
     }
 
     /**
@@ -190,9 +163,8 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
      */
     public function testSort()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->object->sort('test', 'asc');
+
+		$this->assertAttributeSame(array(array('sort', 'test', 'asc')), '_criteria', $this->object);
     }
 }

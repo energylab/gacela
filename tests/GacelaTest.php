@@ -53,12 +53,11 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 		);
 	}
 
-	public function providerSources()
+	public function providerCollections()
 	{
 		return array(
-			array('mysql', 'mysql', array(), "Gacela\\DataSource\\Database"),
-		//	array('mssql', 'mssql', array(), "Gacela\\DataSource\\Database"),
-			array('salesforce', 'salesforce', array(), "Gacela\\DataSource\\Salesforce")
+			array($this->getMock('\PDOStatement'), 'Gacela\Collection\Statement'),
+			array(array(), 'Gacela\Collection\Arr')
 		);
 	}
 
@@ -84,6 +83,15 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 			array('User', 'Test\Mapper\User'),
 			array('Mapper\Order', 'Test\Mapper\Order'),
 			array('Test\Mapper\Customer', 'Test\Mapper\Customer')
+		);
+	}
+
+	public function providerSources()
+	{
+		return array(
+			array(array('name' => 'mysql', 'type' => 'mysql'), "Gacela\\DataSource\\Database"),
+			//	array('mssql', 'mssql', array(), "Gacela\\DataSource\\Database"),
+			array(array('name' => 'salesforce', 'type' => 'salesforce'), "Gacela\\DataSource\\Salesforce")
 		);
 	}
 
@@ -164,11 +172,11 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 	 * @covers Gacela::registerDataSource
 	 * @dataProvider providerSources
 	 */
-	public function testRegisterDataSource($name, $type, $config, $class)
+	public function testRegisterDataSource($config, $class)
 	{
-		$this->object->registerDataSource($name, $type, $config);
+		$this->object->registerDataSource($config);
 
-		$this->assertInstanceOf($class, $this->object->getDataSource($name));
+		$this->assertInstanceOf($class, $this->object->getDataSource($config['name']));
 	}
 
     /**
@@ -176,11 +184,11 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 	 * @dataProvider providerSources
 	 * @depends testRegisterDataSource
      */
-    public function testGetDataSource($name, $type, $config, $class)
+    public function testGetDataSource($config, $class)
     {
-		$this->object->registerDataSource($name, $type, $config);
+		$this->object->registerDataSource($config);
 
-		$this->assertInstanceOf($class, $this->object->getDataSource($name));
+		$this->assertInstanceOf($class, $this->object->getDataSource($config['name']));
     }
 
 	/**
@@ -223,15 +231,25 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 
     /**
      * @covers Gacela::makeCollection
-     * @todo   Implement testMakeCollection().
+     * @dataProvider providerCollections
      */
-    public function testMakeCollection()
+    public function testMakeCollection($data, $expected)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$mapper = new Test\Mapper\User($this->object);
+
+		$this->assertInstanceOf($expected, $this->object->makeCollection($mapper, $data));
     }
+
+	/**
+	 * @covers Gacela::makeCollection
+	 * @expectedException Gacela\Exception
+	 */
+	public function testMakeCollectionThrowsException()
+	{
+		$mapper = new Test\Mapper\User($this->object);
+
+		$this->object->makeCollection($mapper, new \ArrayObject());
+	}
 
     /**
      * @covers Gacela::registerNamespace

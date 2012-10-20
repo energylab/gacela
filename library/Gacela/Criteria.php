@@ -8,7 +8,8 @@
 
 namespace Gacela;
 
-class Criteria implements \IteratorAggregate {
+class Criteria implements \IteratorAggregate
+{
 
 	protected $_criteria = array();
 
@@ -44,6 +45,11 @@ class Criteria implements \IteratorAggregate {
 		return $this->_addCriterion('greaterThan', func_get_args());
 	}
 
+	public function greaterThanOrEqualTo($field, $value, $or = false)
+	{
+		$this->_addCriterion('greaterThanOrEqualTo', func_get_args());
+	}
+
 	public function in($field, array $value, $or = false)
 	{
 		return $this->_addCriterion('in', func_get_args());
@@ -68,6 +74,11 @@ class Criteria implements \IteratorAggregate {
 	public function lessThan($field, $value, $or = false)
 	{
 		return $this->_addCriterion('lessThan', func_get_args());
+	}
+
+	public function lessThanOrEqualTo($field, $value, $or = false)
+	{
+		return $this->_addCriterion('lessThanOrEqualTo', func_get_args());
 	}
 
 	public function like($field, $value, $or = false)

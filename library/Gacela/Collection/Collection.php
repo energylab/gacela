@@ -8,7 +8,8 @@
 
 namespace Gacela\Collection;
 
-abstract class Collection implements \SeekableIterator, \Countable {
+abstract class Collection implements \SeekableIterator, \Countable
+{
 
 	/**
 	 * @var \Gacela\Mapper\Mapper

@@ -327,11 +327,11 @@ class Gacela
 	public function makeCollection($mapper, $data)
 	{
 		if($data instanceof \PDOStatement) {
-			$col = \Gacela::instance()->autoload("\\Collection\\Statement");
+			$col = Gacela::instance()->autoload("Collection\\Statement");
 		} elseif (is_array($data)) {
-			$col = \Gacela::instance()->autoload("\\Collection\\Arr");
+			$col = Gacela::instance()->autoload("Collection\\Arr");
 		} else {
-			throw new \Exception('Collection type is not defined!');
+			throw new Gacela\Exception('Collection type is not defined!');
 		}
 
 		return new $col($mapper, $data);
@@ -343,20 +343,19 @@ class Gacela
 	 * @param  array $config Configuration arguments required by the DataSource
 	 * @return Gacela
 	 */
-	public function registerDataSource($name, $type, $config)
+	public function registerDataSource(array $config)
 	{
-		$config['name'] = $name;
-		$config['type'] = $type;
-
-		if(in_array($type, array('mysql', 'mssql', 'postgres', 'oracle'))) {
+		if(in_array($config['type'], array('mysql', 'mssql', 'postgres', 'oracle'))) {
 			$type = 'database';
+		} else {
+			$type = $config['type'];
 		}
 
 		$class = $this->autoload("DataSource\\".ucfirst($type));
 
 		$adapter = $this->autoload("DataSource\\Adapter\\".ucfirst($config['type']));
 
-		$this->_sources[$name] = new $class($this, new $adapter($this, (object) $config), $config);
+		$this->_sources[$config['name']] = new $class($this, new $adapter($this, (object) $config), $config);
 
 		return $this;
 	}
