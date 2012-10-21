@@ -170,26 +170,17 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 
 	/**
 	 * @covers Gacela::registerDataSource
+	 * @covers Gacela::getDataSource
 	 * @dataProvider providerSources
 	 */
 	public function testRegisterDataSource($config, $class)
 	{
-		$this->object->registerDataSource($config);
+		$source = Gacela::createDataSource($config);
+
+		$this->object->registerDataSource($source);
 
 		$this->assertInstanceOf($class, $this->object->getDataSource($config['name']));
 	}
-
-    /**
-     * @covers Gacela::getDataSource
-	 * @dataProvider providerSources
-	 * @depends testRegisterDataSource
-     */
-    public function testGetDataSource($config, $class)
-    {
-		$this->object->registerDataSource($config);
-
-		$this->assertInstanceOf($class, $this->object->getDataSource($config['name']));
-    }
 
 	/**
 	 * @expectedException \Gacela\Exception

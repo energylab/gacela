@@ -35,6 +35,12 @@ interface iDataSource {
 
 	/**
 	 * @abstract
+	 * @return string
+	 */
+	public function getName();
+
+	/**
+	 * @abstract
 	 * @param \Gacela\Criteria $criteria
 	 * @return Query\Query
 	 */

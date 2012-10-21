@@ -136,6 +136,11 @@ abstract class DataSource implements iDataSource
 		return false;
 	}
 
+	public function getName()
+	{
+		return $this->_config->name;
+	}
+
 	public function lastQuery()
 	{
 		return $this->_lastQuery;

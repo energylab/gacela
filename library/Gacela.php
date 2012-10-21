@@ -67,6 +67,21 @@ class Gacela
         return file_exists($file) && is_readable($file);
     }
 
+	public static function createDataSource(array $config)
+	{
+		if(in_array($config['type'], array('mysql', 'mssql', 'postgres', 'oracle'))) {
+			$type = 'database';
+		} else {
+			$type = $config['type'];
+		}
+
+		$class = static::instance()->autoload("DataSource\\".ucfirst($type));
+
+		$adapter = static::instance()->autoload("DataSource\\Adapter\\".ucfirst($config['type']));
+
+		return new $class(static::instance(), new $adapter(static::instance(), (object) $config), $config);
+	}
+
 	/**
 	 * @static
 	 * @param \Gacela\DataSource\Query\Query $query
@@ -343,21 +358,9 @@ class Gacela
 	 * @param  array $config Configuration arguments required by the DataSource
 	 * @return Gacela
 	 */
-	public function registerDataSource(array $config)
+	public function registerDataSource(Gacela\DataSource\iDataSource $source)
 	{
-		if(in_array($config['type'], array('mysql', 'mssql', 'postgres', 'oracle'))) {
-			$type = 'database';
-		} else {
-			$type = $config['type'];
-		}
-
-		$class = $this->autoload("DataSource\\".ucfirst($type));
-
-		$adapter = $this->autoload("DataSource\\Adapter\\".ucfirst($config['type']));
-
-		$this->_sources[$config['name']] = new $class($this, new $adapter($this, (object) $config), $config);
-
-		return $this;
+		$this->_sources[$source->getName()] = $source;
 	}
 
 	/**
