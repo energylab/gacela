@@ -320,12 +320,12 @@ class Gacela
 
 		$name = $this->autoload($name);
 
-		$cached = $this->cacheMetaData('mapper_'.$name);
+		$cached = $this->cacheMetaData($name);
 
 		if (!$cached) {
 			$cached = new $name();
 
-			$this->cacheMetaData('mapper_'.str_replace('\\', '_', $name), $cached);
+			$this->cacheMetaData(str_replace('\\', '_', $name), $cached);
 		}
 
 		return $cached;

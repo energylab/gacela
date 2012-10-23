@@ -215,10 +215,28 @@ class GacelaTest extends PHPUnit_Framework_TestCase
      * @covers Gacela::loadMapper
      * @dataProvider providerMapper
      */
-    public function testLoadMapper($name, $expected)
+    public function testLoadMapperWithoutMemcache($name, $expected)
     {
 		$this->assertInstanceOf($expected, $this->object->loadMapper($name));
     }
+
+	/**
+	 * @param $name
+	 * @param $expected
+	 * @dataProvider providerMapper
+	 */
+	public function testLoadMapperWithMemcache($name, $expected)
+	{
+		$expected = str_replace('\\', '_', $expected);
+
+		$this->assertFalse($this->memcache->get($expected));
+
+		$this->object->enableCache($this->memcache);
+
+		$mapper = $this->object->loadMapper($name);
+
+		$this->assertEquals($mapper, $this->memcache->get($expected));
+	}
 
     /**
      * @covers Gacela::makeCollection
