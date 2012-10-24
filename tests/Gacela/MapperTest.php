@@ -65,8 +65,6 @@ class MapperTest extends \PHPUnit_Framework_TestCase
 		);
 
 		$gacela->registerDataSource($source);
-
-        //$this->object = new T\Mapper(\Gacela::instance());
     }
 
 	public function testSleep()
