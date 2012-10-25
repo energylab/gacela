@@ -12,60 +12,23 @@ class MapperTest extends \PHPUnit_Framework_TestCase
      */
     protected $object;
 
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
-    protected function setUp()
-    {
-		$gacela = \Gacela::instance();
+	public function providerFind()
+	{
+		return array(
+			array('course', 1),
+			array('house', 2),
+			array('wizard', 3)
+		);
+	}
 
-		$arr = array(
-			'name' => 'db',
-			'type' => 'mysql',
-			'schema' => 'gacela',
-			'user' => '',
-			'password' => ''
+	public function providerLoad()
+	{
+		return array(
+			array('course', (object) array('courseId' => 1, 'wizardId' => 4, 'subject' => 'Care of Magical Teachers')),
+			array('house', (object) array('houseId' => 1, 'houseName' => 'Gryffindor')),
 		);
 
-		$source = $this->getMock(
-			'Gacela\DataSource\Database',
-			array(),
-			array(
-				$gacela,
-				$this->getMock(
-					'\Gacela\DataSource\Adapter\Mysql',
-					array(),
-					array(
-						$gacela,
-						(object) $arr
-					)
-				),
-				$arr
-			)
-		);
-
-		$source->expects($this->once())
-			->method('getName')
-			->will($this->returnValue('db'));
-
-		$source->expects($this->any())
-			->method('loadResource')
-			->will(
-			$this->returnValue(
-				new \Gacela\DataSource\Resource(
-					array(
-						'name' => 'houses',
-						'columns' => array(),
-						'relations' => array(),
-						'primary' => array('id')
-					)
-				)
-			)
-		);
-
-		$gacela->registerDataSource($source);
-    }
+	}
 
 	public function testSleep()
 	{
@@ -141,14 +104,15 @@ class MapperTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Gacela\Mapper\Mapper::find
-     * @todo   Implement testFind().
+	 * @dataProvider providerFind
      */
-    public function testFind()
+    public function testFind($mapper, $primary)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$model = \Gacela::instance()->loadMapper($mapper)->find($primary);
+
+		$key = $mapper.'Id';
+
+		$this->assertSame($primary, $model->$key);
     }
 
     /**
@@ -224,27 +188,12 @@ class MapperTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Gacela\Mapper\Mapper::init
-     * @todo   Implement testInit().
-     */
-    public function testInit()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
      * @covers Gacela\Mapper\Mapper::load
-     * @todo   Implement testLoad().
+	 * @dataProvider providerLoad
      */
-    public function testLoad()
+    public function testLoad($mapper, $data)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertAttributeEquals($data, '_data', \Gacela::instance()->loadMapper($mapper)->load($data));
     }
 
     /**
