@@ -31,6 +31,37 @@ class ArrTest extends \PHPUnit_Framework_TestCase
         $this->object = new Arr(\Gacela::instance()->loadMapper('house'), $arr);
     }
 
+	/**
+	 * @covers \Gacela\Collection\Collection::__construct
+	 */
+	public function test__construct()
+	{
+		$this->assertAttributeInstanceOf('\App\Mapper\House', '_mapper', $this->object);
+
+		$this->assertAttributeInternalType('array', '_data', $this->object);
+	}
+
+	public function testAsArrayOneField()
+	{
+		$arr = $this->object->asArray('houseId');
+
+		$this->assertSame(array(1,2,3,4), $arr);
+	}
+
+	public function testAsArrayMultipleFields()
+	{
+		$arr = $this->object->asArray('houseId', 'houseName');
+
+		$arr2 = array(
+			array('houseId' => 1, 'houseName' => 'Gryffindor'),
+			array('houseId' => 2, 'houseName' => 'Hufflepuff'),
+			array('houseId' => 3, 'houseName' => 'Ravenclaw'),
+			array('houseId' => 4, 'houseName' => 'Slytherin')
+		);
+
+		$this->assertSame($arr2, $arr);
+	}
+
     /**
      * @covers Gacela\Collection\Arr::count
      */
