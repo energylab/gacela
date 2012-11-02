@@ -10,6 +10,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
      */
     protected $object;
 
+	/**
+	 * @var Gacela
+	 */
+	protected $gacela;
+
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
@@ -18,11 +23,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
 		$data = (object) array();
 
-		$gacela = Gacela::instance();
+		$this->gacela = Gacela::instance();
 
-		$gacela->registerNamespace('Test', '/var/www/gacela/tests');
+		$this->gacela->registerNamespace('Test', '/var/www/gacela/tests');
 
-        $this->object = new Test\Model\User($gacela, new Test\Mapper\User($gacela), $data);
+        $this->object = new Test\Model\User($this->gacela, new Test\Mapper\User($this->gacela), $data);
     }
 
     /**
@@ -46,6 +51,23 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		);
 
 		$this->assertAttributeEquals((object) $defaults, '_data', $this->object);
+	}
+
+	public function test__constructExtraFields()
+	{
+		$data = array(
+			'id' => null,
+			'is_admin' => false,
+			'role' => 'user',
+			'affiliate' => 'gacela',
+			'name' => 'Test User',
+			'address' => null,
+			'phone' => 1236549878
+		);
+
+		$this->object = new Test\Model\User($this->gacela, new Test\Mapper\User($this->gacela), $data);
+
+		$this->assertAttributeEquals((object) $data, '_data', $this->object);
 	}
 
     /**

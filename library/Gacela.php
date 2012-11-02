@@ -166,7 +166,7 @@ class Gacela
 
 		$self = self::instance();
 
-        if(isset($self->_namespaces[$parts[0]])) {
+        if(count($parts) && isset($self->_namespaces[$parts[0]])) {
         	if(class_exists($class, false)) {
 				return $class;
 			} else {
@@ -361,6 +361,8 @@ class Gacela
 	public function registerDataSource(Gacela\DataSource\iDataSource $source)
 	{
 		$this->_sources[$source->getName()] = $source;
+
+		return $this;
 	}
 
 	/**

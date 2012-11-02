@@ -102,6 +102,7 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 	{
 		return array
 		(
+			array('primary', '0', '4294967295', 10, true),
 			array('utiny',  '0', '255', 3, true),
 			array('tiny', '-128', '127', 3, false),
 			array('usmall','0', '65535', 5, true),
@@ -125,6 +126,42 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 			array('mediumtext', 16777215),
 			array('longtext', 4294967295)
 		);
+	}
+
+	/**
+	 * @expectedException \PDOException
+	 */
+	public function testConstructThrowsPDOExceptionOnConnection()
+	{
+		$this->object = new Mysql(
+			\Gacela::instance(),
+			array(
+				'schema' => 'invalid',
+				'host' => 'localhost',
+				'password' => 'invalid',
+				'user' => 'invalid',
+				'type' => 'mysql'
+			)
+		);
+
+		$meta = $this->object->load('types');
+
+		$this->setExpectedException('\PDOException');
+	}
+
+	public function testPrimaryIsPrimary()
+	{
+		$this->assertSame(array('primary'), $this->primary);
+	}
+
+	public function testPrimaryKeySequenced()
+	{
+		$this->assertTrue($this->cols['primary']->sequenced);
+	}
+
+	public function testPrimaryKeyIsNotNullable()
+	{
+		$this->assertFalse($this->cols['primary']->null);
 	}
 
 	/**

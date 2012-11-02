@@ -10,7 +10,8 @@ namespace App\Mapper;
 
 use Gacela\Mapper\Mapper as M;
 
-class House extends M {
+class House extends M
+{
 
 	public function findNameAsc(\Gacela\Criteria $criteria = null)
 	{
@@ -18,7 +19,6 @@ class House extends M {
 					->orderBy('houseName');
 
 		return $this->_collection(
-						$this,
 						$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
 					);
 	}

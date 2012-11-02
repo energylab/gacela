@@ -19,6 +19,18 @@ $source = Gacela::createDataSource(
 	)
 );
 
+$test = Gacela::createDataSource(
+	array(
+		'type' => 'mysql',
+		'name' => 'test',
+		'user' => 'gacela',
+		'password' => 'gacela',
+		'schema' => 'test',
+		'host' => 'localhost'
+	)
+);
+
 Gacela::instance()->registerDataSource($source);
+Gacela::instance()->registerDataSource($test);
 
 Gacela::instance()->registerNamespace('App', __DIR__.'/../samples/');

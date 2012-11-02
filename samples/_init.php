@@ -12,10 +12,12 @@ $gacela = Gacela::instance();
 
 $gacela->registerNamespace('App', __DIR__);
 
-$gacela->registerDataSource(
-	'db',
-	'mysql',
+set_exception_handler(array('Gacela\Exception', 'handler'));
+
+$db = $gacela::createDataSource(
 	array(
+		'name' => 'db',
+		'type' => 'mysql',
 		'schema' => 'gacela',
 		'host' => 'localhost',
 		'password' => 'gacela',
@@ -23,10 +25,11 @@ $gacela->registerDataSource(
 	)
 );
 
-$gacela->registerDataSource(
-	'wiki',
-	'mysql',
+
+$wiki = $gacela::createDataSource(
 	array(
+		'name' => 'wiki',
+		'type' => 'mysql',
 		'schema' => 'wiki',
 		'host' => 'localhost',
 		'user' => 'gacela',
@@ -34,16 +37,20 @@ $gacela->registerDataSource(
 	)
 );
 
-$gacela->registerDataSource(
-	'employees',
-	'mysql',
+$employees = $gacela::createDataSource(
 	array(
+		'name' => 'employees',
+		'type' => 'mysql',
 		'schema' => 'employees',
 		'host' => 'localhost',
 		'user' => 'gacela',
 		'passwword' => 'gacela',
 	)
 );
+
+$gacela->registerDataSource($db)
+	->registerDataSource($wiki)
+	->registerDataSource($employees);
 
 $memcache = new Memcache;
 

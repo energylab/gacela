@@ -82,25 +82,6 @@ abstract class Mapper implements iMapper
 
 	/**
 	 * @param \Gacela\DataSource\Resource $resource
-	 * @param $changed
-	 * @param $new
-	 * @return array
-	 */
-	protected function _dataToSave(\Gacela\DataSource\Resource $resource, $changed, $new)
-	{
-		$fields = $resource->getFields();
-
-		$data = array_intersect_key((array) $new, $fields, array_flip($changed));
-
-		foreach($data as $key => $val) {
-			$data[$key] = $this->_gacela()->getField($fields[$key]->type)->transform($fields[$key], $val);
-		}
-
-		return $data;
-	}
-
-	/**
-	 * @param \Gacela\DataSource\Resource $resource
 	 * @param \stdClass $data
 	 * @return bool
 	 */
@@ -121,31 +102,6 @@ abstract class Mapper implements iMapper
 		}
 
 		return $this->_source()->delete($resource->getName(), $this->_source()->getQuery($where));
-	}
-
-	/**
-	 * @param \Gacela\DataSource\Resource $resource
-	 * @param array|stdClass $data
-	 * @return bool
-	 */
-	protected function _doUpdate(\Gacela\DataSource\Resource $resource, $data)
-	{
-		$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $data);
-		$fields = $resource->getFields();
-
-		if(is_null($primary)) {
-			return false;
-		} elseif($fields[key($primary)]->sequenced === false) {
-			$rs = $this->_source()->find($primary, $resource);
-
-			if(count($rs)) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	/**
@@ -483,24 +439,45 @@ abstract class Mapper implements iMapper
 	}
 
 	/**
-	 * @param $resource
-	 * @param $changed
-	 * @param $new
-	 * @param $old
-	 * @return array|bool|int
+	 * @param \Gacela\DataSource\Resource $resource
+	 * @param array $changed
+	 * @param \stdClass $new
+	 * @param array $old
+	 * @return array|bool
 	 * @throws \Exception
 	 */
-	protected function _saveResource($resource, $changed, $new, $old)
+	protected function _saveRecord($resource, $changed, $new, $old)
 	{
-		$data = $this->_dataToSave($resource, $changed, $new);
+		$fields = $resource->getFields();
+
+		$data = array_intersect_key((array) $new, $fields, array_flip($changed));
+
+		foreach($data as $key => $val) {
+			$data[$key] = $this->_gacela()->getField($fields[$key]->type)->transform($fields[$key], $val);
+		}
 
 		if(empty($data)) {
-			return array($changed, $new);
+			return true;
 		}
 
 		$test = array_merge((array) $new, $old);
 
-		if($this->_doUpdate($resource, $test) === false) {
+		$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $test);
+		$fields = $resource->getFields();
+
+		$update = true;
+		if(is_null($primary)) {
+			$update = false;
+		} elseif($fields[key($primary)]->sequenced === false) {
+			$rs = $this->_source()->find($primary, $resource);
+
+			if(!count($rs)) {
+				$update = false;
+			}
+		}
+
+		// Insert the record
+		if($update === false) {
 			$rs = $this->_source()->insert($resource->getName(), $data);
 
 			if($rs === false) {
@@ -513,6 +490,7 @@ abstract class Mapper implements iMapper
 				$new->{current($resource->getPrimaryKey())} = $rs;
 				$changed[] = current($resource->getPrimaryKey());
 			}
+		// Update the existing record
 		} else {
 			$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $test);
 
@@ -788,6 +766,7 @@ abstract class Mapper implements iMapper
 		}
 
 		$criteria = $this->_gacela()->autoload('Criteria');
+
 		$criteria = new $criteria;
 
 		foreach($relation['meta']->keys as $key => $ref) {
@@ -802,7 +781,7 @@ abstract class Mapper implements iMapper
 			return $result;
 		}
 
-		throw new \Exception('Invalid Relationship Type!');
+		throw new \Gacela\Exception('Invalid Relationship Type!');
 	}
 
 	/**
@@ -937,7 +916,7 @@ abstract class Mapper implements iMapper
 				}
 			}
 
-			$rs = $this->_saveResource($dependent['resource'], $data['changed'], (object) $data['new'], $data['old']);
+			$rs = $this->_saveRecord($dependent['resource'], $data['changed'], (object) $data['new'], $data['old']);
 
 			if (is_array($rs)) {
 				foreach($dependent['meta']->keys as $key => $ref) {
@@ -948,14 +927,14 @@ abstract class Mapper implements iMapper
 		}
 
 		foreach($this->_inherits as $parent) {
-			$rs = $this->_saveResource($parent['resource'], $changed, $new, $old);
+			$rs = $this->_saveRecord($parent['resource'], $changed, $new, $old);
 
 			if(is_array($rs)) {
 				list($changed, $new) = $rs;
 			}
 		}
 
-		$rs = $this->_saveResource($this->_resource, $changed, $new, $old);
+		$rs = $this->_saveRecord($this->_resource, $changed, $new, $old);
 
 		if($rs === false) {
 			$this->_source()->rollbackTransaction();

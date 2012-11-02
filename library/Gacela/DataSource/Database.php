@@ -93,7 +93,7 @@ class Database extends DataSource
 	 * @param array $dependents
 	 * @return
 	 */
-	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
+	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
 	{
 		$query = $this->getQuery();
 

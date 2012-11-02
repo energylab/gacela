@@ -43,6 +43,8 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 	public function providerAutoload()
 	{
 		return array(
+			array('Criteria', 'Gacela\Criteria'),
+			array('Inflector', 'Gacela\Inflector'),
 			array('Mapper\User', 'Test\Mapper\User'),
 			array('Model\User', 'Test\Model\User'),
 			array('Test\Mapper\Customer', 'Test\Mapper\Customer'),

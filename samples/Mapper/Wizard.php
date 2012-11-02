@@ -1,19 +1,19 @@
 <?php
-/** 
+/**
  * @author noah
  * @date 4/23/11
  * @brief
- * 
+ *
 */
 
 namespace App\Mapper;
 
 use Gacela\Mapper\Mapper as M;
 
-class Wizard extends M {
-
+class Wizard extends M
+{
 	protected $_dependents = array('address');
-	
+
 	protected function _load(\stdClass $data)
 	{
 		if(!empty($data->role) && $data->role == 'student' && get_class($this) != 'App\Mapper\Student') {
@@ -31,6 +31,6 @@ class Wizard extends M {
 
 		$model = '\\App\\Model\\'.$model;
 
-		return new $model($data);
+		return new $model($this->_gacela(), $this, $data);
 	}
 }

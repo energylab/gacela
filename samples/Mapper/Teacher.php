@@ -7,7 +7,8 @@
 
 namespace App\Mapper;
 
-class Teacher extends Wizard {
+class Teacher extends Wizard
+{
 
 	protected $_resourceName = 'wizards';
 
@@ -30,7 +31,6 @@ class Teacher extends Wizard {
 					->where('EXISTS (SELECT * FROM courses WHERE courses.wizardId = wizards.wizardId)');
 
 		return $this->_collection(
-						$this,
 						$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
 					);
 	}
@@ -47,10 +47,7 @@ class Teacher extends Wizard {
 					->where('role = :role', array(':role' =>  'teacher'))
 					->where("NOT EXISTS ({$existsQuery[0]})");
 
-				$coll = $this->_singleton()->autoload('\\Collection');
-
 		return $this->_collection(
-						$this,
 						$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
 					);
 	}

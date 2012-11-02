@@ -1,12 +1,13 @@
 <?php
-/** 
+/**
  * @author noah
  * @date 5/2/11
  * @brief
- * 
+ *
  */
 
-class Belongsto extends Controller {
+class Belongsto extends Controller
+{
 
 	public function index()
 	{
@@ -19,13 +20,13 @@ class Belongsto extends Controller {
 	public function form($id = null)
 	{
 		$this->course = Gacela::instance()->loadMapper('course')->find($id);
-		
+
 		$this->teachers = Gacela::instance()->loadMapper('teacher')->findAll();
 
 		$this->template = 'belongsto_form';
 		$this->title = 'Belongs To Relationships - Add a Course';
 		$this->message = '';
-		
+
 		if(count($_POST)) {
 			$this->course->subject = $_POST['subject'];
 			$this->course->wizardId = $_POST['teacherId'];

@@ -1,0 +1,19 @@
+USE test;
+
+DROP TABLE peeps;
+DROP TABLE contacts;
+
+CREATE TABLE contacts (
+	email VARCHAR(150) NOT NULL PRIMARY KEY,
+	street VARCHAR(150) NULL,
+	phone CHAR(14) NOT NULL
+) ENGINE=INNODB;
+
+CREATE TABLE peeps (
+	`code` CHAR(8) NOT NULL PRIMARY KEY,
+	fname VARCHAR(150) NOT NULL,
+	lname VARCHAR(150) NOT NULL,
+	email VARCHAR(150) NULL,
+	CONSTRAINT `fk_contact_peep` FOREIGN KEY (email) REFERENCES contacts(email) ON DELETE SET NULL
+) ENGINE=INNODB;
+

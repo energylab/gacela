@@ -1,22 +1,23 @@
 <?php
-/** 
+/**
  * @author Noah Goodrich
  * @date 4/23/11
  * @brief
- * 
+ *
  */
 
-class ConcreteInheritance extends Controller {
+class ConcreteInheritance extends Controller
+{
 
 	public function index()
 	{
 		$criteria = new \Gacela\Criteria;
-		
+
 		$criteria->sort('fname')
 				->sort('lname', 'desc');
-				
+
 		$this->students = Gacela::instance()->loadMapper('student')->findAll($criteria);
-		
+
 		$this->template = 'concrete-inheritance_index';
 		$this->title = 'Concrete Inheritance';
 	}
@@ -26,7 +27,7 @@ class ConcreteInheritance extends Controller {
 		$this->houses = Gacela::instance()->loadMapper('house')->findAll();
 		$this->student = Gacela::instance()->loadMapper('student')->find($id);
 		$this->message = '';
-		
+
 		if(count($_POST)) {
 			$this->student->fullName = $_POST['fullName'];
 			$this->student->role = 'student';
