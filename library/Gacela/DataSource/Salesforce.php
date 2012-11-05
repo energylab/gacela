@@ -29,7 +29,7 @@ class Salesforce extends DataSource
 	 * @param array $dependents
 	 * @return array()
 	 */
-	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
+	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
 	{
 		if(key($primary) === 'Id') {
 			$primary = array($primary['Id']);
