@@ -200,7 +200,7 @@ class Gacela
             }
         }
 
-		throw new \Exception("Unable to find $class!");
+		return false;
     }
 
 	public function cacheMetaData($key, $value = null)
@@ -318,14 +318,16 @@ class Gacela
 			$name = "Mapper\\" . $name;
 		}
 
-		$name = $this->autoload($name);
+		if(($class = $this->autoload($name)) === false) {
+			throw new \Gacela\Exception("Could not find Mapper ($name)!");
+		}
 
-		$cached = $this->cacheMetaData($name);
+		$cached = $this->cacheMetaData($class);
 
 		if (!$cached) {
-			$cached = new $name();
+			$cached = new $class();
 
-			$this->cacheMetaData(str_replace('\\', '_', $name), $cached);
+			$this->cacheMetaData(str_replace('\\', '_', $class), $cached);
 		}
 
 		return $cached;

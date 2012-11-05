@@ -7,7 +7,7 @@ namespace Gacela\DataSource\Adapter;
  * @group Gacela.DataSource
  * @group Gacela.DataSource.Adapter
  */
-class MysqlTest extends \PHPUnit_Framework_TestCase
+class MysqlTest extends \TestCase
 {
     /**
      * @var Mysql

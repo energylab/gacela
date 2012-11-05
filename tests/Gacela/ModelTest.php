@@ -25,17 +25,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
 		$this->gacela = Gacela::instance();
 
-		$this->gacela->registerNamespace('Test', '/var/www/gacela/tests');
-
-        $this->object = new Test\Model\User($this->gacela, new Test\Mapper\User($this->gacela), $data);
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
+        $this->object = new Test\Model\Peep($this->gacela, new Test\Mapper\Peep($this->gacela), $data);
     }
 
 	/**
@@ -58,14 +48,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 		$data = array(
 			'id' => null,
 			'is_admin' => false,
-			'role' => 'user',
+			'role' => 'teacher',
 			'affiliate' => 'gacela',
-			'name' => 'Test User',
-			'address' => null,
+			'fname' => 'Test',
+			'lname' => 'Last',
+			'locationName' => null,
 			'phone' => 1236549878
 		);
 
-		$this->object = new Test\Model\User($this->gacela, new Test\Mapper\User($this->gacela), $data);
+		$this->object = new App\Model\Wizard($this->gacela, new App\Mapper\Wizard($this->gacela), $data);
 
 		$this->assertAttributeEquals((object) $data, '_data', $this->object);
 	}

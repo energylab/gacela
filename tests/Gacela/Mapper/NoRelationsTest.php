@@ -1,6 +1,6 @@
 <?php
 
-class FindTest extends \PHPUnit_Framework_TestCase
+class FindTest extends \DbTestCase
 {
 	public function providerFind()
 	{
@@ -84,6 +84,32 @@ class FindTest extends \PHPUnit_Framework_TestCase
 	public function testLoad($mapper, $data)
 	{
 		$this->assertAttributeEquals($data, '_data', \Gacela::instance()->loadMapper($mapper)->load($data));
+	}
+
+	/**
+	 * @covers Gacela\Mapper\Mapper::save
+	 */
+	public function testInsertThroughSave()
+	{
+		$mapper = \Gacela::instance()->loadMapper('Test\Mapper\Test');
+
+		$date = date('c');
+
+		$new = (object) array(
+			'testName' => 'I am a test',
+			'started' => $date,
+			'flagged' => 0
+		);
+
+		$changed = array('testName');
+
+		$original = array(
+			'testName' => null
+		);
+
+		$rs = $mapper->save($changed, $new, $original);
+
+		$this->assertAttributeEquals(1, 'id', $rs);
 	}
 
 }

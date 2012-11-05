@@ -1,6 +1,6 @@
 <?php
 
-class GacelaTest extends PHPUnit_Framework_TestCase
+class GacelaTest extends TestCase
 {
     /**
      * @var Gacela
@@ -18,9 +18,37 @@ class GacelaTest extends PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = Gacela::instance();
+		$gacela = Gacela::instance();
 
-		$this->object->registerNamespace('Test', __DIR__);
+		$source = Gacela::createDataSource(
+			array(
+				'type' => 'mysql',
+				'name' => 'db',
+				'user' => 'gacela',
+				'password' => 'gacela',
+				'schema' => 'gacela',
+				'host' => 'localhost'
+			)
+		);
+
+		$test = Gacela::createDataSource(
+			array(
+				'type' => 'mysql',
+				'name' => 'test',
+				'user' => 'gacela',
+				'password' => 'gacela',
+				'schema' => 'test',
+				'host' => 'localhost'
+			)
+		);
+
+		$gacela->registerDataSource($source);
+		$gacela->registerDataSource($test);
+
+		$gacela->registerNamespace('App', __DIR__.'/../samples/');
+		$gacela->registerNamespace('Test', __DIR__);
+
+		$this->object = $gacela;
 
 		$this->memcache = new Memcache;
 
@@ -45,10 +73,10 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 		return array(
 			array('Criteria', 'Gacela\Criteria'),
 			array('Inflector', 'Gacela\Inflector'),
-			array('Mapper\User', 'Test\Mapper\User'),
-			array('Model\User', 'Test\Model\User'),
-			array('Test\Mapper\Customer', 'Test\Mapper\Customer'),
-			array('Test\Model\Customer', 'Test\Model\Customer'),
+			array('Mapper\Peep', 'Test\Mapper\Peep'),
+			array('Model\Peep', 'Test\Model\Peep'),
+		//	array('Test\Mapper\Customer', 'Test\Mapper\Customer'),
+		//	array('Test\Model\Customer', 'Test\Model\Customer'),
 			array('Gacela\DataSource\DataSource', 'Gacela\DataSource\DataSource'),
 			array('Field\Bool', 'Gacela\Field\Bool'),
 			array('Field\Field', 'Test\Field\Field')
@@ -82,9 +110,10 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 	public function providerMapper()
 	{
 		return array(
-			array('User', 'Test\Mapper\User'),
-			array('Mapper\Order', 'Test\Mapper\Order'),
-			array('Test\Mapper\Customer', 'Test\Mapper\Customer')
+			array('Peep', 'Test\Mapper\Peep'),
+			array('House', 'App\Mapper\House'),
+			array('Mapper\Wizard', 'App\Mapper\Wizard'),
+			array('App\Mapper\Teacher', 'App\Mapper\Teacher')
 		);
 	}
 
@@ -246,7 +275,7 @@ class GacelaTest extends PHPUnit_Framework_TestCase
      */
     public function testMakeCollection($data, $expected)
     {
-		$mapper = new Test\Mapper\User($this->object);
+		$mapper = new Test\Mapper\Peep($this->object);
 
 		$this->assertInstanceOf($expected, $this->object->makeCollection($mapper, $data));
     }
@@ -257,7 +286,7 @@ class GacelaTest extends PHPUnit_Framework_TestCase
 	 */
 	public function testMakeCollectionThrowsException()
 	{
-		$mapper = new Test\Mapper\User($this->object);
+		$mapper = new Test\Mapper\Peep($this->object);
 
 		$this->object->makeCollection($mapper, new \ArrayObject());
 	}
@@ -267,19 +296,7 @@ class GacelaTest extends PHPUnit_Framework_TestCase
      */
     public function testRegisterNamespace()
     {
-		$array = array(
-			array('Test1', __DIR__, __DIR__.'/'),
-			array('App', '/var/www/app/', '/var/www/app/')
-
-		);
-
-		$expected = array('Gacela' => '/var/www/gacela/library/Gacela/', 'Test' => __DIR__.'/');
-
-		foreach($array as $ns) {
-			$this->object->registerNamespace($ns[0], $ns[1]);
-
-			$expected[$ns[0]] = $ns[2];
-		}
+		$expected = array('Gacela' => '/var/www/gacela/library/Gacela/', 'App' => __DIR__.'/../samples/', 'Test' => __DIR__.'/');
 
 		$this->assertAttributeSame($expected, '_namespaces', $this->object);
     }

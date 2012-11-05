@@ -471,7 +471,7 @@ abstract class Mapper implements iMapper
 		} elseif($fields[key($primary)]->sequenced === false) {
 			$rs = $this->_source()->find($primary, $resource);
 
-			if(!count($rs)) {
+			if(($rs instanceof \PDOStatement && $rs->rowCount() <= 0) || (is_array($rs) && !count($rs))) {
 				$update = false;
 			}
 		}
@@ -506,7 +506,9 @@ abstract class Mapper implements iMapper
 				$where->equals($k, $v);
 			}
 
-			$this->_source()->update($resource->getName(), $data, $this->_source()->getQuery($where));
+			if($this->_source()->update($resource->getName(), $data, $this->_source()->getQuery($where)) === false) {
+				return false;
+			}
 		}
 
 		return array($changed, $new);
@@ -910,7 +912,7 @@ abstract class Mapper implements iMapper
 			}
 
 			foreach($dependent['resource']->getFields() as $name => $field) {
-				if(in_array($name, $changed)) {
+				if(in_array($name, $changed) && !in_array($name, $data['changed'])) {
 					$data['new'][$name] = $new->$name;
 					$data['changed'][] = $name;
 				}
