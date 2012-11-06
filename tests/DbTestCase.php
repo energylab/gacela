@@ -72,7 +72,7 @@ abstract class DbTestCase extends PHPUnit_Extensions_Database_TestCase
 		return new ArrayDataSet(
 			array(
 				'peeps' => array(),
-				'contacts' => array(),
+			//	'contacts' => array(),
 				'tests' => array()
 			)
 		);

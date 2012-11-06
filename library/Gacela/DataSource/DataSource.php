@@ -66,12 +66,16 @@ abstract class DataSource implements iDataSource
 		$instance->incrementCache($name.'_version');
 	}
 
-	protected function _setLastQuery($query, $args = null)
+	protected function _setLastQuery($query, $args = array())
 	{
 		if($query instanceof Query\Query)  {
 			// Using the _lastQuery variable so that we can see the query when debugging
 			list($this->_lastQuery['query'], $this->_lastQuery['args']) = $query->assemble();
 		} else {
+			if(is_null($args)) {
+				$args = array();
+			}
+
 			$this->_lastQuery = array('query' => $query, 'args' => $args);
 		}
 

@@ -85,17 +85,17 @@ abstract class Mapper implements iMapper
 	 * @param \stdClass $data
 	 * @return bool
 	 */
-	protected function _deleteResource(\Gacela\DataSource\Resource $resource, \stdClass $data)
+	protected function _deleteRecord(\Gacela\DataSource\Resource $resource, \stdClass $data)
 	{
-		$where = $this->_gacela()->autoload('Criteria');
-
-		$where = new $where;
-
 		$primary = $this->_primaryKey($resource->getPrimaryKey(), $data);
 
 		if(is_null($primary)) {
 			return true;
 		}
+
+		$where = $this->_gacela()->autoload('Criteria');
+
+		$where = new $where;
 
 		foreach($primary as $key => $value) {
 			$where->equals($key, $value);
@@ -648,24 +648,38 @@ abstract class Mapper implements iMapper
 	{
 		$this->_source()->beginTransaction();
 
-		if(!$this->_deleteResource($this->_resource, $data)) {
+		if(!$this->_deleteRecord($this->_resource, $data)) {
 			$this->_source()->rollbackTransaction();
 			return false;
 		}
 
 		foreach($this->_inherits as $inherits) {
-			if(!$this->_deleteResource($inherits['resource'], $data)) {
+			$tmp = array();
+			foreach($inherits['meta']->keys as $key => $ref) {
+				$tmp[$ref] = $data->$key;
+			}
+
+			if(!$this->_deleteRecord($inherits['resource'], (object) $tmp)) {
 				$this->_source()->rollbackTransaction();
 				return false;
 			}
 		}
 
+		unset($tmp);
+
 		foreach($this->_dependents as $dep) {
-			if(!$this->_deleteResource($dep['resource'], $data)) {
+			$tmp = array();
+			foreach($dep['meta']->keys as $key => $ref) {
+				$tmp[$ref] = $data->$key;
+			}
+
+			if(!$this->_deleteRecord($dep['resource'], (object) $tmp)) {
 				$this->_source()->rollbackTransaction();
 				return false;
 			}
 		}
+
+		unset($tmp);
 
 		$this->_source()->commitTransaction();
 

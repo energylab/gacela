@@ -220,7 +220,7 @@ class Database extends DataSource
 	/**
 	 * @see Gacela\DataSource\iDataSource::query()
 	 */
-	public function query(\Gacela\DataSource\Resource $resource, $query, $args = null)
+	public function query(\Gacela\DataSource\Resource $resource, $query, $args = array())
 	{
 		$key = $this->_setLastQuery($query, $args);
 

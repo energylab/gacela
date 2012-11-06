@@ -86,23 +86,23 @@ class Salesforce extends DataSource
 	 * @param  string|Query $query A valid representation of a query for the DataSource
 	 * @return array
 	 */
-	public function query(\Gacela\DataSource\Resource $resource, $query, $args = null)
+	public function query(\Gacela\DataSource\Resource $resource, $query, $args = array())
 	{
 		$key = $this->_setLastQuery($query, $args);
 
-		$cached = $this->_cache($resource->getName(), $key);
+		/*$cached = $this->_cache($resource->getName(), $key);
 
 		// If the query is cached, return the cached data
 		if($cached !== false AND !is_null($cached)) {
 			return $cached;
-		}
+		}*/
 
 		try {
 			$return = $this->_adapter->query($this->_lastQuery['query']);
 
 			if(isset($return->records)) {
 				$return = $return->records;
-				$this->_cache($resource->getName(), $key, $return);
+				//$this->_cache($resource->getName(), $key, $return);
 			} else {
 				$return = array();
 			}
@@ -122,13 +122,5 @@ class Salesforce extends DataSource
 		return addslashes($value);
 	}
 
-	/**
-	 * @abstract
-	 * @param  string $name
-	 * @param  array $data
-	 * @param \Gacela\Criteria $where
-	 * @param string - 'begin', 'commit'
-	 * @return bool
-	 */
 	public function update($name, $data, $where = null){}
 }

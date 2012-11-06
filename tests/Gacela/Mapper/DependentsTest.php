@@ -96,7 +96,7 @@ class DependentsTest extends DbTestCase
 
 		$this->assertNotNull($mapper->find($this->new->code)->code);
 
-		$mapper->delete($this->new);
+		$this->assertTrue($mapper->delete($this->new));
 
 		$record = $mapper->find($this->new->code);
 
@@ -130,7 +130,19 @@ class DependentsTest extends DbTestCase
 		$this->assertSame($this->new, $rs);
 
 		$this->assertSame($this->new->code, $this->object->find($this->new->code)->code);
+
+		return array($this->changed, $this->new, $this->old);
 	}
 
+	/**
+	 * @depends testInsertEmptyDependent
+	 */
+	public function testDeleteEmptyDependent($args)
+	{
+		$this->object->save($args[0], $args[1], $args[2]);
 
+		$this->object->delete($args[1]);
+
+		$this->assertNull($this->object->find($args[1]->code)->code);
+	}
 }

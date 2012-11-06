@@ -66,10 +66,12 @@ interface iDataSource {
 	/**
 	 * @abstract
 	 * @throws \Exception
-	 * @param  string|Query $query A valid representation of a query for the DataSource
-	 * @return \PDOStatement
+	 * @param Resource
+	 * @param  array | string | Query\Query $query A valid representation of a query for the DataSource
+	 * @param array
+	 * @return \PDOStatement | array
 	 */
-	public function query(\Gacela\DataSource\Resource $resource, $query, $args = null);
+	public function query(\Gacela\DataSource\Resource $resource, $query, $args = array());
 
 	/**
 	 * @abstract
