@@ -198,8 +198,10 @@ abstract class Model implements iModel
 	 */
 	public function remove($association)
 	{
-		if($association->count())
-		{
+		if(
+			((is_array($association) || $association instanceof \Gacela\Collection\Collection) && $association->count())
+			|| $association instanceof \Gacela\Model\iModel
+		) {
 			return $this->_mapper->removeAssociation($association, $this->_data);
 		}
 
