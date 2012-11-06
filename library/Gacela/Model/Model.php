@@ -10,9 +10,6 @@ namespace Gacela\Model;
 
 abstract class Model implements iModel
 {
-
-	protected static $_field = null;
-
 	protected $_changed = array();
 
 	protected $_data = null;
