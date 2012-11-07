@@ -112,7 +112,7 @@ class Database extends DataSource
 	 * @param Resource $resource
 	 * @param array $inherits
 	 * @param array $dependents
-	 * @return
+	 * @return \PDOStatement
 	 */
 	public function findAll(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
@@ -127,7 +127,7 @@ class Database extends DataSource
 	 * @param array $data
 	 * @param array $inherits
 	 * @param array $dependents
-	 * @return
+	 * @return \PDOStatement
 	 */
 	public function findAllByAssociation(\Gacela\DataSource\Resource $resource, array $relation, array $data, array $inherits, array $dependents)
 	{

@@ -8,8 +8,8 @@
 
 namespace Gacela\Collection;
 
-class Arr extends Collection {
-
+class Arr extends Collection
+{
 	public function __construct(\Gacela\Mapper\Mapper $mapper, array $data)
 	{
 		parent::__construct($mapper, $data);
@@ -67,32 +67,6 @@ class Arr extends Collection {
 	public function rewind()
 	{
 		$this->_pointer = 0;
-	}
-
-	public function search(array $value)
-	{
-		$data = array();
-
-		foreach($this as $row) {
-			$rs = true;
-
-			foreach($value as $key => $val) {
-				if(!property_exists($row, $key)) {
-					throw new \Exception('Property: ('.$key.') does not exist!');
-				}
-
-				if($row->$key != $val) {
-					$rs = false;
-					break;
-				}
-			}
-
-			if($rs === true) {
-				$data[] = $row;
-			}
-		}
-
-		return \Gacela::instance()->makeCollection($this->_mapper, $data);
 	}
 
 	/**

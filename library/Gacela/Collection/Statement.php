@@ -90,37 +90,6 @@ class Statement extends Collection
 	}
 
 	/**
-	 * @param array $value
-	 * @return bool|\Gacela\Model\Model|mixed
-	 * @throws \Exception
-	 */
-	public function search(array $value)
-	{
-		$data = array();
-
-		foreach($this as $row) {
-			$rs = true;
-
-			foreach($value as $key => $val) {
-				if(!property_exists($row, $key)) {
-					throw new \Exception('Property: ('.$key.') does not exist!');
-				}
-
-				if($row->$key != $val) {
-					$rs = false;
-					break;
-				}
-			}
-
-			if($rs === true) {
-				$data[] = $row;
-			}
-		}
-
-		return \Gacela::instance()->makeCollection($this->_mapper, $data);
-	}
-
-	/**
 	 * Take the Iterator to position $position
 	 * Required by interface SeekableIterator.
 	 *
