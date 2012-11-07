@@ -82,6 +82,9 @@ abstract class Collection implements \SeekableIterator, \Countable
 	{
 		$data = array();
 
+		$prop = new \ReflectionProperty($this->current(), '_data');
+		$prop->setAccessible(true);
+
 		foreach($this as $row) {
 			$rs = true;
 
@@ -93,7 +96,7 @@ abstract class Collection implements \SeekableIterator, \Countable
 			}
 
 			if($rs === true) {
-				$data[] = $row;
+				$data[] = $prop->getValue($row);
 			}
 		}
 
