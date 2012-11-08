@@ -24,6 +24,8 @@ abstract class Pdo extends Adapter
 						property_exists($this->_config, 'options') ? $this->_config->options : null
 					);
 
+		$this->_conn->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_OBJ);
+
 	}
 
 	/**

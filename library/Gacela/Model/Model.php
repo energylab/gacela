@@ -18,7 +18,10 @@ abstract class Model implements iModel
 
 	protected $_fields;
 
-	protected $_gacela = null;
+	/**
+	 * @var \Gacela
+	 */
+	protected $_gacela;
 
 	/**
 	 * @var \Gacela\Mapper\iMapper

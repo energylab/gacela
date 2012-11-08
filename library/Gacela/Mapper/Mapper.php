@@ -614,10 +614,10 @@ abstract class Mapper implements iMapper
 				->from(array('s' => $sub), array('count' => 'COUNT(*)'));
 		}
 
-		return	current(
-					$this->_source()->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
-				)
-				->count;
+		return	$this->_source()
+					->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
+					->fetch()
+					->count;
 	}
 
 	public function debug($return = true)

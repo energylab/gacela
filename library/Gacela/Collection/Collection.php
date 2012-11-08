@@ -75,9 +75,31 @@ abstract class Collection implements \SeekableIterator, \Countable
 	}
 
 	/**
-	 * @abstract
-	 * @param array $value
-	 * @return mixed
+	* @param array $value
+	* @return Collection
 	 */
-	abstract public function search(array $value);
+	public function search(array $value)
+	{
+		$data = array();
+
+		$prop = new \ReflectionProperty($this->current(), '_data');
+		$prop->setAccessible(true);
+
+		foreach($this as $row) {
+			$rs = true;
+
+			foreach($value as $key => $val) {
+				if($row->$key != $val) {
+					$rs = false;
+					break;
+				}
+			}
+
+			if($rs === true) {
+				$data[] = $prop->getValue($row);
+			}
+		}
+
+		return \Gacela::instance()->makeCollection($this->_mapper, $data);
+	}
 }
