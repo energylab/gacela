@@ -107,6 +107,32 @@ class ArrTest extends \TestCase
 		$this->assertSame('Gryffindor', $arr->current()->houseName);
 	}
 
+	public function testCurrentLoad()
+	{
+		$arr = array(
+			array(10, 'Potter'),
+			array(11, 'Granger'),
+			array(12, 'Weasley'),
+			array(13, 'Malfoy')
+		);
+
+		foreach($arr as $k => $v) {
+			$arr[$k] = (object) array('houseId' => (int) $v[0], 'houseName' => $v[1]);
+		}
+
+		$collection = new Arr(\Gacela::instance()->loadMapper('house'), $arr);
+
+		$current = $collection->current();
+
+		$this->assertSame(10, $current->houseId);
+		$this->assertSame('Potter', $current->houseName);
+
+		foreach($collection as $k => $m) {
+			$this->assertSame($arr[$k]->houseId, $m->houseId);
+			$this->assertSame($arr[$k]->houseName, $m->houseName);
+		}
+	}
+
 	public function testCurrentInvalidIndexReturnsEmptyInstance()
 	{
 		$this->object = new Arr(\Gacela::instance()->loadMapper('house'), array());
