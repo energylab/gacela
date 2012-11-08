@@ -69,8 +69,6 @@ abstract class Adapter implements iAdapter
 		return null;
 	}
 
-	abstract protected function _loadConn();
-
 	public function __call($method, $args)
 	{
 		if(!$this->_conn) {

@@ -36,7 +36,7 @@ class Arr extends Collection
 	public function current()
 	{
 		if(!isset($this->_data[$this->_pointer])) {
-			return $this->_mapper->find(null);
+			return $this->_mapper->load(new \stdClass);
 		}
 
 		$data = $this->_data[$this->_pointer];

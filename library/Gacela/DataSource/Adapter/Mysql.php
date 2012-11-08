@@ -10,10 +10,10 @@ namespace Gacela\DataSource\Adapter;
 
 class Mysql extends Pdo
 {
-	protected function _loadConn()
+	public function loadConnection()
 	{
 		if(!$this->_conn) {
-			parent::_loadConn();
+			parent::loadConnection();
 
 			$this->_columns = $this->_singleton->cacheMetaData($this->_config->schema.'_columns');
 
@@ -59,7 +59,7 @@ class Mysql extends Pdo
 			return $config;
 		}
 
-		$this->_loadConn();
+		$this->loadConnection();
 
 		$_meta = array(
 			'name' => null,

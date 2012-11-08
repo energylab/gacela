@@ -12,7 +12,7 @@ namespace Gacela\DataSource\Adapter;
 
 class Salesforce extends Adapter
 {
-	protected function _loadConn()
+	public function loadConnection()
 	{
         if(!class_exists('\SforceEnterpriseClient'))
         {
@@ -52,7 +52,7 @@ class Salesforce extends Adapter
 			return $config;
 		}
 
-		$this->_loadConn();
+		$this->loadConnection();
 
 		$_meta = array(
 			'name' => null,

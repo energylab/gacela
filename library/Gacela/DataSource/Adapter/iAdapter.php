@@ -6,7 +6,9 @@
 
 namespace Gacela\DataSource\Adapter;
 
-interface iAdapter {
+interface iAdapter
+{
+	public function loadConnection();
 
 	public function load($name, $force = false);
 }
