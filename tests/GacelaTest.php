@@ -165,7 +165,7 @@ class GacelaTest extends TestCase
 
         $this->object->cacheMetaData('test', $array);
 
-		$this->assertEquals($array, $this->object->cacheMetaData('test'));
+		$this->assertSame($array, $this->object->cacheMetaData('test'));
     }
 
 	/**
@@ -185,6 +185,61 @@ class GacelaTest extends TestCase
 		$this->object->cacheMetaData('test', $array);
 
 		$this->assertSame($array, $this->memcache->get('test'));
+	}
+
+	public function testCacheDataWithoutMemcache()
+	{
+		$this->assertFalse($this->object->cacheData('test', (object) array('some test data')));
+	}
+
+	public function testCacheDataWithMemcache()
+	{
+		$array = array(
+			array('var1' => 1, 'var2' => 2, 'var3' => 3),
+			array('var1' => 999, 'var2' => 'something else', 'var3' => 'more')
+		);
+
+		$this->assertFalse($this->memcache->get('test'));
+
+		$this->object->enableCache($this->memcache);
+
+		$this->object->cacheData('test', $array);
+
+		$this->assertSame($array, $this->memcache->get('test'));
+	}
+
+	public function testNonCacheableValueWithoutCache()
+	{
+		$test = $this->object->getDataSource('test');
+
+		$test->loadResource('tests');
+
+		$this->assertFalse($this->object->cacheData('test', $test));
+	}
+
+	/**
+	 * @expectedException
+	 */
+	public function testCachePDOInstance()
+	{
+		$this->object->enableCache($this->memcache);
+
+		$test = $this->object->getDataSource('test');
+
+		$test->loadResource('tests');
+
+		$rs = $this->object->cacheData('pdo', $test);
+
+		$this->assertFalse($rs);
+	}
+
+	public function testCacheFileHandle()
+	{
+		$file = fopen(__DIR__.'/test.sql', 'r');
+
+		$this->object->enableCache($this->memcache);
+
+		$this->object->cacheData('file', $file);
 	}
 
     /**

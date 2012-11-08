@@ -210,7 +210,11 @@ class Gacela
 
 	public function cacheData($key, $value = null)
 	{
-		throw new \Exception('Not Implemented!');
+		if(!is_null($value) && is_null(($this->_cache))) {
+			return false;
+		}
+
+		return $this->_cache($key, $value);
 	}
 
 	/**
