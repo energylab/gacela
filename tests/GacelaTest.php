@@ -217,31 +217,6 @@ class GacelaTest extends TestCase
 		$this->assertFalse($this->object->cacheData('test', $test));
 	}
 
-	/**
-	 * @expectedException
-	 */
-	public function testCachePDOInstance()
-	{
-		$this->object->enableCache($this->memcache);
-
-		$test = $this->object->getDataSource('test');
-
-		$test->loadResource('tests');
-
-		$rs = $this->object->cacheData('pdo', $test);
-
-		$this->assertFalse($rs);
-	}
-
-	public function testCacheFileHandle()
-	{
-		$file = fopen(__DIR__.'/test.sql', 'r');
-
-		$this->object->enableCache($this->memcache);
-
-		$this->object->cacheData('file', $file);
-	}
-
     /**
      * @covers Gacela::configPath
      * @todo   Implement testConfigPath().
