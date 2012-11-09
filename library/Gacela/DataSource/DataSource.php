@@ -27,6 +27,12 @@ abstract class DataSource implements iDataSource
 
 	protected $_lastQuery = array();
 
+	/**
+	 * @param $name
+	 * @param $key
+	 * @param null $data
+	 * @return mixed
+	 */
 	protected function _cache($name, $key, $data = null)
 	{
 		$instance = $this->_gacela;
@@ -53,17 +59,18 @@ abstract class DataSource implements iDataSource
 		}
 	}
 
+	/**
+	 * @param $name
+	 */
 	protected function _incrementCache($name)
 	{
 		$instance = $this->_gacela;
 
 		$cached = $instance->cache($name.'_version');
 
-		if($cached === false) {
-			return;
+		if($cached !== false) {
+			$instance->incrementCache($name.'_version');
 		}
-
-		$instance->incrementCache($name.'_version');
 	}
 
 	protected function _setLastQuery($query, $args = array())
