@@ -1,6 +1,6 @@
 <?php
 
-class AssociationsTest extends \DbTestCase
+class AssociationsTest extends \Test\GUnit\Extensions\Database\TestCase
 {
 	/**
 	 * @covers Gacela\Mapper\Mapper::addAssociation

@@ -1,6 +1,6 @@
 <?php
 
-class GacelaTest extends TestCase
+class GacelaTest extends Test\GUnit\TestCase
 {
     /**
      * @var Gacela
@@ -46,7 +46,7 @@ class GacelaTest extends TestCase
 		$gacela->registerDataSource($test);
 
 		$gacela->registerNamespace('App', __DIR__.'/../samples/');
-		$gacela->registerNamespace('Test', __DIR__);
+		$gacela->registerNamespace('Test', __DIR__.'/Test');
 
 		$this->object = $gacela;
 
@@ -75,8 +75,8 @@ class GacelaTest extends TestCase
 			array('Inflector', 'Gacela\Inflector'),
 			array('Mapper\Peep', 'Test\Mapper\Peep'),
 			array('Model\Peep', 'Test\Model\Peep'),
-		//	array('Test\Mapper\Customer', 'Test\Mapper\Customer'),
-		//	array('Test\Model\Customer', 'Test\Model\Customer'),
+			array('Test\Mapper\Test', 'Test\Mapper\Test'),
+			array('Test\Model\Test', 'Test\Model\Test'),
 			array('Gacela\DataSource\DataSource', 'Gacela\DataSource\DataSource'),
 			array('Field\Bool', 'Gacela\Field\Bool'),
 			array('Field\Field', 'Test\Field\Field')
@@ -337,7 +337,7 @@ class GacelaTest extends TestCase
      */
     public function testRegisterNamespace()
     {
-		$expected = array('Gacela' => '/var/www/gacela/library/Gacela/', 'App' => __DIR__.'/../samples/', 'Test' => __DIR__.'/');
+		$expected = array('Gacela' => '/var/www/gacela/library/Gacela/', 'App' => __DIR__.'/../samples/', 'Test' => __DIR__.'/Test/');
 
 		$this->assertAttributeSame($expected, '_namespaces', $this->object);
     }

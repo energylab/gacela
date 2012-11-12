@@ -1,6 +1,8 @@
 <?php
 
-class PHPUnit_Extensions_Database_DataSet_ArrayDataSet extends PHPUnit_Extensions_Database_DataSet_AbstractDataSet
+namespace Test\GUnit\Extensions\Database\DataSet;
+
+class ArrayDataSet extends \PHPUnit_Extensions_Database_DataSet_AbstractDataSet
 {
 	/**
 	 * @var array
@@ -18,8 +20,8 @@ class PHPUnit_Extensions_Database_DataSet_ArrayDataSet extends PHPUnit_Extension
 				$columns = array_keys($rows[0]);
 			}
 
-			$metaData = new PHPUnit_Extensions_Database_DataSet_DefaultTableMetaData($tableName, $columns);
-			$table = new PHPUnit_Extensions_Database_DataSet_DefaultTable($metaData);
+			$metaData = new \PHPUnit_Extensions_Database_DataSet_DefaultTableMetaData($tableName, $columns);
+			$table = new \PHPUnit_Extensions_Database_DataSet_DefaultTable($metaData);
 
 			foreach ($rows AS $row) {
 				$table->addRow($row);
@@ -30,13 +32,13 @@ class PHPUnit_Extensions_Database_DataSet_ArrayDataSet extends PHPUnit_Extension
 
 	protected function createIterator($reverse = FALSE)
 	{
-		return new PHPUnit_Extensions_Database_DataSet_DefaultTableIterator($this->tables, $reverse);
+		return new \PHPUnit_Extensions_Database_DataSet_DefaultTableIterator($this->tables, $reverse);
 	}
 
 	public function getTable($tableName)
 	{
 		if (!isset($this->tables[$tableName])) {
-			throw new InvalidArgumentException("$tableName is not a table in the current database.");
+			throw new \InvalidArgumentException("$tableName is not a table in the current database.");
 		}
 
 		return $this->tables[$tableName];

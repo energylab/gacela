@@ -3,7 +3,7 @@
  * @user: noah
  * @date 11/10/12
  */
-class BelongsToTest extends \DbTestCase
+class BelongsToTest extends \Test\GUnit\Extensions\Database\TestCase
 {
 	/**
 	 * @covers Gacela\Mapper\Mapper::findAllByAssociation

@@ -1,6 +1,6 @@
 <?php
 
-class DependentsTest extends DbTestCase
+class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 {
 	/**
 	 * @var Gacela\Mapper\Mapper

@@ -1,14 +1,16 @@
 <?php
 
-abstract class DbTestCase extends PHPUnit_Extensions_Database_TestCase
+namespace Test\GUnit\Extensions\Database;
+
+abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 {
 	private $conn;
 
 	public static function setUpBeforeClass()
 	{
-		$gacela = Gacela::instance();
+		$gacela = \Gacela::instance();
 
-		$source = Gacela::createDataSource(
+		$source = \Gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'db',
@@ -19,7 +21,7 @@ abstract class DbTestCase extends PHPUnit_Extensions_Database_TestCase
 			)
 		);
 
-		$test = Gacela::createDataSource(
+		$test = \Gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'test',
@@ -33,8 +35,8 @@ abstract class DbTestCase extends PHPUnit_Extensions_Database_TestCase
 		$gacela->registerDataSource($source)
 			->registerDataSource($test);
 
-		$gacela->registerNamespace('App', __DIR__.'/../samples/')
-			->registerNamespace('Test', __DIR__);
+		$gacela->registerNamespace('App', '/var/www/gacela/samples/')
+			->registerNamespace('Test', '/var/www/gacela/tests/Test/');
 
 	}
 
@@ -44,7 +46,7 @@ abstract class DbTestCase extends PHPUnit_Extensions_Database_TestCase
 
 		$test->loadResource('peeps');
 
-		$r = new ReflectionClass($test);
+		$r = new \ReflectionClass($test);
 
 		$p = $r->getProperty('_adapter');
 
@@ -52,7 +54,7 @@ abstract class DbTestCase extends PHPUnit_Extensions_Database_TestCase
 
 		$p = $p->getValue($test);
 
-		$pr = new ReflectionClass($p);
+		$pr = new \ReflectionClass($p);
 
 		$c = $pr->getProperty('_conn');
 
@@ -67,16 +69,16 @@ abstract class DbTestCase extends PHPUnit_Extensions_Database_TestCase
 		return $this->conn;
 	}
 
-	/*public function getSetUpOperation()
+	public function getSetUpOperation()
 	{
 		$cascadeTruncates = TRUE; //if you want cascading truncates, false otherwise
 		//if unsure choose false
 
-		return new PHPUnit_Extensions_Database_Operation_Composite(array(
-			new PHPUnit_Extensions_Database_Operation_MySQLTruncate($cascadeTruncates),
-			PHPUnit_Extensions_Database_Operation_Factory::INSERT()
+		return new \PHPUnit_Extensions_Database_Operation_Composite(array(
+			new Operation\MySQLTruncate($cascadeTruncates),
+			\PHPUnit_Extensions_Database_Operation_Factory::INSERT()
 		));
-	}*/
+	}
 
 	protected function getDataSet()
 	{
@@ -93,10 +95,10 @@ abstract class DbTestCase extends PHPUnit_Extensions_Database_TestCase
 	 * Creates a new Array DataSet with the given $array.
 	 *
 	 * @param string $xmlFile
-	 * @return ArrayDataSet
+	 * @return DataSet\ArrayDataSet
 	 */
 	protected function createArrayDataSet(array $array)
 	{
-		return new PHPUnit_Extensions_Database_DataSet_ArrayDataSet($array);
+		return new DataSet\ArrayDataSet($array);
 	}
 }

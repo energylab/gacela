@@ -93,7 +93,7 @@ abstract class Mapper implements iMapper
 			$instance->cacheData($key, $version);
 		}
 
-		$key = $sourceName.'_'.$className. $version . '_' .hash('whirlpool', serialize($params));
+		$key = $sourceName.'_'.$className.'_'.$version . '_' .hash('whirlpool', serialize($params));
 
 		$cached = $instance->cacheData($key);
 

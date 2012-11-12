@@ -1,6 +1,6 @@
 <?php
 
-class DatabaseTest extends \DbTestCase
+class DatabaseTest extends \Test\GUnit\Extensions\Database\TestCase
 {
 
 	/**

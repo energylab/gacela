@@ -1,13 +1,14 @@
 <?php
 
+namespace Test\GUnit;
+
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
-
 	public static function setUpBeforeClass()
 	{
-		$gacela = Gacela::instance();
+		$gacela = \Gacela::instance();
 
-		$source = Gacela::createDataSource(
+		$source = \Gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'db',
@@ -18,7 +19,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 			)
 		);
 
-		$test = Gacela::createDataSource(
+		$test = \Gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'test',
@@ -32,8 +33,8 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 		$gacela->registerDataSource($source)
 			->registerDataSource($test);
 
-		$gacela->registerNamespace('App', __DIR__.'/../samples/')
-			->registerNamespace('Test', __DIR__);
+		$gacela->registerNamespace('App', '/var/www/gacela/samples/')
+			->registerNamespace('Test', '/var/www/gacela/tests/Test/');
 
 	}
 }

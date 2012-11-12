@@ -1,6 +1,6 @@
 <?php
 
-class ClassInheritanceTest extends \DbTestCase
+class ClassInheritanceTest extends \Test\GUnit\Extensions\Database\TestCase
 {
 	public function testSaveInherits()
 	{
