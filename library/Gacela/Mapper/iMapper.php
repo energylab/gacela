@@ -9,8 +9,8 @@
 
 namespace Gacela\Mapper;
 
-interface iMapper {
-
+interface iMapper
+{
 	public function init();
 
 	public function count($criteria = null);

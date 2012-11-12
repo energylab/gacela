@@ -7,11 +7,6 @@ use Test\Mapper as T;
  */
 class MapperTest extends \TestCase
 {
-    /**
-     * @var Mapper
-     */
-    protected $object;
-
 	public function testSleep()
 	{
 		$source = Gacela::createDataSource(
@@ -48,57 +43,25 @@ class MapperTest extends \TestCase
         );
     }
 
-    /**
-     * @covers Gacela\Mapper\Mapper::delete
-     * @todo   Implement testDelete().
-     */
-    public function testDelete()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
+	/**
+	 * @covers Gacela\Mapper\Mapper::findAllByAssociation
+	 * @todo   Implement testFindAllByAssociation().
+	 */
+	public function testFindAllByAssociation()
+	{
+		// Remove the following lines when you implement this test.
+		$this->markTestIncomplete(
+			'This test has not been implemented yet.'
+		);
+	}
 
-    /**
-     * @covers Gacela\Mapper\Mapper::getFields
-     * @todo   Implement testGetFields().
-     */
-    public function testGetFields()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\Mapper\Mapper::getPrimaryKey
-     * @todo   Implement testGetPrimaryKey().
-     */
-    public function testGetPrimaryKey()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\Mapper\Mapper::getRelations
-     * @todo   Implement testGetRelations().
-     */
-    public function testGetRelations()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-	public function testDeleteWithDependent()
+	/**
+	 * @covers Gacela\Mapper\Mapper::findRelation
+	 */
+	public function testFindRelation()
 	{
 
 	}
+
 
 }

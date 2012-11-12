@@ -28,51 +28,10 @@ abstract class DataSource implements iDataSource
 	protected $_lastQuery = array();
 
 	/**
-	 * @param $name
-	 * @param $key
-	 * @param null $data
-	 * @return mixed
+	 * @param $query
+	 * @param array $args
+	 * @return void
 	 */
-	protected function _cache($name, $key, $data = null)
-	{
-		$instance = $this->_gacela;
-
-		$version = $instance->cache($name . '_version');
-
-		if (is_null($version) || $version === false) {
-			$version = 0;
-			$instance->cache($name . '_version', $version);
-		}
-
-		$key = 'query_' . $version . '_' . $key;
-
-		$cached = $instance->cache($key);
-
-		if (is_null($data)) {
-			return $cached;
-		}
-
-		if ($cached === false) {
-			$instance->cache($key, $data);
-		} else {
-			$instance->cache($key, $data, true);
-		}
-	}
-
-	/**
-	 * @param $name
-	 */
-	protected function _incrementCache($name)
-	{
-		$instance = $this->_gacela;
-
-		$cached = $instance->cache($name.'_version');
-
-		if($cached !== false) {
-			$instance->incrementCache($name.'_version');
-		}
-	}
-
 	protected function _setLastQuery($query, $args = array())
 	{
 		if($query instanceof Query\Query)  {
@@ -85,8 +44,6 @@ abstract class DataSource implements iDataSource
 
 			$this->_lastQuery = array('query' => $query, 'args' => $args);
 		}
-
-		return hash('whirlpool', serialize(array($this->_lastQuery['query'], $this->_lastQuery['args'])));
 	}
 
 	public function __construct(\Gacela $gacela, \Gacela\DataSource\Adapter\iAdapter $adapter, array $config)

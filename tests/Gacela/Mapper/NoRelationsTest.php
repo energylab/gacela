@@ -1,14 +1,31 @@
 <?php
 
-class FindTest extends \DbTestCase
+class NoRelationsTest extends \DbTestCase
 {
-	public function providerFind()
+	/**
+	 * @var Test\Mapper\Test
+	 */
+	protected $object;
+
+	protected function getDataSet()
 	{
-		return array(
-			array('course', 1),
-			array('house', 2),
-			array('wizard', 3)
+		return $this->createArrayDataSet(
+			array(
+				'tests' => array(
+					array('testName' => 'Test1', 'flagged' => 1, 'completed' => null),
+					array('testName' => 'Test2', 'completed' => date('c'), 'flagged' => 0),
+					array('id' => 4, 'testName' => 'AnotherOne', 'flagged' => 0, 'completed' => null),
+					array('testName' => 'Test4', 'flagged' => 0, 'completed' => null)
+				)
+			)
 		);
+	}
+
+	public function setUp()
+	{
+		parent::setUp();
+
+		$this->object = Gacela::instance()->loadMapper('Test');
 	}
 
 	public function providerLoad()
@@ -22,59 +39,72 @@ class FindTest extends \DbTestCase
 
 	/**
 	 * @covers Gacela\Mapper\Mapper::count
-	 * @todo   Implement testCount().
 	 */
-	public function testCount()
+	public function testCountNoQuery()
 	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
+		$this->assertSame(4, $this->object->count());
+	}
+
+	/**
+	 * @covers Gacela\Mapper\Mapper::count
+	 */
+	public function testCountCriteria()
+	{
+		$crit = new Gacela\Criteria();
+
+		$crit->equals('flagged', 1);
+
+		$this->assertSame(1, $this->object->count($crit));
+	}
+
+	/**
+	 * @covers Gacela\Mapper\Mapper::count
+	 */
+	public function testCountQueryObject()
+	{
+		$query = new Gacela\DataSource\Query\Sql;
+
+		$query->from('tests')
+			->where('completed IS NOT NULL');
+
+		$this->assertSame(1, $this->object->count($query));
 	}
 
 	/**
 	 * @covers Gacela\Mapper\Mapper::find
-	 * @dataProvider providerFind
 	 */
-	public function testFind($mapper, $primary)
+	public function testFind()
 	{
-		$model = \Gacela::instance()->loadMapper($mapper)->find($primary);
+		$model = $this->object->find(1);
 
-		$key = $mapper.'Id';
-
-		$this->assertSame($primary, $model->$key);
+		$this->assertInstanceOf('\Test\Model\Test', $model);
+		$this->assertSame('Test1', $model->testName);
+		$this->assertTrue($model->flagged);
 	}
 
 	/**
 	 * @covers Gacela\Mapper\Mapper::findAll
-	 * @todo   Implement testFindAll().
 	 */
 	public function testFindAll()
 	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
+		$col = $this->object->findAll();
+
+		$this->assertInstanceOf('\Gacela\Collection\Arr', $col);
+		$this->assertSame(4, $col->count());
 	}
 
 	/**
-	 * @covers Gacela\Mapper\Mapper::findAllByAssociation
-	 * @todo   Implement testFindAllByAssociation().
+	 * @covers Gacela\Mapper\Mapper::findAll
 	 */
-	public function testFindAllByAssociation()
+	public function testFindAllWithCriteria()
 	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
-	}
+		$criteria = new Gacela\Criteria();
 
-	/**
-	 * @covers Gacela\Mapper\Mapper::findRelation
-	 */
-	public function testFindRelation()
-	{
+		$criteria->isNotNull('completed');
 
+		$col = $this->object->findAll($criteria);
+
+		$this->assertSame(1, $col->count());
 	}
 
 	/**
@@ -109,7 +139,33 @@ class FindTest extends \DbTestCase
 
 		$rs = $mapper->save($changed, $new, $original);
 
-		$this->assertAttributeEquals(1, 'id', $rs);
+		$this->assertAttributeEquals(5, 'id', $rs);
+	}
+
+	/**
+	 * @covers Gacela\Mapper\Mapper::getFields
+	 */
+	public function testGetFields()
+	{
+		$resource = Gacela::instance()->getDataSource('test')->loadResource('tests');
+
+		$this->assertEquals($resource->getFields(), $this->object->getFields());
+	}
+
+	/**
+	 * @covers Gacela\Mapper\Mapper::getPrimaryKey
+	 */
+	public function testGetSinglePrimaryKey()
+	{
+		$this->assertEquals(array('id'), $this->object->getPrimaryKey());
+	}
+
+	/**
+	 * @covers Gacela\Mapper\Mapper::getPrimaryKey
+	 */
+	public function testGetCompoundPrimaryKey()
+	{
+		$this->markTestIncomplete();
 	}
 
 }

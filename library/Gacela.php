@@ -11,6 +11,9 @@ class Gacela
 {
 	protected static $_instance;
 
+	/**
+	 * @var \Memcache
+	 */
 	protected $_cache = null;
 
 	protected $_cached = array();

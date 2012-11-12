@@ -18,6 +18,8 @@ abstract class Mapper implements iMapper
 	 */
 	protected $_associations = array();
 
+	protected $_cache = false;
+
 	/**
 	 *  Contains the names of resources that are dependent on Mapper::$_resource <br/>
 	 * <a href="http://martinfowler.com/eaaCatalog/dependentMapping.html" target="_blank">Dependent Mapping</a>
@@ -70,6 +72,59 @@ abstract class Mapper implements iMapper
 	 *  Instance of DataSource to use for the Mapper.
 	 */
 	protected $_source = 'db';
+
+	/**
+	 * @param null $data
+	 * @return mixed
+	 */
+	protected function _cache($params, $data = null)
+	{
+		$instance = $this->_gacela();
+
+		$sourceName = $this->_source()->getName();
+		$className = strtolower(str_replace('\\', '_', get_class($this)));
+
+		$key = $sourceName.'_'.$className.'_version';
+
+		$version = $instance->cacheData($key);
+
+		if (is_null($version) || $version === false) {
+			$version = 0;
+			$instance->cacheData($key, $version);
+		}
+
+		$key = $sourceName.'_'.$className. $version . '_' .hash('whirlpool', serialize($params));
+
+		$cached = $instance->cacheData($key);
+
+		if (is_null($data)) {
+			return $cached;
+		}
+
+		$instance->cacheData($key, $data);
+
+		return $data;
+	}
+
+	/**
+	 * @param $name
+	 * @return void
+	 */
+	protected function _incrementCache()
+	{
+		$instance = $this->_gacela();
+
+		$sourceName = $this->_source()->getName();
+		$className = strtolower(str_replace('\\', '_', get_class($this)));
+
+		$key = $sourceName.'_'.$className.'_version';
+
+		$cached = $instance->cacheData($key);
+
+		if($cached !== false) {
+			$instance->incrementDataCache($key);
+		}
+	}
 
 	/**
 	 * @param \PDOStatement | array $data
@@ -469,11 +524,13 @@ abstract class Mapper implements iMapper
 		if(is_null($primary)) {
 			$update = false;
 		} elseif($fields[key($primary)]->sequenced === false) {
-			$rs = $this->_source()->find($primary, $resource);
+			$criteria = new \Gacela\Criteria;
 
-			if(($rs instanceof \PDOStatement && $rs->rowCount() <= 0) || (is_array($rs) && !count($rs))) {
-				$update = false;
+			foreach($primary as $field => $value) {
+				$criteria->equals($field, $value);
 			}
+
+			$update = $this->_source()->find($this->_source()->getQuery($criteria), $resource);
 		}
 
 		// Insert the record
@@ -603,21 +660,7 @@ abstract class Mapper implements iMapper
 
 	public function count($query = null)
 	{
-		if($query instanceof \Gacela\Criteria || is_null($query)) {
-			$query = $this->_source()->getQuery($query);
-
-			$query->from($this->_resourceName, array('count' => 'COUNT(*)'));
-		} elseif($query instanceof \Gacela\DataSource\Query\Sql) {
-			$sub = $query;
-
-			$query = $this->_source()->getQuery()
-				->from(array('s' => $sub), array('count' => 'COUNT(*)'));
-		}
-
-		return	$this->_source()
-					->findAll($query, $this->_resource, $this->_inherits, $this->_dependents)
-					->fetch()
-					->count;
+		return $this->_source()->count($query, $this->_resource, $this->_inherits, $this->_dependents);
 	}
 
 	public function debug($return = true)
@@ -683,6 +726,10 @@ abstract class Mapper implements iMapper
 
 		$this->_source()->commitTransaction();
 
+		if($this->_cache) {
+			$this->_incrementCache();
+		}
+
 		return true;
 	}
 
@@ -704,19 +751,52 @@ abstract class Mapper implements iMapper
 
 		$primary = $this->_primaryKey($this->_primaryKey, $id);
 
-		if(!is_null($primary)) {
-			$rs = $this->_source()->find($primary, $this->_resource, $this->_inherits, $this->_dependents);
+		if(is_null($primary)) {
+			return $this->_load(new \stdClass);
+		}
 
-			if($rs instanceof \PDOStatement) {
-				$data = $rs->fetchObject();
-			} elseif(is_array($rs)) {
-				$data = current($rs);
+		$criteria = new \Gacela\Criteria;
+
+		foreach($primary as $field => $value) {
+			$criteria->equals($field, $value);
+		}
+
+		$data = null;
+
+		if($this->_cache && ($cached = $this->_cache(new \Gacela\Criteria))) {
+			do {
+				$row = current($cached);
+
+				$fail = false;
+
+				while(!$fail) {
+					$key = key($primary);
+					$val = current($primary);
+
+					if($row->$key != $val) {
+						$fail = true;
+					}
+				}
+
+				reset($primary);
+			} while(!$data && next($cached) !== false);
+		}
+
+		if(!$data) {
+			$data = $this->_source()->find($this->_source()->getQuery($criteria), $this->_resource, $this->_inherits, $this->_dependents);
+
+			if($data && $this->_cache) {
+				if(!$cached) {
+					$cached = array($data);
+				} else {
+					$cached[] = $data;
+				}
+
+				$this->_cache(new \Gacela\Criteria, $cached);
 			}
 		}
 
-		unset($rs);
-
-		if(!isset($data) || empty($data)) {
+		if(!$data) {
 			$data = new \stdClass();
 		}
 
@@ -730,14 +810,29 @@ abstract class Mapper implements iMapper
 	 */
 	public function findAll(\Gacela\Criteria $criteria = null)
 	{
+		if($this->_cache) {
+			$cached = $this->_cache($criteria);
+
+			if($cached) {
+				return $this->_collection($cached);
+			}
+		}
+
 		$data = $this->_source()
 			->findAll(
 				$this->_source()->getQuery($criteria),
 				$this->_resource,
 				$this->_inherits,
 				$this->_dependents
-			)
-			->fetchAll();
+			);
+
+		if($data instanceof \PDOStatement) {
+			$data = $data->fetchAll();
+		}
+
+		if($this->_cache) {
+			$this->_cache($criteria, $data);
+		}
 
 		return $this->_collection($data);
 	}
@@ -958,6 +1053,10 @@ abstract class Mapper implements iMapper
 		}
 
 		$this->_source()->commitTransaction();
+
+		if($this->_cache) {
+			$this->_incrementCache();
+		}
 
 		return (object) $new;
 	}

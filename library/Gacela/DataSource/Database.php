@@ -61,6 +61,22 @@ class Database extends DataSource
 		return $this->_adapter->commit();
 	}
 
+	public function count($query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
+	{
+		if($query instanceof \Gacela\Criteria || is_null($query)) {
+			$query = $this->getQuery($query);
+
+			$query->from($resource->getName(), array('count' => 'COUNT(*)'));
+		} elseif($query instanceof \Gacela\DataSource\Query\Sql) {
+			$sub = $query;
+
+			$query = $this->getQuery()
+				->from(array('s' => $sub), array('count' => 'COUNT(*)'));
+		}
+
+		return (int) $this->findAll($query, $resource, $inherits, $dependents)->fetch()->count;
+	}
+
 	/**
 	 * @see Gacela\DataSource\iDataSource::delete()
 	 * @throws \Exception
@@ -79,7 +95,6 @@ class Database extends DataSource
 				return false;
 			}
 
-			//$this->_incrementCache($name);
 			return true;
 		} else {
 			throw new \Exception('Update failed with errors: <pre>'.print_r($query->errorInfo(), true).print_r($query, true).'</pre>');
@@ -93,18 +108,13 @@ class Database extends DataSource
 	 * @param array $dependents
 	 * @return
 	 */
-	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
+	public function find(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
 	{
-		$query = $this->getQuery();
-
-		foreach($primary as $key => $val) {
-			$query->where($resource->getName().'.'.$key.' = :'.$key, array(':'.$key => $val));
-		}
-
 		return $this->query(
 					$resource,
 					$this->_buildFinder($query, $resource, $inherits, $dependents)
-				);
+				)
+				->fetchObject();
 	}
 
 	/**
@@ -193,26 +203,22 @@ class Database extends DataSource
 				if($this->_adapter->inTransaction()) {
 					$this->rollbackTransaction();
 				}
-
-				throw new \Exception
-				(
-					'Insert to '.
-					$name .
-					' failed with errors: <pre>'.
-					print_r($query->errorInfo(), true) .
-					'</pre> With SQL: <pre>'.
-					$sql.
-					'</pre> And Data: </pre>'.
-					print_r($binds, true).
-					'</pre>'
-				);
 			}
 		} catch (\PDOException $e) {
 			if($this->_adapter->inTransaction()) {
 				$this->rollbackTransaction();
 			}
 
-			throw $e;
+			throw new \Gacela\Exception
+			(
+				'Insert to '.$name." failed with errors:\n".
+					print_r($query->errorInfo(), true) .
+					"\nWith Sql:\n".
+					$sql.
+					"\n\nAnd Data:\n".
+					print_r($binds, true).
+					"\n"
+			);
 		}
 
 	}
@@ -222,7 +228,7 @@ class Database extends DataSource
 	 */
 	public function query(\Gacela\DataSource\Resource $resource, $query, $args = array())
 	{
-		$key = $this->_setLastQuery($query, $args);
+		$this->_setLastQuery($query, $args);
 
 		/*$cached = $this->_cache($resource->getName(), $key);
 

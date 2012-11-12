@@ -67,14 +67,36 @@ abstract class DbTestCase extends PHPUnit_Extensions_Database_TestCase
 		return $this->conn;
 	}
 
+	/*public function getSetUpOperation()
+	{
+		$cascadeTruncates = TRUE; //if you want cascading truncates, false otherwise
+		//if unsure choose false
+
+		return new PHPUnit_Extensions_Database_Operation_Composite(array(
+			new PHPUnit_Extensions_Database_Operation_MySQLTruncate($cascadeTruncates),
+			PHPUnit_Extensions_Database_Operation_Factory::INSERT()
+		));
+	}*/
+
 	protected function getDataSet()
 	{
-		return new ArrayDataSet(
+		return $this->createArrayDataSet(
 			array(
 				'peeps' => array(),
 			//	'contacts' => array(),
 				'tests' => array()
 			)
 		);
+	}
+
+	/**
+	 * Creates a new Array DataSet with the given $array.
+	 *
+	 * @param string $xmlFile
+	 * @return ArrayDataSet
+	 */
+	protected function createArrayDataSet(array $array)
+	{
+		return new PHPUnit_Extensions_Database_DataSet_ArrayDataSet($array);
 	}
 }

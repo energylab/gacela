@@ -260,6 +260,17 @@ class GacelaTest extends TestCase
 		$this->assertInstanceOf("\\Gacela\\Field\\".$type, $this->object->getField($type));
 	}
 
+	public function testIncrementCache()
+	{
+		$this->object->enableCache($this->memcache);
+
+		$this->object->cacheData('test', 1);
+
+		$this->object->incrementDataCache('test');
+
+		$this->assertSame(2, $this->object->cacheData('test'));
+	}
+
     /**
      * @covers Gacela::loadConfig
      * @todo   Implement testLoadConfig().

@@ -16,6 +16,8 @@ interface iDataSource {
 	 */
 	public function __construct(\Gacela $gacela, \Gacela\DataSource\Adapter\iAdapter $adapter, array $config);
 
+	public function count($query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents);
+
 	/**
 	 * @abstract
 	 * @param  $name
@@ -24,7 +26,7 @@ interface iDataSource {
 	 */
 	public function delete($name, \Gacela\DataSource\Query\Query $where);
 
-	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array());
+	public function find(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array());
 
 	/**
 	 *
@@ -59,7 +61,7 @@ interface iDataSource {
 	/**
 	 * @abstract
 	 * @param  string $name
-	 * @return \Gacela\DataSource\Resource\Resource
+	 * @return \Gacela\DataSource\Resource
 	 */
 	public function loadResource($name, $force = false);
 

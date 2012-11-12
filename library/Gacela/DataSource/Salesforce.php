@@ -11,6 +11,8 @@ namespace Gacela\DataSource;
 
 class Salesforce extends DataSource
 {
+	public function count($query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents) {}
+
 	/**
 	 * @abstract
 	 * @param  $name
@@ -29,7 +31,7 @@ class Salesforce extends DataSource
 	 * @param array $dependents
 	 * @return array()
 	 */
-	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
+	public function find(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
 	{
 		if(key($primary) === 'Id') {
 			$primary = array($primary['Id']);
@@ -37,8 +39,8 @@ class Salesforce extends DataSource
 
 		$return = $this->_adapter->retrieve(join(',', array_keys($resource->getFields())), $resource->getName(), $primary);
 
-		if(is_null($return) OR is_object($return)) {
-			$return = array($return);
+		if(is_array($return)) {
+			$return = current($return);
 		}
 
 		return $return;

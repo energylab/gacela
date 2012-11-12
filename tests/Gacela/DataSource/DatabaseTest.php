@@ -10,7 +10,7 @@ class DatabaseTest extends \DbTestCase
 
 	protected function getDataSet()
 	{
-		return new ArrayDataSet(
+		return $this->createArrayDataSet(
 			array(
 				'tests' => array(
 					array('testName' => 'test1'),
