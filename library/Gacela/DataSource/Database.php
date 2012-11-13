@@ -108,11 +108,17 @@ class Database extends DataSource
 	 * @param array $dependents
 	 * @return
 	 */
-	public function find(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
+	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array())
 	{
+		$crit = new \Gacela\Criteria;
+
+		foreach($primary as $key => $val) {
+			$crit->equals($resource->getName().'.'.$key, $val);
+		}
+
 		return $this->query(
 					$resource,
-					$this->_buildFinder($query, $resource, $inherits, $dependents)
+					$this->_buildFinder($this->getQuery($crit), $resource, $inherits, $dependents)
 				)
 				->fetchObject();
 	}
@@ -230,13 +236,6 @@ class Database extends DataSource
 	{
 		$this->_setLastQuery($query, $args);
 
-		/*$cached = $this->_cache($resource->getName(), $key);
-
-		// If the query is cached, return the cached data
-		if($cached !== false AND !is_null($cached)) {
-			return $cached;
-		}*/
-
 		$stmt = $this->_adapter->prepare($this->_lastQuery['query']);
 
 		$stmt->setFetchMode(\PDO::FETCH_OBJ);
@@ -247,7 +246,6 @@ class Database extends DataSource
 
 		if($stmt->execute() === true) {
 			return $stmt;
-			//$this->_cache($resource->getName(), $key, $return);
 		} else {
 			$error = $stmt->errorInfo();
 			$error = $error[2];

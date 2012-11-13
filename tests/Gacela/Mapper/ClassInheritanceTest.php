@@ -2,12 +2,67 @@
 
 class ClassInheritanceTest extends \Test\GUnit\Extensions\Database\TestCase
 {
-	public function testSaveInherits()
+	/**
+	 * @var \Test\Mapper\Customer
+	 */
+	protected $object;
+
+	public function setUp()
+	{
+		parent::setUp();
+
+		$this->object = \Gacela::instance()->loadMapper('Customer');
+
+		$this->object->setCacheable(false);
+	}
+
+	protected function getDataSet()
+	{
+		return $this->createArrayDataSet(
+			array(
+				'users' => array(array('id' => 1, 'email' => 'jan@test.com')),
+				'customers' => array(array('id' => 1, 'first' => 'January', 'last' => 'Jones', 'phone' => '5556321234'))
+			)
+		);
+	}
+
+	public function testInsert()
+	{
+		$data = array(
+			'id' => null,
+			'email' => 'venus@test.com',
+			'first' => 'Venus',
+			'last' => 'De Milo',
+			'phone' => '5555555543'
+		);
+
+		$changed = array_keys($data);
+
+		$old = array();
+		foreach($data as $key => $val) {
+			$old[$key] = null;
+		}
+
+		$rs = $this->object->save($changed, (object) $data, $old);
+
+		$this->assertNotEmpty($rs->id);
+
+		$data['id'] = $rs->id;
+
+		$this->assertEquals((object) $data, $rs);
+	}
+
+	public function testUpdateParent()
 	{
 
 	}
 
-	public function testSaveEmptyInherits()
+	public function testUpdateChild()
+	{
+
+	}
+
+	public function delete()
 	{
 
 	}

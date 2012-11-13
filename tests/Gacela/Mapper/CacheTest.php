@@ -7,7 +7,7 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 {
 
 	/**
-	 * @var Test\Mapper\?
+	 * @var Test\Mapper\Customer
 	 */
 	protected $object;
 
@@ -20,11 +20,20 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$this->object = Gacela::instance()->loadMapper('');
+		$this->object = Gacela::instance()->loadMapper('Customer');
 
 		$this->memcache = new Memcache;
 
 		$this->memcache->addServer('127.0.0.1', 11211);
+
+		Gacela::instance()->enableCache($this->memcache);
+	}
+
+	public function tearDown()
+	{
+		parent::tearDown();
+
+		$this->memcache->flush();
 	}
 
 	protected function getDataSet()
@@ -46,12 +55,12 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 					array('id' => 12, 'email' => 'december@test.com')
 				),
 				'customers' => array(
-					array('id' => 2, 'first' => 'June', 'last' => 'Tester', 'phone' => 1234567890),
-					array('id' => 4, 'first' => 'January', 'last' => 'Year', 'phone' => 9876543210),
-					array('id' => 6, 'first' => 'July', 'last' => 'IsHot', 'phone' => 6549873215),
-					array('id' => 8, 'first' => 'August', 'last' => 'IsHotter', 'phone' => 1236549870),
-					array('id' => 10, 'first' => 'March', 'last' => 'MyBirthday', 'phone' => 3271983000),
-					array('id' => 12, 'first' => 'December', 'last' => 'Christmas', 'phone' => 1225190098)
+					array('id' => 2, 'first' => 'June', 'last' => 'Tester', 'phone' => '1234567890'),
+					array('id' => 4, 'first' => 'January', 'last' => 'Year', 'phone' => '9876543210'),
+					array('id' => 6, 'first' => 'July', 'last' => 'IsHot', 'phone' => '6549873215'),
+					array('id' => 8, 'first' => 'August', 'last' => 'IsHotter', 'phone' => '1236549870'),
+					array('id' => 10, 'first' => 'March', 'last' => 'MyBirthday', 'phone' => '3271983000'),
+					array('id' => 12, 'first' => 'December', 'last' => 'Christmas', 'phone' => '1225190098')
 				)
 			)
 		);
@@ -59,13 +68,34 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 
 	public function testFindWithoutPrimedCache()
 	{
+		$key = 'test_test_mapper_customer_0_'.hash('whirlpool', serialize(null));
 
+		$this->assertFalse($this->memcache->get($key));
+
+		$m = $this->object->find(2);
+
+		$this->assertSame('june@test.com', $m->email);
+		$this->assertSame('Tester', $m->last);
+
+		$cached = $this->memcache->get($key);
+
+		$cached = current($cached);
+
+		$m2 = new \Test\Model\Customer(\Gacela::instance(), $this->object, $cached);
+
+		$this->assertEquals($m, $m2);
 	}
 
 	public function testFindAllWithoutCriteria()
 	{
-		$key = 'test_customer_0_'.hash(MHASH_WHIRLPOOL, serialize(null));
+		$key = 'test_test_mapper_customer_0_'.hash('whirlpool', serialize(null));
 
 		$this->assertFalse($this->memcache->get($key));
+
+		$rs = $this->object->findAll();
+
+		$this->assertSame(6, $rs->count());
+
+		$this->assertAttributeEquals($this->memcache->get($key), '_data', $rs);
 	}
 }

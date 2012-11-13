@@ -26,7 +26,7 @@ interface iDataSource {
 	 */
 	public function delete($name, \Gacela\DataSource\Query\Query $where);
 
-	public function find(\Gacela\DataSource\Query\Query $query, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array());
+	public function find(array $primary, \Gacela\DataSource\Resource $resource, array $inherits = array(), array $dependents = array());
 
 	/**
 	 *

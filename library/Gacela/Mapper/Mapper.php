@@ -524,13 +524,7 @@ abstract class Mapper implements iMapper
 		if(is_null($primary)) {
 			$update = false;
 		} elseif($fields[key($primary)]->sequenced === false) {
-			$criteria = new \Gacela\Criteria;
-
-			foreach($primary as $field => $value) {
-				$criteria->equals($field, $value);
-			}
-
-			$update = $this->_source()->find($this->_source()->getQuery($criteria), $resource);
+			$update = $this->_source()->find($primary, $resource);
 		}
 
 		// Insert the record
@@ -755,15 +749,9 @@ abstract class Mapper implements iMapper
 			return $this->_load(new \stdClass);
 		}
 
-		$criteria = new \Gacela\Criteria;
-
-		foreach($primary as $field => $value) {
-			$criteria->equals($field, $value);
-		}
-
 		$data = null;
 
-		if($this->_cache && ($cached = $this->_cache(new \Gacela\Criteria))) {
+		if($this->_cache && ($cached = $this->_cache(null))) {
 			do {
 				$row = current($cached);
 
@@ -783,7 +771,7 @@ abstract class Mapper implements iMapper
 		}
 
 		if(!$data) {
-			$data = $this->_source()->find($this->_source()->getQuery($criteria), $this->_resource, $this->_inherits, $this->_dependents);
+			$data = $this->_source()->find($primary, $this->_resource, $this->_inherits, $this->_dependents);
 
 			if($data && $this->_cache) {
 				if(!$cached) {
@@ -792,7 +780,7 @@ abstract class Mapper implements iMapper
 					$cached[] = $data;
 				}
 
-				$this->_cache(new \Gacela\Criteria, $cached);
+				$this->_cache(null, $cached);
 			}
 		}
 
@@ -1059,5 +1047,16 @@ abstract class Mapper implements iMapper
 		}
 
 		return (object) $new;
+	}
+
+	/**
+	 * @param bool
+	 * @return Mapper
+	 */
+	public function setCacheable($bool)
+	{
+		$this->_cache = (bool) $bool;
+
+		return $this;
 	}
 }
