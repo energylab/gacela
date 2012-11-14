@@ -137,13 +137,28 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$old = array();
 
-		foreach($new as $key => $v) {
-			$old[$key] = null;
+		foreach($new as $k => $v) {
+			$old[$k] = null;
 		}
 
 		$rs = $this->object->save($changed, (object) $new, $old);
 
 		$this->assertNotSame(false, $rs);
+
+		$this->assertSame(1, $this->memcache->get($key));
+	}
+
+	public function testIncrementCacheWithDelete()
+	{
+		$key = 'test_test_mapper_customer_version';
+
+		$this->assertFalse($this->memcache->get($key));
+
+		$this->object->findAll();
+
+		$this->assertSame(0, $this->memcache->get($key));
+
+		$this->object->delete((object) array('id' => 2));
 
 		$this->assertSame(1, $this->memcache->get($key));
 	}

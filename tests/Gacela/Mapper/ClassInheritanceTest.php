@@ -36,7 +36,7 @@ class ClassInheritanceTest extends \Test\GUnit\Extensions\Database\TestCase
 				),
 				'customers' => array(
 					array('id' => 2, 'first' => 'June', 'last' => 'Tester', 'phone' => '1234567890'),
-					array('id' => 4, 'first' => 'January', 'last' => 'Year', 'phone' => '9876543210'),
+					array('id' => 4, 'first' => 'January', 'last' => 'Jones', 'phone' => '9876543210'),
 					array('id' => 6, 'first' => 'July', 'last' => 'IsHot', 'phone' => '6549873215'),
 					array('id' => 8, 'first' => 'August', 'last' => 'IsHotter', 'phone' => '1236549870'),
 					array('id' => 10, 'first' => 'March', 'last' => 'MyBirthday', 'phone' => '3271983000'),
@@ -94,11 +94,11 @@ class ClassInheritanceTest extends \Test\GUnit\Extensions\Database\TestCase
 	public function testUpdateChild()
 	{
 		$new = array(
-			'id' => 1,
+			'id' => 4,
 			'email' => 'jan@test.com',
 			'first' => 'January',
 			'last' => 'Pfifer',
-			'phone' => '5556321234'
+			'phone' => '9876543210'
 		);
 
 		$changed = array('last');
