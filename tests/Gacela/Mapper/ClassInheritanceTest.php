@@ -54,12 +54,40 @@ class ClassInheritanceTest extends \Test\GUnit\Extensions\Database\TestCase
 
 	public function testUpdateParent()
 	{
+		$new = array(
+			'id' => 1,
+			'email' => 'january@test.com',
+			'first' => 'January',
+			'last' => 'Jones',
+			'phone' => '5556321234'
+		);
 
+		$changed = array('email');
+
+		$old = array('email' => 'jan@test.com');
+
+		$rs = $this->object->save($changed, (object) $new, $old);
+
+		$this->assertEquals((object) $new, $rs);
 	}
 
 	public function testUpdateChild()
 	{
+		$new = array(
+			'id' => 1,
+			'email' => 'jan@test.com',
+			'first' => 'January',
+			'last' => 'Pfifer',
+			'phone' => '5556321234'
+		);
 
+		$changed = array('last');
+
+		$old = array('last' => 'Jones');
+
+		$rs = $this->object->save($changed, (object) $new, $old);
+
+		$this->assertEquals((object) $new, $rs);
 	}
 
 	public function delete()
