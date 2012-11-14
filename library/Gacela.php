@@ -290,11 +290,17 @@ class Gacela
 		return $this->_fields[$type];
 	}
 
+	/**
+	 * @param $key
+	 * @return Gacela
+	 */
 	public function incrementDataCache($key)
 	{
 		if(is_object($this->_cache)) {
 			$this->_cache->increment($key);
 		}
+
+		return $this;
 	}
 
 	public function loadConfig($name)

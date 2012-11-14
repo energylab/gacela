@@ -26,6 +26,8 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$this->memcache->addServer('127.0.0.1', 11211);
 
+		$this->memcache->flush();
+
 		Gacela::instance()->enableCache($this->memcache);
 	}
 
@@ -86,6 +88,21 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 		$this->assertEquals($m, $m2);
 	}
 
+	public function testFindUsingCache()
+	{
+		$this->object->find(4);
+
+		$this->object->find(12);
+
+		$this->object->find(4);
+
+		$debug = $this->object->debug(true);
+
+		$id = current($debug['lastDataSourceQuery']['args']);
+
+		$this->assertSame(12, $id);
+	}
+
 	public function testFindAllWithoutCriteria()
 	{
 		$key = 'test_test_mapper_customer_0_'.hash('whirlpool', serialize(null));
@@ -97,5 +114,37 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 		$this->assertSame(6, $rs->count());
 
 		$this->assertAttributeEquals($this->memcache->get($key), '_data', $rs);
+	}
+
+	public function testIncrementCacheWithSave()
+	{
+		$key = 'test_test_mapper_customer_version';
+
+		$this->assertFalse($this->memcache->get($key));
+
+		$this->object->findAll();
+
+		$this->assertSame(0, $this->memcache->get($key));
+
+		$new = array(
+			'email' => 'independence@test.com',
+			'first' => 'Independence',
+			'last' => 'American',
+			'phone' => 1234567890
+		);
+
+		$changed = array_keys($new);
+
+		$old = array();
+
+		foreach($new as $key => $v) {
+			$old[$key] = null;
+		}
+
+		$rs = $this->object->save($changed, (object) $new, $old);
+
+		$this->assertNotSame(false, $rs);
+
+		$this->assertSame(1, $this->memcache->get($key));
 	}
 }

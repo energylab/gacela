@@ -53,6 +53,10 @@ class GacelaTest extends Test\GUnit\TestCase
 		$this->memcache = new Memcache;
 
 		$this->memcache->addServer('127.0.0.1', 11211);
+
+		if(is_object($this->memcache)) {
+			$this->memcache->flush();
+		}
     }
 
     /**

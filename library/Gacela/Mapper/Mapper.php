@@ -107,26 +107,6 @@ abstract class Mapper implements iMapper
 	}
 
 	/**
-	 * @param $name
-	 * @return void
-	 */
-	protected function _incrementCache()
-	{
-		$instance = $this->_gacela();
-
-		$sourceName = $this->_source()->getName();
-		$className = strtolower(str_replace('\\', '_', get_class($this)));
-
-		$key = $sourceName.'_'.$className.'_version';
-
-		$cached = $instance->cacheData($key);
-
-		if($cached !== false) {
-			$instance->incrementDataCache($key);
-		}
-	}
-
-	/**
 	 * @param \PDOStatement | array $data
 	 * @return \Gacela\Collection\Collection
 	 */
@@ -205,6 +185,26 @@ abstract class Mapper implements iMapper
 	protected function _gacela()
 	{
 		return \Gacela::instance();
+	}
+
+	/**
+	 * @param $name
+	 * @return void
+	 */
+	protected function _incrementCache()
+	{
+		$instance = $this->_gacela();
+
+		$sourceName = $this->_source()->getName();
+		$className = strtolower(str_replace('\\', '_', get_class($this)));
+
+		$key = $sourceName.'_'.$className.'_version';
+
+		$cached = $instance->cacheData($key);
+
+		if($cached !== false) {
+			$instance->incrementDataCache($key);
+		}
 	}
 
 	/**
@@ -757,13 +757,17 @@ abstract class Mapper implements iMapper
 
 				$fail = false;
 
-				while(!$fail) {
+				do {
 					$key = key($primary);
 					$val = current($primary);
 
 					if($row->$key != $val) {
 						$fail = true;
 					}
+				} while(!$fail && next($primary) !== false);
+
+				if(!$fail) {
+					$data = $row;
 				}
 
 				reset($primary);
