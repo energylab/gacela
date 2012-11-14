@@ -120,6 +120,8 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		$key = 'test_test_mapper_customer_version';
 
+		$this->assertFalse($this->memcache->get($key));
+
 		$this->object->findAll();
 
 		$this->assertSame(0, $this->memcache->get($key));
