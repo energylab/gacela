@@ -125,7 +125,7 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 		$this->object->findAll();
 
 		$this->assertSame(0, $this->memcache->get($key));
-		echo "After Assertion: ".$this->memcache->get($key)."\n";
+
 		$new = array(
 			'email' => 'independence@test.com',
 			'first' => 'Independence',
@@ -140,11 +140,11 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 		foreach($new as $k => $v) {
 			$old[$k] = null;
 		}
-		echo "Here: ".$this->memcache->get($key)."\n";
+
 		$rs = $this->object->save($changed, (object) $new, $old);
-		echo "After Save: ".$this->memcache->get($key)."\n";
+
 		$this->assertNotSame(false, $rs);
-		echo "Before Final Assertion: ".$this->memcache->get($key)."\n";exit;
+
 		$this->assertSame(1, $this->memcache->get($key));
 	}
 

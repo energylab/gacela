@@ -213,7 +213,7 @@ class Gacela
 
 	public function cacheData($key, $value = null)
 	{
-		if(!is_null($value) && is_null(($this->_cache))) { exit('fail');
+		if(!is_null($value) && is_null(($this->_cache))) {
 			return false;
 		}
 
@@ -298,7 +298,7 @@ class Gacela
 	{
 		if(is_object($this->_cache)) {
 			if(!$this->_cache->increment($key)) {
-				exit('failed');
+
 			}
 		}
 
