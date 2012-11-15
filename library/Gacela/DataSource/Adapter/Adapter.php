@@ -72,7 +72,7 @@ abstract class Adapter implements iAdapter
 	public function __call($method, $args)
 	{
 		if(!$this->_conn) {
-			$this->_loadConn();
+			$this->loadConnection();
 		}
 
 		$method = new \ReflectionMethod($this->_conn, $method);

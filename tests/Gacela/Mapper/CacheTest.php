@@ -162,4 +162,17 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$this->assertSame(1, $this->memcache->get($key));
 	}
+
+	public function testFindRelationOfCachedObject()
+	{
+		$courses = Gacela::instance()->loadMapper('Course')->findAll();
+
+		$c2 = Gacela::instance()->loadMapper('Course')->findAll();
+
+		foreach($c2 as $course) {
+			$this->assertInstanceOf('App\Model\Teacher', $course->teacher);
+		}
+
+
+	}
 }
