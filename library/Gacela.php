@@ -41,7 +41,7 @@ class Gacela
 	protected function _cache($key, $object = null)
 	{
 		if(!is_object($this->_cache)) {
-			if(is_null($object)) {
+			if($object === null || $object === false) {
 				if(isset($this->_cached[$key])) {
 					return $this->_cached[$key];
 				}
@@ -53,7 +53,7 @@ class Gacela
 				return true;
 			}
 		} else {
-			if(is_null($object)) {
+			if($object === null || $object === false) {
 				return $this->_cache->get($key);
 			} else {
 				return $this->_cache->set($key, $object);
@@ -213,7 +213,7 @@ class Gacela
 
 	public function cacheData($key, $value = null)
 	{
-		if(!is_null($value) && is_null(($this->_cache))) {
+		if(!is_null($value) && is_null(($this->_cache))) { exit('fail');
 			return false;
 		}
 
@@ -297,7 +297,9 @@ class Gacela
 	public function incrementDataCache($key)
 	{
 		if(is_object($this->_cache)) {
-			$this->_cache->increment($key);
+			if(!$this->_cache->increment($key)) {
+				exit('failed');
+			}
 		}
 
 		return $this;
