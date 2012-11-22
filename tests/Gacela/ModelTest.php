@@ -6,7 +6,7 @@
 class ModelTest extends \Test\GUnit\Extensions\Database\TestCase
 {
     /**
-     * @var \Test\Model\User
+     * @var \Test\Model\Test
      */
     protected $object;
 

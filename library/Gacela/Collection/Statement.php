@@ -43,7 +43,7 @@ class Statement extends Collection
 	public function current()
 	{
 		if(is_null($this->_current)) {
-			$this->next();
+			$this->_current = $this->_data->fetch();
 		}
 
 		if($this->_current == false) {
@@ -70,6 +70,10 @@ class Statement extends Collection
 	 */
 	public function next()
 	{
+		if(is_null($this->_current)) {
+			$this->_current = $this->_data->fetch();
+		}
+
 		$this->_pointer++;
 
 		$this->_current = $this->_data->fetch();
@@ -85,7 +89,7 @@ class Statement extends Collection
 
 			$this->_data->execute();
 
-			$this->_current = null;
+			$this->_current = $this->_data->fetch();
 		}
 	}
 
