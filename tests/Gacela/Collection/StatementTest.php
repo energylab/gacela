@@ -236,4 +236,38 @@ class StatementTest extends \Test\GUnit\Extensions\Database\TestCase
 			}
 		}
     }
+
+	public function testIterateStatementMultipleTimes()
+	{
+		for($i=0;$i<100;$i++) {
+			foreach($this->collection as $k => $row) {
+				$this->assertSame($k+1, $row->id);
+			}
+
+			unset($row);
+		}
+	}
+
+	public function testTwoActiveStatementsAtOneTime()
+	{
+		$one = new Statement(
+			\Gacela::instance()->loadMapper('test'),
+			$this->source->query($this->source->loadResource('tests'), "SELECT * FROM tests")
+		);
+
+		$two = new Statement(
+			\Gacela::instance()->loadMapper('customer'),
+			$this->source->query($this->source->loadResource('customers'), 'SELECT * FROM customers INNER JOIN users ON customers.id = users.id')
+		);
+
+		foreach($one as $key => $row) {
+			$this->assertSame($key+1, $row->id);
+		}
+
+		foreach($two as $t => $o) {}
+
+		foreach($one as $k => $r) {
+			$this->assertSame($k+1, $r->id);
+		}
+	}
 }
