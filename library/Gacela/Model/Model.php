@@ -70,13 +70,17 @@ abstract class Model implements iModel
 	protected function _set($key, $val)
 	{
 		if(isset($this->_fields[$key])) {
-			if(isset($this->_data->$key)) {
-				$this->_originalData[$key] = $this->_data->$key;
+			$val = $this->_gacela->getField($this->_fields[$key]->type)->transform($this->_fields[$key], $val, false);
+
+			if($val !== $this->_data->$key) {
+				if(isset($this->_data->$key)) {
+					$this->_originalData[$key] = $this->_data->$key;
+				}
+
+				$this->_changed[] = $key;
+
+				$this->_data->$key = $val;
 			}
-
-			$this->_changed[] = $key;
-
-			$this->_data->$key = $this->_gacela->getField($this->_fields[$key]->type)->transform($this->_fields[$key], $val, false);
 		} else {
 			$this->_data->$key = $val;
 		}
@@ -216,6 +220,10 @@ abstract class Model implements iModel
 	{
 		if($data) {
 			$this->setData($data);
+		}
+
+		if(empty($this->_changed)) {
+			return true;
 		}
 
 		if(!$this->validate()) {
