@@ -22,6 +22,10 @@ class Statement extends Collection
 		$this->_data->setFetchMode(\PDO::FETCH_OBJ);
 
 		$this->_count = $data->rowCount();
+
+		if(!$this->_count) {
+			$this->_current = false;
+		}
 	}
 
 	/**

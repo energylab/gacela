@@ -238,4 +238,16 @@ class ArrTest extends \Test\GUnit\TestCase
 			}
 		}
     }
+
+	public function testEmptyCollection()
+	{
+		$data = array();
+
+		$collection = new Arr(\Gacela::instance()->loadMapper('test'), $data);
+
+		foreach($collection as $row)
+		{
+			$this->fail('Empty Collection should not iterate');
+		}
+	}
 }

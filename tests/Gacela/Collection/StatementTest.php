@@ -270,4 +270,16 @@ class StatementTest extends \Test\GUnit\Extensions\Database\TestCase
 			$this->assertSame($k+1, $r->id);
 		}
 	}
+
+	public function testEmptyCollection()
+	{
+		$data = $this->source->query($this->source->loadResource('tests'), "SELECT * FROM tests WHERE id < 0");
+
+		$collection = new Statement(\Gacela::instance()->loadMapper('test'), $data);
+
+		foreach($collection as $row)
+		{
+			$this->fail('Empty Collection should not iterate');
+		}
+	}
 }
