@@ -102,7 +102,7 @@ class Statement extends Collection
 	 * Required by interface SeekableIterator.
 	 *
 	 * @param int $position the position to seek to
-	 * @return Gacela\Collection
+	 * @return \Gacela\Collection\Collection
 	 * @throws \Exception
 	 */
 	public function seek($position)
@@ -118,6 +118,8 @@ class Statement extends Collection
 		while($this->_pointer < $position) {
 			$this->next();
 		}
+
+		return $this;
 	}
 
 	public function slice($offset, $length = null)

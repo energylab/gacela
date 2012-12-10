@@ -85,6 +85,8 @@ class Arr extends Collection
 		}
 
 		$this->_pointer = $position;
+
+		return $this;
 	}
 
 	public function slice($offset, $length = null)
