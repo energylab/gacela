@@ -61,6 +61,13 @@ class Database extends DataSource
 		return $this->_adapter->commit();
 	}
 
+	/**
+	 * @param $query
+	 * @param Resource $resource
+	 * @param array $inherits
+	 * @param array $dependents
+	 * @return int
+	 */
 	public function count($query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
 	{
 		if($query instanceof \Gacela\Criteria || is_null($query)) {
@@ -74,7 +81,13 @@ class Database extends DataSource
 				->from(array('s' => $sub), array('count' => 'COUNT(*)'));
 		}
 
-		return (int) $this->findAll($query, $resource, $inherits, $dependents)->fetch()->count;
+		$rs = $this->findAll($query, $resource, $inherits, $dependents)->fetch();
+
+		if($rs) {
+			$rs = $rs->count;
+		}
+
+		return (int) $rs;
 	}
 
 	/**
