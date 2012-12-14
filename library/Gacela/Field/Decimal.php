@@ -31,6 +31,11 @@ class Decimal extends Field
 
 	public function transform($meta, $value, $in = true)
 	{
+		if($value === '' || $value === false || $value === null)
+		{
+			return null;
+		}
+
 		return (string) $value;
 	}
 }
