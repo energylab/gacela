@@ -392,7 +392,9 @@ class Sql extends Query
 		}
 
 		foreach($array as $where) {
-			if($where[1] instanceof $this) {
+			if($where[0] instanceof $this) {
+				list($where[0], $where[1]) = $where[0]->assemble();
+			} elseif($where[1] instanceof $this) {
 				list($query, $args) = $where[1]->assemble();
 
 				str_replace(':query', $query, $_where[0]);
