@@ -455,6 +455,9 @@ class Sql extends Query
 				continue;
 			} elseif($op == 'sort') {
 				$this->orderBy($field, $args);
+
+				// Move along, move along
+				continue;
 			}
 
 
