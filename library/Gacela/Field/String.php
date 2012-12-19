@@ -13,7 +13,7 @@ class String extends Field
 
 	public function validate($meta, $value)
 	{
-		if(empty($value) && !$meta->null) {
+		if((is_null($value) || $value === '' ) && !$meta->null) {
 			return static::NULL_CODE;
 		} elseif(strlen($value) > $meta->length) {
 			return static::LENGTH_CODE;
