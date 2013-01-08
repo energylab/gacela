@@ -803,7 +803,7 @@ abstract class Mapper implements iMapper
 	public function findAll(\Gacela\Criteria $criteria = null)
 	{
 		if($this->_cache) {
-			$cached = $this->_cache($criteria);
+			$cached = $this->_cache(is_null($criteria) ? new \Gacela\Criteria : $criteria);
 
 			if($cached) {
 				return $this->_collection($cached);
