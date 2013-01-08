@@ -16,7 +16,7 @@ class String extends Field
 	{
 		if((is_null($value) || $value === '' || $value === false) && !$meta->null) {
 			return static::NULL_CODE;
-		} elseif(!is_string($value)) {
+		} elseif(!is_string($value) && !(is_null($value) || $value === false)) {
 			return static::TYPE_CODE;
 		} elseif(strlen($value) > $meta->length) {
 			return static::LENGTH_CODE;
