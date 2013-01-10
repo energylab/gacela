@@ -66,7 +66,7 @@ class Salesforce extends Adapter
 		while(is_null($resource) AND current($this->_columns) !== false) {
 			$col = current($this->_columns);
 
-			if(strtolower($col->name) == $name) {
+			if($col->name == $name) {
 				$resource = $col;
 				$_meta['name'] = $col->name;
 			}
