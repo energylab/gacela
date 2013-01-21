@@ -41,7 +41,9 @@ class Arr extends Collection
 
 		$data = $this->_data[$this->_pointer];
 
-		if(array_keys((array) $data) == $this->_mapper->getPrimaryKey()) {
+		if($data instanceof \Gacela\Model\iModel) {
+			return $data;
+		} elseif(array_keys((array) $data) == $this->_mapper->getPrimaryKey()) {
 			return $this->_mapper->find($data);
 		} else {
 			return $this->_mapper->load($data);
@@ -85,6 +87,8 @@ class Arr extends Collection
 		}
 
 		$this->_pointer = $position;
+
+		return $this;
 	}
 
 	public function slice($offset, $length = null)

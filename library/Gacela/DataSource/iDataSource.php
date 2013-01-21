@@ -16,6 +16,13 @@ interface iDataSource {
 	 */
 	public function __construct(\Gacela $gacela, \Gacela\DataSource\Adapter\iAdapter $adapter, array $config);
 
+	/**
+	 * @param $query
+	 * @param Resource $resource
+	 * @param array $inherits
+	 * @param array $dependents
+	 * @return int
+	 */
 	public function count($query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents);
 
 	/**

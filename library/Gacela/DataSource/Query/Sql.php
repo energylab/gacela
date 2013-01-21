@@ -15,7 +15,9 @@ class Sql extends Query
 		'equals' => '=',
 		'notEquals' => '!=',
 		'lessThan' => '<',
+		'lessThanOrEqualTo' => '<=',
 		'greaterThan' => '>',
+		'greaterThanOrEqualTo' => '>=',
 		'notIn' => 'NOT IN',
 		'in' => "IN",
 		'like' => 'LIKE',
@@ -392,7 +394,9 @@ class Sql extends Query
 		}
 
 		foreach($array as $where) {
-			if($where[1] instanceof $this) {
+			if($where[0] instanceof $this) {
+				list($where[0], $where[1]) = $where[0]->assemble();
+			} elseif($where[1] instanceof $this) {
 				list($query, $args) = $where[1]->assemble();
 
 				str_replace(':query', $query, $_where[0]);
@@ -451,6 +455,9 @@ class Sql extends Query
 				continue;
 			} elseif($op == 'sort') {
 				$this->orderBy($field, $args);
+
+				// Move along, move along
+				continue;
 			}
 
 
@@ -470,12 +477,12 @@ class Sql extends Query
 				}
 			}
 
-			if(in_array($op, array('equals', 'notEquals', 'lessThan', 'greaterThan', 'like', 'notLike'))) {
-				$this->where($this->_quoteIdentifier($field).' '.$this->_operators[$op]." {$toBind}", $bind, $or);
-			} elseif(in_array($op, array('in', 'notIn'))) {
+			if(in_array($op, array('in', 'notIn'))) {
 				$this->in($field, $stmt[2], $op === 'in' ? false : true, $or);
 			} elseif(in_array($op, array('notNull', 'null'))) {
 				$this->where("{$field} ".$this->_operators[$stmt[0]], array(), $or);
+			} else {
+				$this->where($this->_quoteIdentifier($field).' '.$this->_operators[$op]." {$toBind}", $bind, $or);
 			}
 		}
 	}
