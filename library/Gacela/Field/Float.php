@@ -25,6 +25,12 @@ class Float extends Field
 
 	public function transform($meta, $value, $in = true)
 	{
-		return (double) $value;
+		if(!is_double($value) && is_numeric($value)) {
+			return (double) $value;
+		} elseif($value === false || $value === '') {
+			return null;
+		}
+
+		return $value;
 	}
 }

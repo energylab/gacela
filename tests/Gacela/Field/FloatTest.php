@@ -35,9 +35,11 @@ class FloatTest extends \PHPUnit_Framework_TestCase
 	{
 		return array(
 			array(12.34, 12.34),
-			array('1', 1),
+			array('1', 1.0),
 			array("1234.12345", 1234.12345),
-			array(1234567.1234)
+			array(1234567.1234, 1234567.1234),
+			array(false, null),
+			array('', null),
 		);
 	}
 
@@ -74,13 +76,10 @@ class FloatTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Gacela\Field\Float::transform
-     * @todo   Implement testTransform().
+     * @dataProvider providerTransform
      */
-    public function testTransform()
+    public function testTransform($in, $expected)
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+		$this->assertSame($expected, $this->object->transform($this->meta, $in));
     }
 }

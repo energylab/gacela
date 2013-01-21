@@ -36,6 +36,21 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	public function providerTransform()
+	{
+		return array
+		(
+			array(123.45, '123.45'),
+			array(null, null),
+			array(false, null),
+			array('', null),
+			array(0, '0'),
+			array('1', '1'),
+			array('1236547895.32165', '1236547895.32165')
+		);
+	}
+
+
 	/**
 	 * @covers Gacela\Field\Decimal::transform
 	 */
@@ -45,11 +60,12 @@ class DecimalTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Gacela\Field\Decimal::transform
+	 * @covers Gacela\Field\Float::transform
+	 * @dataProvider providerTransform
 	 */
-	public function testTransform()
+	public function testTransform($in, $expected)
 	{
-		$this->assertSame(strval(15.0003), $this->object->transform($this->meta, 15.0003));
+		$this->assertSame($expected, $this->object->transform($this->meta, $in));
 	}
 
 	public function testValidateNullCode()
