@@ -11,7 +11,20 @@ namespace Gacela\DataSource;
 
 class Salesforce extends DataSource
 {
-	public function count($query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents) {}
+	public function count($query, \Gacela\DataSource\Resource $resource, array $inherits, array $dependents)
+	{
+		if($query instanceof \Gacela\Criteria || is_null($query)) {
+			$query = $this->getQuery($query);
+		}
+
+		$query->from($resource->getName(), array('count()'));
+
+		$this->_setLastQuery($query, array());
+
+		$rs = $this->_adapter->query($this->_lastQuery['query']);
+
+		return (int) $rs->size;
+	}
 
 	/**
 	 * @abstract
@@ -90,21 +103,13 @@ class Salesforce extends DataSource
 	 */
 	public function query(\Gacela\DataSource\Resource $resource, $query, $args = array())
 	{
-		$key = $this->_setLastQuery($query, $args);
-
-		/*$cached = $this->_cache($resource->getName(), $key);
-
-		// If the query is cached, return the cached data
-		if($cached !== false AND !is_null($cached)) {
-			return $cached;
-		}*/
+		$this->_setLastQuery($query, $args);
 
 		try {
 			$return = $this->_adapter->query($this->_lastQuery['query']);
 
 			if(isset($return->records)) {
 				$return = $return->records;
-				//$this->_cache($resource->getName(), $key, $return);
 			} else {
 				$return = array();
 			}
