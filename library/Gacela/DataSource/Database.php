@@ -61,6 +61,11 @@ class Database extends DataSource
 		return $this->_adapter->commit();
 	}
 
+	public function inTransaction()
+	{
+		return $this->_adapter->inTransaction();
+	}
+
 	/**
 	 * @param $query
 	 * @param Resource $resource
@@ -215,31 +220,30 @@ class Database extends DataSource
 					return false;
 				}
 
-				//$this->_incrementCache($name);
-
 				return $this->_adapter->lastInsertId();
 			} else {
 				if($this->_adapter->inTransaction()) {
 					$this->rollbackTransaction();
 				}
+
+				throw new \Gacela\Exception
+				(
+					'Insert to '.$name." failed with errors:\n".
+						print_r($query->errorInfo(), true) .
+						"\nWith Sql:\n".
+						$sql.
+						"\n\nAnd Data:\n".
+						print_r($binds, true).
+						"\n"
+				);
 			}
 		} catch (\PDOException $e) {
 			if($this->_adapter->inTransaction()) {
 				$this->rollbackTransaction();
 			}
 
-			throw new \Gacela\Exception
-			(
-				'Insert to '.$name." failed with errors:\n".
-					print_r($query->errorInfo(), true) .
-					"\nWith Sql:\n".
-					$sql.
-					"\n\nAnd Data:\n".
-					print_r($binds, true).
-					"\n"
-			);
+			throw $e;
 		}
-
 	}
 
 	/**

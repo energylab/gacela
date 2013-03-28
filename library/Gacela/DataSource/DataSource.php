@@ -57,7 +57,7 @@ abstract class DataSource implements iDataSource
 
 	public function beginTransaction()
 	{
-		return false;
+		return true;
 	}
 
 	public function createConfig($name, $fields, $write = false)
@@ -101,7 +101,7 @@ abstract class DataSource implements iDataSource
 
 	public function commitTransaction()
 	{
-		return false;
+		return true;
 	}
 
 	public function getName()
@@ -134,7 +134,7 @@ abstract class DataSource implements iDataSource
 
 	public function rollbackTransaction()
 	{
-		return false;
+		return true;
 	}
 }
 

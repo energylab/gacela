@@ -993,7 +993,7 @@ abstract class Mapper implements iMapper
 	 */
 	public function save(array $changed, \stdClass $new, array $old)
 	{
-		$this->_source()->beginTransaction();
+		$rs = $this->_source()->beginTransaction()."\n";
 
 		foreach($this->_dependents as $dependent) {
 
@@ -1040,11 +1040,13 @@ abstract class Mapper implements iMapper
 		$rs = $this->_saveRecord($this->_resource, $changed, $new, $old);
 
 		if($rs === false) {
-			$this->_source()->rollbackTransaction();
+			$rs = $this->_source()->rollbackTransaction();
+
+			echo "Mapper Rollback: ".print_r($rs, true)."\n";
 			return false;
 		}
 
-		$this->_source()->commitTransaction();
+		$rs = $this->_source()->commitTransaction();
 
 		if($this->_cache) {
 			$this->_incrementCache();
