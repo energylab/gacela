@@ -1042,7 +1042,6 @@ abstract class Mapper implements iMapper
 		if($rs === false) {
 			$rs = $this->_source()->rollbackTransaction();
 
-			echo "Mapper Rollback: ".print_r($rs, true)."\n";
 			return false;
 		}
 
