@@ -60,7 +60,7 @@ class DataSourceTest extends \Test\GUnit\TestCase
      */
     public function testBeginTransaction()
     {
-		$this->assertSame(false, $this->object->beginTransaction());
+		$this->assertTrue($this->object->beginTransaction());
     }
 
     /**
@@ -80,7 +80,7 @@ class DataSourceTest extends \Test\GUnit\TestCase
      */
     public function testCommitTransaction()
     {
-        $this->assertSame(false, $this->object->commitTransaction());
+        $this->assertTrue($this->object->commitTransaction());
     }
 
     /**
@@ -131,6 +131,6 @@ class DataSourceTest extends \Test\GUnit\TestCase
      */
     public function testRollbackTransaction()
     {
-		$this->assertSame(false, $this->object->rollbackTransaction());
+		$this->assertTrue($this->object->rollbackTransaction());
     }
 }

@@ -32,6 +32,18 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 			)
 		);
 
+		$sf = \Gacela::createDataSource(
+			array(
+				'type' => 'salesforce',
+				'name' => 'sf',
+				'soapclient_path' => '/var/ww/sf/vendor/soapclient/',
+				'wsdl_path' => '/var/www/sf.wsdl',
+				'username' => 'me@noahgoodrich.com',
+				'password' => 'S4l3sforce!wmYPflqJLiWH7e2dxWl0W2ES4',
+				'objects' => array('Account')
+			)
+		);
+
 		$gacela->registerDataSource($source)
 			->registerDataSource($test);
 

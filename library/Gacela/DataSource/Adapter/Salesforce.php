@@ -14,10 +14,10 @@ class Salesforce extends Adapter
 {
 	public function loadConnection()
 	{
-        if(!class_exists('\SforceEnterpriseClient'))
-        {
-            require_once($this->_config->soapclient_path.'SforceEnterpriseClient.php');
-        }
+ 		if(!class_exists('\SforceEnterpriseClient'))
+        	{
+            		require_once($this->_config->soapclient_path.'SforceEnterpriseClient.php');
+       		}
 
 		if(is_null($this->_conn)) {
 			$this->_conn = new \SforceEnterpriseClient();

@@ -35,7 +35,7 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::tearDown();
 
-		$this->memcache->flush();
+		//$this->memcache->flush();
 	}
 
 	protected function getDataSet()

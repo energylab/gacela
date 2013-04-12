@@ -3,3 +3,4 @@ documentation/api/*
 *.komodo*
 /nbproject/private/
 /nbproject/*
+*.swp

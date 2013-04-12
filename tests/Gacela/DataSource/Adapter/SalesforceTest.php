@@ -1,4 +1,5 @@
 <?php
+
 namespace Gacela\DataSource\Adapter;
 
 /**
@@ -17,26 +18,20 @@ class SalesforceTest extends \Test\GUnit\Extensions\Database\TestCase
      */
     protected function setUp()
     {
-        $this->object = new Salesforce(\Gacela::instance(), array());
-    }
+	$sf = Kacela::instance()->get_datasource('sf');
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
+	$adapter = new ReflectionProperty($sf, '_adapter');
+
+	$adapter->setAccessible(true);
+
+	$this->model = $adapter->getValue($sf);	
     }
 
     /**
      * @covers Gacela\DataSource\Adapter\Salesforce::load
-     * @todo   Implement testLoad().
      */
-    public function testLoad()
+    public function testLoadGuid()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+
     }
 }
