@@ -17,14 +17,16 @@ class SalesforceTest extends \Test\GUnit\Extensions\Database\TestCase
      * This method is called before a test is executed.
      */
     protected function setUp()
-    {
-	$sf = Kacela::instance()->get_datasource('sf');
+	{
+		parent::setUp();
 
-	$adapter = new ReflectionProperty($sf, '_adapter');
+		$sf = \Gacela::instance()->getDatasource('sf');
 
-	$adapter->setAccessible(true);
+		$adapter = new \ReflectionProperty($sf, '_adapter');
 
-	$this->model = $adapter->getValue($sf);	
+		$adapter->setAccessible(true);
+
+		$this->object = $adapter->getValue($sf);	
     }
 
     /**
@@ -32,6 +34,13 @@ class SalesforceTest extends \Test\GUnit\Extensions\Database\TestCase
      */
     public function testLoadGuid()
     {
+		$meta = $this->object->load('Account');
+	
+		$id = $meta['columns']['Id'];
 
-    }
+		$this->assertAttributeEquals('guid', 'type', $id);
+		$this->assertAttributeSame(true, 'primary', $id);
+		$this->assertAttributeSame(18, 'length', $id);
+		$this->assertAttributeSame(false, 'default', $id);
+	}
 }

@@ -34,6 +34,7 @@ class Salesforce extends Adapter
 					$this->_columns = array($this->_columns);
 				}
 
+
 				$this->_singleton->cacheMetaData($this->_config->name.'_columns', $this->_columns);
 			}
 		}
@@ -133,6 +134,9 @@ class Salesforce extends Adapter
 						}
 					}
 
+					break;
+				case 'id':
+					$meta['type'] = 'guid';
 					break;
 				default:
 					$meta['type'] = 'string';

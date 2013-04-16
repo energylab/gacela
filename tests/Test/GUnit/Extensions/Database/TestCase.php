@@ -36,7 +36,7 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 			array(
 				'type' => 'salesforce',
 				'name' => 'sf',
-				'soapclient_path' => '/var/ww/sf/vendor/soapclient/',
+				'soapclient_path' => '/var/www/sf/soapclient/',
 				'wsdl_path' => '/var/www/sf.wsdl',
 				'username' => 'me@noahgoodrich.com',
 				'password' => 'S4l3sforce!wmYPflqJLiWH7e2dxWl0W2ES4',
@@ -45,7 +45,8 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 		);
 
 		$gacela->registerDataSource($source)
-			->registerDataSource($test);
+				->registerDataSource($test)
+				->registerDataSource($sf);
 
 		$gacela->registerNamespace('App', '/var/www/gacela/samples/')
 			->registerNamespace('Test', '/var/www/gacela/tests/Test/');
