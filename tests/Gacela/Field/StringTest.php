@@ -27,7 +27,6 @@ class StringTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Gacela\Field\String::validate
-     * @todo   Implement testValidate().
      */
     public function testValidateNullCode()
     {
@@ -53,7 +52,6 @@ class StringTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Gacela\Field\String::transform
-     * @todo   Implement testTransform().
      */
     public function testTransformIn()
     {

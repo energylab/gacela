@@ -8,7 +8,7 @@
 
 namespace Gacela\Field;
 
-class Guid extend Field
+class Guid extends Field
 {
 	const TYPE_CODE = 'invalid_guid';
 
@@ -16,7 +16,7 @@ class Guid extend Field
 	{
 		if(!is_string($value) && !empty($value)) {
 			return static::TYPE_CODE;
-		} elseif(strlen($value) > $meta->length) {
+		} elseif(!empty($value) && strlen($value) != $meta->length) {
 			return static::LENGTH_CODE;
 		}
 
