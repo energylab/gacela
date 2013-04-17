@@ -36,9 +36,9 @@ class Salesforce extends DataSource
 	{
 		list($query, $args) = $where->delete($name)->assemble();
 
-		$rs = $this->_adapter->delete($name, $args['Ids']);
+		$rs = $this->_adapter->delete($args['Ids']);
 
-		exit(print_r($rs));
+		exit(print_r($rs, true));
 	}
 
 	/**
@@ -100,7 +100,10 @@ class Salesforce extends DataSource
 	 * @param string - 'begin', 'commit'
 	 * @return int|bool Last insert id (if supported by the DataSource and Resource) otherwise a boolean true
 	 */
-	public function insert($name, $data, $binds = array()) {}
+	public function insert($name, $data, $binds = array())
+	{
+
+	}
 
 	/**
 	 * @abstract

@@ -22,7 +22,7 @@ class SalesforceTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		$q = new Query\Soql();
 
-		$q->where('Id = 000012365498745GFV');
+		$q->where('Id = 001E000000NmEprIAF');
 
 		$rs = $this->object->delete('Account', $q);
 
