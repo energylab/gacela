@@ -102,7 +102,20 @@ class Salesforce extends DataSource
 	 */
 	public function insert($name, $data, $binds = array())
 	{
+		if(is_object($data) || (is_array($data) && !is_array(current($data)))) {
+			$data = array($data);
+		}
 
+		foreach($data as $k => $v)
+		{
+			if(is_array($v)) {
+				$data[$k] = (object) $v;
+			}
+		}
+
+		$rs = $this->_adapter->create($data, $name);
+
+		exit(print_r($rs, true));
 	}
 
 	/**

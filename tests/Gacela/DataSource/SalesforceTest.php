@@ -18,6 +18,34 @@ class SalesforceTest extends \Test\GUnit\Extensions\Database\TestCase
 		$this->object = \Gacela::instance()->getDataSource('sf');
 	}
 
+	public function providerInsertOne()
+	{
+		$data = array
+		(
+			'Name' => "Gacela Unit Test",
+		);
+
+		return array
+		(
+			array($data),
+			array((object) $data)
+		);
+	}
+
+	/**
+	 * @param $record
+	 * @dataProvider providerInsertOne
+	 */
+	public function testInsertOne($record)
+	{
+		$rs = $this->object->insert('Account', $record);
+	}
+
+	public function testInsertMultiple()
+	{
+
+	}
+
 	public function testDelete()
 	{
 		$q = new Query\Soql();
