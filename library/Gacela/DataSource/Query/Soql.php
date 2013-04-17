@@ -11,6 +11,31 @@ namespace Gacela\DataSource\Query;
 
 class Soql extends Sql
 {
+	/**
+	 * @throws \Gacela\Exception
+	 * @return string
+	 */
+	protected function _delete()
+	{
+		if(count($this->_where) > 1) {
+			throw new \Gacela\Exception('For salesforce only one statement is allowed when deleting!');
+		}
+
+		$where = current($this->_where);
+
+		if(empty($where[1]) AND strpos($where[0], '=') !== false) {
+			$arg = explode('=', $where[0]);
+
+			$arg = trim($arg[1], '\'" ');
+
+			$this->_binds['Ids'] = array($arg);
+		} elseif(strpos($where[0], '=') !== false) {
+			$this->_binds['Ids'] = array(current($where[1]));
+		}  elseif(stripos($where[0], 'in') !== false) {
+			$this->_binds['Ids'] = array_values($where[1]);
+		}
+	}
+
 	protected function _quoteIdentifier($identifier)
 	{
 		return $identifier;
@@ -43,34 +68,40 @@ class Soql extends Sql
 
 	public function assemble()
 	{
-		$select = trim($this->_select());
-		$from = trim($this->_from());
-		$sql = '';
+		if($this->_delete) {
+			$sql = $this->_delete;
 
-		if(!empty($select)) {
-			$sql .= "SELECT {$select}\n";
-		}
+			$this->_delete();
+		} else {
+			$select = trim($this->_select());
+			$from = trim($this->_from());
+			$sql = '';
 
-		if(!empty($from)) {
-			$sql .= "FROM {$from}\n";
-		}
+			if(!empty($select)) {
+				$sql .= "SELECT {$select}\n";
+			}
 
-		$where = $this->_where_or_having($this->_where);
+			if(!empty($from)) {
+				$sql .= "FROM {$from}\n";
+			}
 
-		if(!empty($sql) && !empty($where)) {
-			$sql .= 'WHERE ';
-		}
+			$where = $this->_where_or_having($this->_where);
 
-		$sql .= $where;
+			if(!empty($sql) && !empty($where)) {
+				$sql .= 'WHERE ';
+			}
 
-		$sql .= $this->_group();
+			$sql .= $where;
 
-		$sql .= $this->_where_or_having($this->_having);
+			$sql .= $this->_group();
 
-		$sql .= $this->_order();
+			$sql .= $this->_where_or_having($this->_having);
 
-		if(!empty($this->_limit)) {
-			$sql .= 'LIMIT '.(int) $this->_limit[1]."\n";
+			$sql .= $this->_order();
+
+			if(!empty($this->_limit)) {
+				$sql .= 'LIMIT '.(int) $this->_limit[1]."\n";
+			}
 		}
 
 		foreach($this->_binds as $key => $arg) {
@@ -86,6 +117,11 @@ class Soql extends Sql
 
 	public function quote($param)
 	{
+		if(is_array($param))
+		{
+			return $param;
+		}
+
 		// This sucks but its the best of I've got right now.
 		return "'".addslashes($param)."'";
 	}

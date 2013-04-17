@@ -32,21 +32,13 @@ class Salesforce extends DataSource
 	 * @param \Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function delete($name, \Gacela\DataSource\Query\Query $where) 
+	public function delete($name, \Gacela\DataSource\Query\Query $where)
 	{
-		return;
+		list($query, $args) = $where->delete($name)->assemble();
 
-		if(count($where) > 1) {
-			throw new \Gacela\Exception('For salesforce only one IN statement is allowed!');
-		}
+		$rs = $this->_adapter->delete($name, $args['Ids']);
 
-		$where = current($where);
-		
-		if(!in_array($where[0], array('in', 'equals'))) {
-			throw new \Gacela\Exception('For salesforce only an in or equals statement is supported');
-		}
-
-		exit(print_r($where[1], true));		
+		exit(print_r($rs));
 	}
 
 	/**
