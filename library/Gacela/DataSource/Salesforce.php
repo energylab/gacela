@@ -32,7 +32,22 @@ class Salesforce extends DataSource
 	 * @param \Gacela\Criteria $where
 	 * @return bool
 	 */
-	public function delete($name, \Gacela\DataSource\Query\Query $where) {}
+	public function delete($name, \Gacela\DataSource\Query\Query $where) 
+	{
+		return;
+
+		if(count($where) > 1) {
+			throw new \Gacela\Exception('For salesforce only one IN statement is allowed!');
+		}
+
+		$where = current($where);
+		
+		if(!in_array($where[0], array('in', 'equals'))) {
+			throw new \Gacela\Exception('For salesforce only an in or equals statement is supported');
+		}
+
+		exit(print_r($where[1], true));		
+	}
 
 	/**
 	 * Can be used to find a single Salesforce record. (\Gacela\Mapper\Mapper works this way).
