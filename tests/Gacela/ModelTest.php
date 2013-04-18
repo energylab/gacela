@@ -59,16 +59,20 @@ class ModelTest extends \Test\GUnit\Extensions\Database\TestCase
 		$this->assertAttributeEquals((object) $data, '_data', $this->object);
 	}
 
-    /**
-     * @covers Gacela\Model\Model::__get
-     * @todo   Implement test__get().
-     */
-    public function test__get()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+    public function test__gePropertyBeforeRelation()
+	{
+		$student = new App\Model\Student($this->gacela, $this->gacela->loadMapper('Student'), new \stdClass);
+
+		$house = new App\Model\House($this->gacela, $this->gacela->loadMapper('House'), new \stdClass);
+
+		$house->setData
+		(
+			array('houseId' => 10, 'houseName' => 'Unit Test')
+		);
+
+		$student->house = $house;
+
+		$this->assertSame($house->houseName, $student->house->houseName);
     }
 
     /**
