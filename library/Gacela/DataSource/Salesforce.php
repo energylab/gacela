@@ -38,7 +38,14 @@ class Salesforce extends DataSource
 
 		$rs = $this->_adapter->delete($args['Ids']);
 
-		exit(print_r($rs, true));
+		$success = true;
+		foreach($rs as $r) {
+			if(!$r->success) {
+				$success = false;
+			}
+		}
+
+		return $success;
 	}
 
 	/**
@@ -115,7 +122,17 @@ class Salesforce extends DataSource
 
 		$rs = $this->_adapter->create($data, $name);
 
-		exit(print_r($rs, true));
+		if(count($data) == 1) {
+			$rs = current($rs);
+
+			if(property_exists($rs, 'errors')) {
+				throw new \Gacela\Exception($rs->errors[0]->message);
+			} else {
+				return $rs->id;
+			}
+		} else {
+			return $rs;
+		}
 	}
 
 	/**
