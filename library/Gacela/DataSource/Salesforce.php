@@ -115,7 +115,9 @@ class Salesforce extends DataSource
 
 		$rs = $this->_adapter->create($data, $name);
 
-		exit(print_r($rs, true));
+		if(count($rs) == 1) {
+			
+		}
 	}
 
 	/**
