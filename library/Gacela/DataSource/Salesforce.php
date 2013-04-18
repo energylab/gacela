@@ -38,8 +38,13 @@ class Salesforce extends DataSource
 
 		$rs = $this->_adapter->delete($args['Ids']);
 
+		if(is_object($rs)) {
+			$rs = array($rs);
+		}
+
 		$success = true;
 		foreach($rs as $r) {
+
 			if(!$r->success) {
 				$success = false;
 			}
