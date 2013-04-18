@@ -117,12 +117,10 @@ abstract class Model implements iModel
 		$method = '_get' . ucfirst($key);
 		if (method_exists($this, $method)) {
 			return $this->$method();
+		} elseif(property_exists($this->_data, $key)) {
+			return $this->_data->$key;
 		} elseif (array_key_exists($key, $this->_relations)) {
 			return $this->_mapper->findRelation($key, $this->_data);
-		} else {
-			if(property_exists($this->_data, $key)) {
-				return $this->_data->$key;
-			}
 		}
 
 		throw new \Exception("Specified key ($key) does not exist!");
