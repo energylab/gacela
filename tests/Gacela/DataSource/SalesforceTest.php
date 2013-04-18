@@ -23,6 +23,7 @@ class SalesforceTest extends \Test\GUnit\Extensions\Database\TestCase
 		$data = array
 		(
 			'Name' => "Gacela Unit Test",
+			'AccountNumber' => 9876542
 		);
 
 		return array
@@ -38,27 +39,70 @@ class SalesforceTest extends \Test\GUnit\Extensions\Database\TestCase
 	 */
 	public function testInsertOne($record)
 	{
-		$rs = $this->object->insert('Account', $record);
+		$id = $this->object->insert('Account', $record);
+
+		$this->assertSame(18, strlen($id));
+	}
+
+	/**
+	 * @throws \Gacela\Exception
+	 */
+	public function testInsertOneFailure()
+	{
+		try {
+			$this->object->insert('Account', array('NumberOfEmployees' => 5, 'AccountNumber' => 1234567));
+		} catch (\Gacela\Exception $e) {
+			$this->assertEquals('Required fields are missing: [Name]', $e->getMessage());
+
+			return;
+		}
+
+		$this->fail('Failed to assert that insert fails!');
 	}
 
 	public function testInsertMultiple()
 	{
+		$data = array
+		(
+			array
+			(
+				'Name' => 'Success 1',
+				'AccountNumber' => 3216548
+			),
+			array
+			(
+				'Name' => 'Failure 1',
+			),
+			array
+			(
+				'Name' => 'Success 2',
+				'AccountNumber' => 6549875
+			),
+			array
+			(
+				'AccountNumber' => 3214569
+			)
+		);
 
+		$rs = $this->object->insert('Account', $data);
+
+		$this->assertSame(18, strlen($rs[0]->id));
+		$this->assertSame('Account Number must be 7 Digits', $rs[1]->errors[0]->message);
+
+		return $rs;
 	}
 
-	public function testDelete()
+	/**
+	 * @depends testInsertMultiple
+	 */
+	public function testDelete($rs)
 	{
 		$q = new Query\Soql();
 
-		$q->where('Id = 001E000000NmEprIAF');
+		$ids = array($rs[0]->id, $rs[2]->id);
 
-		$rs = $this->object->delete('Account', $q);
+		$q->in('Id', $ids);
 
-
-	}
-
-	public function testDeleteNonExistantObject()
-	{
-
+		$this->assertTrue($this->object->delete('Account', $q));
 	}
 }
