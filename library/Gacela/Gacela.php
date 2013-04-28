@@ -1,4 +1,7 @@
 <?php
+
+namespace Gacela;
+
 /**
  * @author Noah Goodrich
  * @date May 7, 2011
@@ -9,7 +12,7 @@
 
 class Gacela
 {
-	protected static $_instance;
+	protected static $instance;
 
 	/**
 	 * @var \Memcache
@@ -85,6 +88,14 @@ class Gacela
 		return new $class(static::instance(), new $adapter(static::instance(), (object) $config), $config);
 	}
 
+	public static function criteria()
+	{
+		$class = static::$instance()->autoload('Criteria');
+
+		return new $class;
+	}
+
+
 	/**
 	 * @static
 	 * @param \Gacela\DataSource\Query\Query $query
@@ -137,6 +148,14 @@ class Gacela
 		}
 	}
 
+	public function find() 
+	{
+	}
+
+	public function findAll()
+	{
+	}
+
 	/**
 	 * @static
 	 * @return Gacela
@@ -144,15 +163,15 @@ class Gacela
 	public static function instance()
 	{
 		if(is_null(static::$_instance)) {
-			static::$_instance = new Gacela();
+			static::$instance = new Gacela();
 		}
 
-		return static::$_instance;
+		return static::$instance;
 	}
 
 	public static function reset()
 	{
-		self::$_instance = null;
+		self::$instance = null;
 	}
 
 	/**
@@ -167,9 +186,7 @@ class Gacela
 		// The class name has to be parsed differently from the namespace path
 		$name = array_pop($parts);
 
-		$self = self::instance();
-
-        if(count($parts) && isset($self->_namespaces[$parts[0]])) {
+        if(count($parts) && isset($this->_namespaces[$parts[0]])) {
         	if(class_exists($class, false)) {
 				return $class;
 			} else {
@@ -177,7 +194,7 @@ class Gacela
 				unset($path[0]);
 
 				// According to PSR-0 - The underscore should be part of the directory structure for class names
-				$file = $self->_namespaces[$parts[0]].join(DIRECTORY_SEPARATOR, $path).DIRECTORY_SEPARATOR.str_replace('_', DIRECTORY_SEPARATOR, $name).'.php';
+				$file = $this->_namespaces[$parts[0]].join(DIRECTORY_SEPARATOR, $path).DIRECTORY_SEPARATOR.str_replace('_', DIRECTORY_SEPARATOR, $name).'.php';
 
 				if($self->_findFile($file)) {
 					require $file;
@@ -185,7 +202,7 @@ class Gacela
 				}
 			}
         } else {
-            $namespaces = array_reverse($self->_namespaces);
+            $namespaces = array_reverse($this->_namespaces);
 
             foreach ($namespaces as $ns => $path) {
 

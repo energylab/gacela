@@ -454,7 +454,7 @@ abstract class Mapper implements iMapper
 	 */
 	protected function _load(\stdClass $data)
 	{
-		return new $this->_modelName($this->_gacela(), $this, $data);
+		return new $this->_modelName($data);
 	}
 
 	protected function _pluralize($string)
