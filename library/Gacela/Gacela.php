@@ -33,7 +33,7 @@ class Gacela
     {
         spl_autoload_register(array($this, 'autoload'));
 
-        $this->registerNamespace('Gacela', __DIR__.'/Gacela');
+        $this->registerNamespace('Gacela', __DIR__);
     }
 
 	/**
@@ -69,7 +69,7 @@ class Gacela
 	 * @return bool
 	 */
     protected function _findFile($file)
-    {
+    { 
         return file_exists($file) && is_readable($file);
     }
 
@@ -84,8 +84,13 @@ class Gacela
 		$class = static::instance()->autoload("DataSource\\".ucfirst($type));
 
 		$adapter = static::instance()->autoload("DataSource\\Adapter\\".ucfirst($config['type']));
+		
+		return new $class(new $adapter((object) $config), $config);
+	}
 
-		return new $class(static::instance(), new $adapter(static::instance(), (object) $config), $config);
+	public static function collection(\Gacela\Collection\Collection $col)
+	{
+		return static::instance()->makeCollection($col);
 	}
 
 	public static function criteria()
@@ -94,7 +99,6 @@ class Gacela
 
 		return new $class;
 	}
-
 
 	/**
 	 * @static
@@ -148,12 +152,14 @@ class Gacela
 		}
 	}
 
-	public function find() 
+	public function find($mapper, $id) 
 	{
+		return static::load($mapper)->find($id);
 	}
 
-	public function findAll()
+	public function findAll($mapper, \Gacela\Criteria $criteria = null)
 	{
+		return static::load($mapper)->findAll($criteria);
 	}
 
 	/**
@@ -162,16 +168,21 @@ class Gacela
 	 */
 	public static function instance()
 	{
-		if(is_null(static::$_instance)) {
+		if(is_null(static::$instance)) {
 			static::$instance = new Gacela();
 		}
 
 		return static::$instance;
 	}
 
+	public static function load($mapper)
+	{
+		return static::instance()->loadMapper($mapper);
+	}
+
 	public static function reset()
 	{
-		self::$instance = null;
+		static::$instance = null;
 	}
 
 	/**
@@ -185,8 +196,8 @@ class Gacela
 
 		// The class name has to be parsed differently from the namespace path
 		$name = array_pop($parts);
-
-        if(count($parts) && isset($this->_namespaces[$parts[0]])) {
+		
+        if(count($parts) && isset($this->_namespaces[$parts[0]])) { 
         	if(class_exists($class, false)) {
 				return $class;
 			} else {
@@ -196,27 +207,27 @@ class Gacela
 				// According to PSR-0 - The underscore should be part of the directory structure for class names
 				$file = $this->_namespaces[$parts[0]].join(DIRECTORY_SEPARATOR, $path).DIRECTORY_SEPARATOR.str_replace('_', DIRECTORY_SEPARATOR, $name).'.php';
 
-				if($self->_findFile($file)) {
+				if($this->_findFile($file)) {
 					require $file;
 					return $class;
 				}
 			}
-        } else {
+        } else { 
             $namespaces = array_reverse($this->_namespaces);
 
             foreach ($namespaces as $ns => $path) {
 
 				// According to PSR-0 - The underscore should be part of the directory structure for class names
                 $file = $path.join(DIRECTORY_SEPARATOR, $parts).DIRECTORY_SEPARATOR.str_replace('_', DIRECTORY_SEPARATOR, $name).'.php';
-
+				
 				$_class = $ns.'\\'.$class;
-
-				if(class_exists($_class, false)) {
+					
+				if(class_exists($_class, false)) { 
 					return $_class;
-				} elseif($self->_findFile($file)) {
+				} elseif($this->_findFile($file)) { 
 					require $file;
 					return $_class;
-                }
+                } 
             }
         }
 
@@ -383,9 +394,9 @@ class Gacela
 	public function makeCollection($mapper, $data)
 	{
 		if($data instanceof \PDOStatement) {
-			$col = Gacela::instance()->autoload("Collection\\Statement");
+			$col = $this->autoload("Collection\\Statement");
 		} elseif (is_array($data)) {
-			$col = Gacela::instance()->autoload("Collection\\Arr");
+			$col = $this->autoload("Collection\\Arr");
 		} else {
 			throw new Gacela\Exception('Collection type is not defined!');
 		}
@@ -416,7 +427,7 @@ class Gacela
 		if(substr($path, -1, 1) != '/') {
 			$path .= '/';
 		}
-
+		echo $ns."\n";
 		$this->_namespaces[$ns] = $path;
 
 		return $this;

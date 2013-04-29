@@ -46,10 +46,8 @@ abstract class DataSource implements iDataSource
 		}
 	}
 
-	public function __construct(\Gacela $gacela, \Gacela\DataSource\Adapter\iAdapter $adapter, array $config)
+	public function __construct(\Gacela\DataSource\Adapter\iAdapter $adapter, array $config)
 	{
-		$this->_gacela = $gacela;
-
 		$this->_adapter = $adapter;
 
 		$this->_config = (object) $config;

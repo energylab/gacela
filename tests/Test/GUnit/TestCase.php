@@ -6,9 +6,9 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
 	public static function setUpBeforeClass()
 	{
-		$gacela = \Gacela::instance();
+		$gacela = \Gacela\Gacela::instance();
 
-		$source = \Gacela::createDataSource(
+		$source = \Gacela\Gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'db',
@@ -19,7 +19,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 			)
 		);
 
-		$test = \Gacela::createDataSource(
+		$test = \Gacela\Gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'test',

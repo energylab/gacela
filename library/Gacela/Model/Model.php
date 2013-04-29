@@ -18,6 +18,8 @@ abstract class Model implements iModel
 
 	protected $_fields;
 
+	protected $_mapper;
+
 	protected $_originalData = array();
 
 	protected $_relations = array();
@@ -59,9 +61,7 @@ abstract class Model implements iModel
 
 	protected function _mapper()
 	{
-		$class = explode('\\', get_class($this));
-
-
+		return \Gacela\Gacela::load($this->_mapper);
 	}
 
 	protected function _set($key, $val)
@@ -86,8 +86,10 @@ abstract class Model implements iModel
 	/**
 	 * @param array|stdClass $data
 	 */
-	public function __construct($data = array())
+	public function __construct($mapper, $data = array())
 	{
+		$this->_mapper = $mapper;
+
 		if(is_object($data)) {
 			$data = (array) $data;
 		}
