@@ -167,7 +167,7 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		$courses = \Gacela\Gacela::findAll('Course');
 
-		$c2 = Gacela::findAll('Course');
+		$c2 = \Gacela\Gacela::findAll('Course');
 
 		foreach($c2 as $course) {
 			$this->assertInstanceOf('App\Model\Teacher', $course->teacher);

@@ -23,9 +23,11 @@ class ModelTest extends \Test\GUnit\Extensions\Database\TestCase
     {
 		$data = (object) array();
 
-		$this->gacela = Gacela::instance();
+		$this->gacela = \Gacela\Gacela::instance();
 
-        $this->object = new Test\Model\Test($this->gacela, new Test\Mapper\Test($this->gacela), $data);
+		$m = $this->gacela->loadMapper('Test');
+
+        $this->object = new Test\Model\Test(get_class($m), $data);
     }
 
 	/**

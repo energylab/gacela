@@ -152,12 +152,12 @@ class Gacela
 		}
 	}
 
-	public function find($mapper, $id) 
+	public static function find($mapper, $id) 
 	{
 		return static::load($mapper)->find($id);
 	}
 
-	public function findAll($mapper, \Gacela\Criteria $criteria = null)
+	public static function findAll($mapper, \Gacela\Criteria $criteria = null)
 	{
 		return static::load($mapper)->findAll($criteria);
 	}
