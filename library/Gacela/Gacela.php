@@ -274,17 +274,9 @@ class Gacela
 	 * @param  Memcache|array $servers
 	 * @return Gacela
 	 */
-	public function enableCache($servers)
+	public function enableCache($server)
 	{
-		if($servers instanceof Memcache) {
-			$this->_cache = $servers;
-		} elseif(is_array($servers)) {
-			$this->_cache = new Memcache;
-
-			foreach($servers as $server) {
-				$this->_cache->addServer($server[0], $server[1]);
-			}
-		}
+		$this->_cache = $server;
 
 		return $this;
 	}
@@ -297,7 +289,7 @@ class Gacela
 	public function getDataSource($name)
 	{
 		if(!isset($this->_sources[$name])) {
-			throw new Gacela\Exception("Invalid Data Source {$name} Referenced");
+			throw new \Gacela\Exception("Invalid Data Source {$name} Referenced");
 		}
 
 		return $this->_sources[$name];
@@ -319,15 +311,15 @@ class Gacela
 	}
 
 	/**
-	 * @param $key
-	 * @return Gacela
-	 */
+	* @param $key
+	* @return Gacela
+	**/
 	public function incrementDataCache($key)
 	{
 		if(is_object($this->_cache)) {
 			if(!$this->_cache->increment($key)) {
 
-			}
+			}			
 		}
 
 		return $this;
@@ -398,7 +390,7 @@ class Gacela
 		} elseif (is_array($data)) {
 			$col = $this->autoload("Collection\\Arr");
 		} else {
-			throw new Gacela\Exception('Collection type is not defined!');
+			throw new \Gacela\Exception('Collection type is not defined!');
 		}
 
 		return new $col($mapper, $data);

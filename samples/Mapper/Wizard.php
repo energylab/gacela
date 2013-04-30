@@ -31,6 +31,6 @@ class Wizard extends M
 
 		$model = '\\App\\Model\\'.$model;
 
-		return new $model($this->_gacela(), $this, $data);
+		return new $model(get_class($this), $data);
 	}
 }

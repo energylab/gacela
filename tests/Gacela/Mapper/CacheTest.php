@@ -35,7 +35,7 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::tearDown();
 
-		//$this->memcache->flush();
+		$this->memcache->flush();
 	}
 
 	protected function getDataSet()
@@ -80,10 +80,12 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 		$this->assertSame('Tester', $m->last);
 
 		$cached = $this->memcache->get($key);
+		
+		$this->assertInternalType('array', $cached);
 
 		$cached = current($cached);
 
-		$m2 = new \Test\Model\Customer($cached);
+		$m2 = new \Test\Model\Customer("Test\Mapper\Customer", $cached);
 
 		$this->assertEquals($m, $m2);
 	}
