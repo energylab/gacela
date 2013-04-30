@@ -11,7 +11,7 @@ class ClassInheritanceTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$this->object = \Gacela::instance()->loadMapper('Customer');
+		$this->object = \Gacela\Gacela::instance()->loadMapper('Customer');
 
 		$this->object->setCacheable(false);
 	}

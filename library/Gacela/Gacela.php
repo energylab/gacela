@@ -410,7 +410,7 @@ class Gacela
 	 * @param  array $config Configuration arguments required by the DataSource
 	 * @return Gacela
 	 */
-	public function registerDataSource(Gacela\DataSource\iDataSource $source)
+	public function registerDataSource(\Gacela\DataSource\iDataSource $source)
 	{
 		$this->_sources[$source->getName()] = $source;
 
@@ -427,7 +427,7 @@ class Gacela
 		if(substr($path, -1, 1) != '/') {
 			$path .= '/';
 		}
-		echo $ns."\n";
+		
 		$this->_namespaces[$ns] = $path;
 
 		return $this;

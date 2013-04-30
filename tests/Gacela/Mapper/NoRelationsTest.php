@@ -25,7 +25,7 @@ class NoRelationsTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$this->object = Gacela::instance()->loadMapper('Test');
+		$this->object = \Gacela\Gacela::instance()->loadMapper('Test');
 	}
 
 	public function providerLoad()
@@ -113,7 +113,7 @@ class NoRelationsTest extends \Test\GUnit\Extensions\Database\TestCase
 	 */
 	public function testLoad($mapper, $data)
 	{
-		$this->assertAttributeEquals($data, '_data', \Gacela::instance()->loadMapper($mapper)->load($data));
+		$this->assertAttributeEquals($data, '_data', \Gacela\Gacela::load($mapper)->load($data));
 	}
 
 	/**
@@ -121,7 +121,7 @@ class NoRelationsTest extends \Test\GUnit\Extensions\Database\TestCase
 	 */
 	public function testInsertThroughSave()
 	{
-		$mapper = \Gacela::instance()->loadMapper('Test\Mapper\Test');
+		$mapper = \Gacela\Gacela::load('Test\Mapper\Test');
 
 		$date = date('c');
 
@@ -147,7 +147,7 @@ class NoRelationsTest extends \Test\GUnit\Extensions\Database\TestCase
 	 */
 	public function testGetFields()
 	{
-		$resource = Gacela::instance()->getDataSource('test')->loadResource('tests');
+		$resource = \Gacela\Gacela::instance()->getDataSource('test')->loadResource('tests');
 
 		$this->assertEquals($resource->getFields(), $this->object->getFields());
 	}

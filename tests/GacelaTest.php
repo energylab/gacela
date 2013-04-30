@@ -18,9 +18,9 @@ class GacelaTest extends Test\GUnit\TestCase
      */
     protected function setUp()
     {
-		$gacela = Gacela::instance();
+		$gacela = \Gacela\Gacela::instance();
 
-		$source = Gacela::createDataSource(
+		$source = $gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'db',
@@ -31,7 +31,7 @@ class GacelaTest extends Test\GUnit\TestCase
 			)
 		);
 
-		$test = Gacela::createDataSource(
+		$test = $gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'test',
@@ -65,7 +65,7 @@ class GacelaTest extends Test\GUnit\TestCase
      */
     protected function tearDown()
     {
-		Gacela::reset();
+		\Gacela\Gacela::reset();
 
 		if(is_object($this->memcache)) {
 			$this->memcache->flush();
@@ -135,7 +135,7 @@ class GacelaTest extends Test\GUnit\TestCase
      */
     public function testInstance()
     {
-        $this->assertInstanceOf('Gacela', Gacela::instance());
+        $this->assertInstanceOf('Gacela', \Gacela\Gacela::instance());
     }
 
     /**
@@ -240,7 +240,7 @@ class GacelaTest extends Test\GUnit\TestCase
 	 */
 	public function testRegisterDataSource($config, $class)
 	{
-		$source = Gacela::createDataSource($config);
+		$source = $this->object::createDataSource($config);
 
 		$this->object->registerDataSource($source);
 
@@ -320,7 +320,7 @@ class GacelaTest extends Test\GUnit\TestCase
      */
     public function testMakeCollection($data, $expected)
     {
-		$mapper = new Test\Mapper\Peep($this->object);
+		$mapper = new Test\Mapper\Peep();
 
 		$this->assertInstanceOf($expected, $this->object->makeCollection($mapper, $data));
     }
@@ -331,7 +331,7 @@ class GacelaTest extends Test\GUnit\TestCase
 	 */
 	public function testMakeCollectionThrowsException()
 	{
-		$mapper = new Test\Mapper\Peep($this->object);
+		$mapper = new Test\Mapper\Peep();
 
 		$this->object->makeCollection($mapper, new \ArrayObject());
 	}

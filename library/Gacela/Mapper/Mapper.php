@@ -184,7 +184,7 @@ abstract class Mapper implements iMapper
 
 	protected function _gacela()
 	{
-		return \Gacela::instance();
+		return \Gacela\Gacela::instance();
 	}
 
 	/**

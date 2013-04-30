@@ -99,7 +99,7 @@ class Salesforce extends DataSource
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		$class = $this->_gacela->autoload("DataSource\\Query\\Soql");
+		$class = \Gacela\Gacela::instance()->autoload("DataSource\\Query\\Soql");
 
 		return new $class($criteria);
 	}

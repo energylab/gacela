@@ -28,7 +28,7 @@ class ArrTest extends \Test\GUnit\TestCase
 			$arr[$k] = (object) array('houseId' => (int) $v[0], 'houseName' => $v[1]);
 		}
 
-        $this->object = new Arr(\Gacela::instance()->loadMapper('house'), $arr);
+        $this->object = new Arr(\Gacela\Gacela::load('house'), $arr);
     }
 
 	/**
@@ -102,7 +102,7 @@ class ArrTest extends \Test\GUnit\TestCase
 			(object) array('houseId' => 2)
 		);
 
-		$arr = new Arr(\Gacela::instance()->loadMapper('house'), $data);
+		$arr = new Arr(\Gacela\Gacela::instance()->loadMapper('house'), $data);
 
 		$this->assertSame('Gryffindor', $arr->current()->houseName);
 	}
@@ -120,7 +120,7 @@ class ArrTest extends \Test\GUnit\TestCase
 			$arr[$k] = (object) array('houseId' => (int) $v[0], 'houseName' => $v[1]);
 		}
 
-		$collection = new Arr(\Gacela::instance()->loadMapper('house'), $arr);
+		$collection = new Arr(\Gacela\Gacela::instance()->loadMapper('house'), $arr);
 
 		$current = $collection->current();
 
@@ -135,7 +135,7 @@ class ArrTest extends \Test\GUnit\TestCase
 
 	public function testCurrentInvalidIndexReturnsEmptyInstance()
 	{
-		$this->object = new Arr(\Gacela::instance()->loadMapper('house'), array());
+		$this->object = new Arr(\Gacela\Gacela::instance()->loadMapper('house'), array());
 
 		$this->assertSame(null, $this->object->current()->houseId);
 	}
@@ -243,7 +243,7 @@ class ArrTest extends \Test\GUnit\TestCase
 	{
 		$data = array();
 
-		$collection = new Arr(\Gacela::instance()->loadMapper('test'), $data);
+		$collection = new Arr(\Gacela\Gacela::instance()->loadMapper('test'), $data);
 
 		foreach($collection as $row)
 		{

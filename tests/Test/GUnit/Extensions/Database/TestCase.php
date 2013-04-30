@@ -8,9 +8,9 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 
 	public static function setUpBeforeClass()
 	{
-		$gacela = \Gacela::instance();
+		$gacela = \Gacela\Gacela::instance();
 
-		$source = \Gacela::createDataSource(
+		$source = $gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'db',
@@ -21,7 +21,7 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 			)
 		);
 
-		$test = \Gacela::createDataSource(
+		$test = $gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'test',
@@ -32,7 +32,7 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 			)
 		);
 
-		$sf = \Gacela::createDataSource(
+		$sf = $gacela::createDataSource(
 			array(
 				'type' => 'salesforce',
 				'name' => 'sf',
@@ -55,7 +55,7 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 
 	public function getConnection()
 	{
-		$test = \Gacela::instance()->getDataSource('test');
+		$test = \Gacela\Gacela::instance()->getDataSource('test');
 
 		$test->loadResource('peeps');
 
