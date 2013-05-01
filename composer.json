@@ -1,0 +1,17 @@
+{
+	"name" : "noah-goodrich/gacela",
+	"description" : "Responsive Data Mapper for PHP",
+	"license" : "MIT",
+	"keywords" : ["orm", "data mapper"],
+	"authors" : [
+		{
+			"name" : "Noah Goodrich",
+			"email" : "me@noahgoodrich.com"
+		}
+	],
+	"autoload" : {
+		"psr-0" : {
+			"Gacela" : "library/"
+		}
+	}
+}
