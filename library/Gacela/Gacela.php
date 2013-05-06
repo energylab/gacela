@@ -88,18 +88,6 @@ class Gacela
 		return new $class(new $adapter((object) $config), $config);
 	}
 
-	public static function collection(\Gacela\Collection\Collection $col)
-	{
-		return static::instance()->makeCollection($col);
-	}
-
-	public static function criteria()
-	{
-		$class = static::$instance()->autoload('Criteria');
-
-		return new $class;
-	}
-
 	/**
 	 * @static
 	 * @param \Gacela\DataSource\Query\Query $query
@@ -152,16 +140,6 @@ class Gacela
 		}
 	}
 
-	public static function find($mapper, $id) 
-	{
-		return static::load($mapper)->find($id);
-	}
-
-	public static function findAll($mapper, \Gacela\Criteria $criteria = null)
-	{
-		return static::load($mapper)->findAll($criteria);
-	}
-
 	/**
 	 * @static
 	 * @return Gacela
@@ -173,11 +151,6 @@ class Gacela
 		}
 
 		return static::$instance;
-	}
-
-	public static function load($mapper)
-	{
-		return static::instance()->loadMapper($mapper);
 	}
 
 	public static function reset()
@@ -270,6 +243,18 @@ class Gacela
 		return $this->_config;
 	}
 
+	public function collection(\Gacela\Collection\Collection $col)
+	{
+		return $this->makeCollection($col);
+	}
+
+	public function criteria()
+	{
+		$class = $this->autoload('Criteria');
+
+		return new $class;
+	}
+
 	/**
 	 * @param  Memcache|array $servers
 	 * @return Gacela
@@ -308,6 +293,21 @@ class Gacela
 		}
 
 		return $this->_fields[$type];
+	}
+	
+	/**
+	 * @param Mapper Name
+	 * @param array|int Id
+	 *
+	 */
+	public function find($mapper, $id) 
+	{
+		return $this->loadMapper($mapper)->find($id);
+	}
+
+	public  function findAll($mapper, \Gacela\Criteria $criteria = null)
+	{
+		return $this->loadMapper($mapper)->findAll($criteria);
 	}
 
 	/**
