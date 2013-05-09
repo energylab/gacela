@@ -4,7 +4,7 @@ Most useful applications interact with data in some form. There are multiple sol
 When using object-oriented PHP, that same data is stored, modified and accessed in a class.
 
 Let's assume that you were creating your own internal database of local hoodlums to call when you're in a pinch. We'll assume that these locals can be reached by phone or email.
-When calling you'll need to know what other names they might be known as so you can be sure to find them.
+When calling you will need to know what other names they might be known as so you can be sure to find them.
 
 Storing the data in a hierarchical format with XML is fairly straightforward. Each 'user' is represented by a node named 'user' with a child 'contents' node to contain the user's blog posts.
 
