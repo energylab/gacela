@@ -61,7 +61,7 @@ abstract class Model implements iModel
 
 	protected function _mapper()
 	{
-		return \Gacela\Gacela::instance()->load($this->_mapper);
+		return \Gacela\Gacela::instance()->loadMapper($this->_mapper);
 	}
 
 	protected function _set($key, $val)
