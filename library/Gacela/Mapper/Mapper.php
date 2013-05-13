@@ -285,7 +285,7 @@ abstract class Mapper implements iMapper
 			if(isset($this->_foreignKeys[$name])) {
 				unset($this->_foreignKeys[$name]);
 			}
-
+			
 
 			/**
 			 * If the keyColumn of the primary resource is nullable, then all fields in the dependent relationship need to
@@ -310,6 +310,15 @@ abstract class Mapper implements iMapper
 			}
 
 			$this->_dependents[$name] = $dependent;
+
+			// If the primary key field in the dependent object is sequenced then the foreign
+			// key field in the parent object must also be marked sequenced. -- ndg
+			$primary = $dependent['resource']->getPrimaryKey();
+			$fields = $dependent['resource']->getFields();
+
+			if(count($primary) == 1 && $fields[current($primary)]->sequenced) {
+				$this->_fields[key($dependent['meta']->keys)]->sequenced = true;
+			}
 		}
 
 		foreach($this->_dependents as $dependent) {
