@@ -145,4 +145,5 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$this->assertNull($this->object->find($args[1]->code)->code);
 	}
+
 }

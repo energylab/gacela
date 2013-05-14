@@ -98,7 +98,8 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 		return $this->createArrayDataSet(
 			array(
 				'peeps' => array(),
-			//	'contacts' => array(),
+				'objects' => array(),
+				'meta' => array(),
 				'tests' => array()
 			)
 		);
