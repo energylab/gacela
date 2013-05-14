@@ -5,7 +5,7 @@ class SequencedDependentsTest extends \Test\GUnit\Extensions\Database\Testcase {
 	
 	public function testInitDependentWithSequencedPrimaryKey()
 	{
-		$mapper = \Gacela::instance()->loadMapper('Object');
+		$mapper = \Gacela\Gacela::instance()->loadMapper('Object');
 		
 		$fields = $mapper->getFields();
 
@@ -14,10 +14,7 @@ class SequencedDependentsTest extends \Test\GUnit\Extensions\Database\Testcase {
 
 	public function testDependentWithSequencedKeyValidates()
 	{
-		$object = new \Test\Model\Object(
-			\Gacela::instance(),
-			\Gacela::instance()->loadMapper('Object')
-		);
+		$object = new \Test\Model\Object('Object');
 
 		$object->setData(
 			array(
@@ -31,10 +28,7 @@ class SequencedDependentsTest extends \Test\GUnit\Extensions\Database\Testcase {
 
 	public function testDependentWithSequencedKeyUpdatesPrimaryObjectForeignKey()
 	{
-		$object = new \Test\Model\Object(
-			\Gacela::instance(),
-			\Gacela::instance()->loadMapper('Object')
-		);
+		$object = new \Test\Model\Object('Object');
 
 		$object->setData(
 			array(

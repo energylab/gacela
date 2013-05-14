@@ -28,7 +28,7 @@ class ArrTest extends \Test\GUnit\TestCase
 			$arr[$k] = (object) array('houseId' => (int) $v[0], 'houseName' => $v[1]);
 		}
 
-        $this->object = new Arr(\Gacela\Gacela::load('house'), $arr);
+        $this->object = new Arr(\Gacela\Gacela::instance()->loadMapper('house'), $arr);
     }
 
 	/**

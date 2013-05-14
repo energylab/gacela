@@ -31,12 +31,12 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$this->object = \Gacela\Gacela::load('peep');
+		$this->object = \Gacela\Gacela::instance()->loadMapper('peep');
 	}
 
 	public function testInitDependents()
 	{
-		$m = \Gacela\Gacela::load('peep');
+		$m = \Gacela\Gacela::instance()->loadMapper('peep');
 
 		$this->assertObjectHasAttribute('_dependents', $m);
 
@@ -70,7 +70,7 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 	 */
 	public function testInsertWithDependent()
 	{
-		$mapper = \Gacela\Gacela::load('peep');
+		$mapper = \Gacela\Gacela::instance()->loadMapper('peep');
 
 		$rs = $mapper->save($this->changed, (object) $this->new, $this->old);
 
@@ -90,7 +90,7 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		$this->new = (object) $this->new;
 
-		$mapper = \Gacela\Gacela::load('peep');
+		$mapper = \Gacela\Gacela::instance()->loadMapper('peep');
 
 		$mapper->save($this->changed, (object) $this->new, $this->old);
 

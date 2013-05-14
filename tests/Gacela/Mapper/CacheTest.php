@@ -20,7 +20,7 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$this->object = \Gacela\Gacela::load('Customer');
+		$this->object = \Gacela\Gacela::instance()->loadMapper('Customer');
 
 		$this->memcache = new Memcache;
 
@@ -167,9 +167,9 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 
 	public function testFindRelationOfCachedObject()
 	{
-		$courses = \Gacela\Gacela::findAll('Course');
+		$courses = \Gacela\Gacela::instance()->findAll('Course');
 
-		$c2 = \Gacela\Gacela::findAll('Course');
+		$c2 = \Gacela\Gacela::instance()->findAll('Course');
 
 		foreach($c2 as $course) {
 			$this->assertInstanceOf('App\Model\Teacher', $course->teacher);
