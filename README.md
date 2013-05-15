@@ -30,18 +30,16 @@ to hold their posts.
 'users' table
 
 | id  | name           | email                    |
----------------------------------------------------
+|-----|----------------|--------------------------|
 | 1  | Bobby Mcintire  | bobby@kacela.com         |
----------------------------------------------------
+|    |                 |                          |
 | 2  | Frankfurt McGee | sweetcheeks@kacela.com   |
----------------------------------------------------
 
 'contents'
 
 | id | userId | title                   | content                        |
--------------------------------------------------------------------------
-| 1 |    2   | Beginners Guide to ORMs | Read the rest of the guide     |
--------------------------------------------------------------------------
+|----|--------|-------------------------|--------------------------------|
+| 1  |  2     | Beginners Guide to ORMs | Read the rest of the guide     |
 
 The same data in PHP would be stored in classes like so:
 
