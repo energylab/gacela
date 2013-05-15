@@ -146,92 +146,89 @@ Define the following requirement in your composer.json file:
 
 ## Configuration
 
+## Data Source Setup
+
+Currently there are two supported types of Data Sources for Gacela: Database & Salesforce. We plan to add support for
+Xml, RESTful Web Services, and SOAP Web Services as well as to fully support the differences between MySQL, MSSQL,
+Postgres, and SQLlite.
+
+Gacela provides a convenience method to create a DataSource object from configuration parameters.
+
+### Relational Database
+
 ```php
-return array
-(
-	/**
-	 * List of data sources and connection params
-	 */
-	'datasources' => array
-	(
-		/**
-		 * db is the default data source for Mappers
-		 * PDO is the data-access abstraction layer used by Gacela for all RDBMS connections.
-		 */
-		'db' => array
-		(
-			/**
-			 * Valid types are: mysql (More will be added soon)
-			 */
-			'type' => 'mysql',
-			/**
-			 * Database name
-			 */
-			'schema' => 'kacela',
-			/**
-			 * Connection host
-			 */
-			'host' => 'localhost',
-			/**
-			 * Database username
-			 */
-			'user' => 'root',
-			/**
-			 * Database password
-			 */
-			'password' => ''
-		),
-		/**
-		 *
-		 */
-		'sf' => array
-		(
-			'type' => 'salesforce',
-			/**
-			 * Gacela uses the Force.com toolkit for PHP.
-			 * It can be found here: https://github.com/developerforce/Force.com-Toolkit-for-PHP
-			 * Once installed in your application, Gacela needs to know the path to the soap client.
-			 */
-			'soapclient_path' => MODPATH.'sf/vendor/soapclient/',
+$source = \Gacela\Gacela::createDataSource(
+    [
+        'name' => 'db',
+        'type' => 'mysql' // Other types would be mssql, postgres, sqllite
+        'host' => 'localhost',
+        'user' => 'gacela',
+        'password' => '',
+        'schema' => 'gacela'
+    ]
+);
+
+\Gacela\Gacela::instance()->registerDataSource($source);
+```
+
+The default for Gacela is to name the database tables in the plural form (users, contents). Though this can be easily
+overridden. We'll look at an example of how to override table name later.
+
+For example:
+
+```sql
+CREATE TABLE users (
+    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `name` VARCHAR(150) NOT NULL,
+    `email` VARCHAR(200) NOT NULL
+) ENGINE=Innodb;
+
+CREATE TABLE contents (
+    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    userId INT UNSIGNED NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content LONGTEXT NOT NULL,
+    CONSTRAINT `fk_user_contents` FOREIGN KEY (userId) REFERENCES users(id) ON DELETE RESTRICT
+) ENGINE=Innodb;
+```
+
+### Salesforce
+
+```php
+$source = \Gacela\Gacela::createDataSource(
+    [
+        'name' => 'salesforce',
+        'type' => 'salesforce',
+        'soapclient_path' => MODPATH.'sf/vendor/soapclient/',
 			/**
 			 * Specify the full path to your wsdl file for Salesforce
 			 */
-			'wsdl_path' => APPPATH.'config/sf.wsdl',
-			'username' => 'salesforceuser@domain.com.sandbox',
-			'password' => 'SecretPasswordWithSalesforceHash',
-			/**
-			 * Specifies which Salesforce objects are available for use in Gacela
-			 */
-			'objects' => array()
-		)
-	),
-	/**
-	 * Can specify TRUE to use default Cache::instance() otherwise, specify Cache group name
-	 */
-	'cache' => false,
-	/**
-	 * Set to TRUE causes the Kohana_Profiler to run for Gacela
-	 */
-	'profiling' => false
+		'wsdl_path' => APPPATH.'config/sf.wsdl',
+		'username' => 'salesforceuser@domain.com.sandbox',
+		'password' => 'SecretPasswordWithSalesforceHash',
+		/**
+		 * Specifies which Salesforce objects are available for use in Gacela
+		 */
+         'objects' => []
+    ]
 );
 ```
 
-## Data Source Setup
 
-### MySQL
+## Registering Namespaces
 
-The default for Gacela is to name the database tables in the plural form (users, posts)
+
 
 # Basic Usage
 
-With Gacela installed I would create the following files:i
+With Gacela installed I would create the following files:
 
 APPATH/Classes/Mapper/User.php
 
 ```php
 namespace Gacela\Mapper;
 
-class Mapper_User extends Mapper {}
+class User extends Mapper {}
 ```
 
 APPATH/classes/model/user.php
