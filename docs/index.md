@@ -1,82 +1,106 @@
 # Mapping Data Structures to PHP Objects
 
-Most useful applications interact with data in some form. There are multiple solutions for storing data and for each of those solutions, sometimes multiple formats in which the data can be stored.
+Most useful applications interact with data in some form. There are multiple solutions for storing data and for each of 
+those solutions, sometimes multiple formats in which the data can be stored.
 When using object-oriented PHP, that same data is stored, modified and accessed in a class.
 
-Let's assume that you were creating your own internal database of local hoodlums to call when you're in a pinch. We'll assume that these locals can be reached by phone or email.
-When calling you will need to know what other names they might be known as so you can be sure to find them.
+Let's assume that you were creating your own blogging system. We'll assume initially that you have need want to create
+posts and you want to allow multiple users to author articles. 
 
-Storing the data in a hierarchical format with XML is fairly straightforward. Each 'user' is represented by a node named 'user' with a child 'contents' node to contain the user's blog posts.
+
+Storing the data in a hierarchical format with XML is fairly straightforward. Each 'user' is represented by a node named 
+'user' with a child 'contents' node to contain the user's blog posts.
 
 ```xml
 <xml version="1.0>
 	<user id="1" first="Bobby" last="Mcintire" email="bobby@kacela.com" />
 	<user id="2" first="Frankfurt" last="McGee" email="sweetcheeks@kacela.com">
 		<contents>
-			<content></content>
+			<content id="id" title="Beginners Guide to ORMs">
+                In order to start, you need to read the rest of this user's guide.
+            </content>
 		</contents>
 	</user>
 </xml>
 ```
 
-With a relational database, we would create two tables, one to hold the basic information about each user, and a table to hold their posts.
+With a relational database, we would create two tables, one to hold the basic information about each user, and a table 
+to hold their posts.
 
 'users' table
 
-| id  | name           | email                    | phone        |
-|-----|----------------|--------------------------|--------------|
-| 1  | Bobby Mcintire  | bobby@kacela.com         | 1234567891   |
-| 2  | Frankfurt McGee | sweetcheeks@kacela.com   | 9876543214   |
+| id  | name           | email                    |
+---------------------------------------------------
+| 1  | Bobby Mcintire  | bobby@kacela.com         |
+---------------------------------------------------
+| 2  | Frankfurt McGee | sweetcheeks@kacela.com   |
+---------------------------------------------------
+
+'contents'
+
+| id | userId | title                   | content                        |
+-------------------------------------------------------------------------
+| 1 |    2   | Beginners Guide to ORMs | Read the rest of the guide     |
+-------------------------------------------------------------------------
 
 The same data in PHP would be stored in classes like so:
 
 ```php
 class User {
 
-	protected $data = array(
+	protected $data = [
 		'id' => 1,
 		'name' => 'Bobby Mcintire',
-		'email' => 'bobby@kacela.com',
-		'phone' => '1234567891'
-	);
+		'email' => 'bobby@kacela.com'
+	];
 
-	protected $contents = array();
+	protected $contents = [];
 
 }
 
 class User {
 
-	protected $data = array(
+	protected $data = [
 		'id' => 2,
 		'name' => 'Frankfurt McGee',
 		'email' => 'sweetcheeks@kacela.com',
 		'phone' => '9876543214'
-	);
+	];
 
-	protected $contents = array(
-
-	);
+	protected $contents = [
+        [
+            'id' => 1,
+            'userId' => 2,
+            'title' => 'Beginners Guide to ORMs',
+            'content' => 'Read this guide all the way to the end'
+        ]
+	];
 
 }
 ```
 
-As you can see the way that data is stored can be vastly different from the way that we interact with data in our application code.
-This is called the object-impedance mismatch. A common design pattern has arisen to hide the complexities of the differences between data in application code and data stores called Object-Relational Mapping.
-This design pattern was developed specifically to deal with the complexities of mapping relational database records to objects in code, but many of the same principles apply when dealing with any form of raw data because there is almost always some mismatch.
+As you can see the way that data is stored can be vastly different from the way that we interact with data in our 
+application code.
+
+This is called the object-impedance mismatch. A common design pattern has arisen to hide the complexities of the 
+differences between data in application code and data stores called Object-Relational Mapping.
+
+This design pattern was developed specifically to deal with the complexities of mapping relational database records to 
+objects in code, but many of the same principles apply when dealing with any form of raw data because there is almost 
+always some mismatch.
 
 # Common Solutions
 
 The most common approach to Object-Relational Mapping, or ORM for short, is the Active Record pattern.
-This is the pattern used by Kohana's default ORM so we will use Kohana_ORM for our examples.
 
-With Active Record, one object represents one Record from the Data Source.
-With an Active Record object, business logic and data access logic are contained in a single object.
-A basic Active Record object would look like so:
+With Active Record, one class instance represents one Record from the Data Source.
+With an Active Record instance, business logic and data access logic are contained in a single object.
+A basic Active Record class would look like so:
 
 ```php
 class Model_User extends ORM
 {
-	// Note that aliases which are stored in another table cannot be fetched yet
+
 }
 ```
 
@@ -88,32 +112,39 @@ $user = ORM::find('User', 1);
 // echo's Bobby Mcintire to the screen
 echo $user->name;
 
-$user->phone = '9875412356'
+$user->email = 'new.user@gacela.com'
 
 $user->save();
 ```
 
 # Gacela's Basic Philosophies
 
-Working with a Data Mapper for the first time can be quite a bit more difficult than working with a more basic approach like Active Record, but Gacela offers large dividends if you tackle the complexity upfront. When developing Gacela, the following were just the top features we thought every ORM should have:
+Working with a Data Mapper for the first time can be quite a bit more difficult than working with a more basic approach 
+like Active Record, but Gacela offers large dividends if you tackle the complexity upfront. When developing Gacela, the 
+following were just the top features we thought every ORM should have:
 
-- Automatically discover relationships between objects and rules about the data contained within objects.
+- Automatically discover relationships between classes and rules about the data contained within classes.
 - Separate data store activities from business logic activities so that our classes have a single responsibility.
-- Defaults that are easy to set up and use, but can handle complex mapping between business objects and the underlying data store.
+- Defaults that are easy to set up and use, but can handle complex mapping between business objects and the underlying 
+data store.
 
 # Installation and Configuration
 
 ## How to Install
 
-1. At the command-line, browse to /your/project/root
-2. Execute git submodule add https://github.com/noah-goodrich/kohana-kacela modules/kacela
-3. Execute git submodule init
-4. Execute git submodule update
-5. Under application/classes, add two new directories: model, mapper
+Gacela can be installed with Composer.
+
+Define the following requirement in your composer.json file:
+
+```json
+{
+    "require": {
+        "energylab/gacela": "dev-develop"
+    }
+}
+```
 
 ## Configuration
-
-Configuration settings for Gacela are stored in modules/kacela/kacela.php. This file can be copied to application/config and modified.
 
 ```php
 return array
@@ -189,13 +220,13 @@ return array
 
 ### MySQL
 
-The default for Gacela is to name the database tables in the plural form (users, aliases,
+The default for Gacela is to name the database tables in the plural form (users, posts)
 
 # Basic Usage
 
-With Gacela installed I would create the following files:
+With Gacela installed I would create the following files:i
 
-APPATH/classes/mapper/user.php
+APPATH/Classes/Mapper/User.php
 
 ```php
 namespace Gacela\Mapper;
