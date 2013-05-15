@@ -146,11 +146,15 @@ Define the following requirement in your composer.json file:
 
 ## Data Source Setup
 
+Gacela assumes that in any given application there will be multiple sources of data, even if there just multiple 
+databases that need to be used.
+
 Currently there are two supported types of Data Sources for Gacela: Database & Salesforce. We plan to add support for
 Xml, RESTful Web Services, and SOAP Web Services as well as to fully support the differences between MySQL, MSSQL,
 Postgres, and SQLlite.
 
-Gacela provides a convenience method to create a DataSource object from configuration parameters.
+Gacela provides a convenience method to create a DataSource object from configuration parameters. Once a DataSource 
+object is created, it is easily registered with the Gacela instance so that it is available from anywhere.
 
 ### Relational Database
 
@@ -212,48 +216,245 @@ $source = \Gacela\Gacela::createDataSource(
 );
 ```
 
-
 ## Registering Namespaces
 
+Gacela contains its own autoloader and registers it when the Gacela instance is constructed. Gacela also registers its 
+own namespace for its use. You will want to register a custom namespace for your application even if you only plan on 
+creating Mappers and Models for your project.
 
+```php
+/*
+ * Assuming that you are bootstrapping from the root of your project and that you want to put your 
+ * custom application code in an app directory
+ */
+\Gacela\Gacela::instance()->registerNamespace('App', __DIR__.'/app/');
+
+/*
+ * A handy trick if you want to put your Mappers/Models or other custom extensions for Gacela in the global 
+ * namespace
+ */
+\Gacela\Gacela::instance()->registerNamespace('', __DIR__.'/app/');
+```
+
+With those two namespaces registered to the same directory, I could declare a new Mapper (User) like so:
+
+```php
+/*
+ * __DIR__.'/app/Mapper/User.php'
+ */
+
+<?php
+
+namespace Mapper;
+
+class User extends \Gacela\Mapper\Mapper {}
+```
+
+Or alternatively like this:
+
+```php 
+/*
+ * __DIR__.'/app/Mapper/User.php'
+ */
+
+<?php
+
+namespace App\Mapper;
+
+use \Gacela\Mapper\Mapper as M;
+
+class User extends M {}
+```
+
+Even more exciting is that Gacela allows for cascading namespaces so you can easily override default Gacela classes
+without having to modify the methods and classes that depend on the modified class. So lets say that you wanted
+to create a custom Model class where you could some default functionality for all of your models to use.
+
+```php
+/*
+ * __DIR__.'/app/Model/Model.php'
+ */
+<?php
+
+namespace Model;
+
+class Model extends \Gacela\Model\Model {}
+
+?> // This breaks a PSR standard but is shown here to clarify the end of the file
+
+/*
+ * __DIR__'/app/Model/User.php'
+ */
+
+ <?php
+
+namespace Model;
+
+class User extends Model {}
+
+?>
+```
+
+Personally, I always extend the base Model and Mapper classes in projects if for no other reason than it simplifies my 
+class declarations.
+
+## Using Caching
+
+Gacela supports caching on two levels, the first is to cache the metadata that it uses to determine relationships,
+column data types, and such. The second is to cache requested data. In order to use either, caching must be enabled 
+in the Gacela instance.
+
+Gacela will use any caching library that supports get(), set(), and increment() 
+
+```php
+$cache = new \Cache;
+
+\Gacela\Gacela::instance()->enableCache($cache);
+```
 
 # Basic Usage
 
-With Gacela installed I would create the following files:
+As we noted previously, there are two separate functions provided by any given ORM;
 
-APPATH/Classes/Mapper/User.php
+- Data Access
+- Business Logic
+
+Most ORM's mash these two responsibilities into a single class that will contain custom methods for dealing with 
+business or application logic problems as well as custom methods for finding or saving data back to the database. Gacela
+takes a different approach in that it separates these two functions into two separate, distinct classes:
+
+- Mappers (Data Access) 
+- Models (Business or Application Logic)
+
+To get our basic application up and running, I will need the following files and class definitions:
 
 ```php
-namespace Gacela\Mapper;
+/*
+ * Again assume that we have created an 'app' directory and registered it into the global namespace with Gacela.
+ * 
+ * As I mentioned before, I prefer to always override the default Model and Mapper classes in my application so 
+ * I will that first.
+ * app/Mapper/Mapper
+ */
+<?php 
+
+namespace Mapper;
+
+class Mapper extends \Gacela\Mapper\Mapper {}
+
+?>
+
+/*
+ * app/Model/Model
+ */
+<?php
+
+namespace Model;
+
+class Model extends \Gacela\Model\Model {}
+
+?>
+
+/*
+ * app/Mapper/User
+ */
+<?php
+
+namespace Mapper;
 
 class User extends Mapper {}
+
+?>
+
+/*
+ * The underlying database table is named contents, but perhaps we decided after the fact that we'd rather
+ * use Post as the name by which we reference records in this table.
+ *
+ * app/Mapper/Post
+ */
+<?php
+
+namespace Mapper;
+
+class Post extends Mapper {
+
+    /*
+     * Easy peasy. To manually specify the underlying table or as we call it in Gacela, resource, name just set
+     * the $_resourceName property in the mapper. This also works great if your table names are singular rather than 
+     * the default plural.
+     */
+    protected $_resourceName = 'contents';
+}
+
+?>
+
+/*
+ * app/Model/User
+ */
+<?php
+
+namespace Model;
+
+class User extends Model {}
+
+?>
+
+/*
+ * app/Model/Post
+ */
+<?php
+
+namespace Model;
+
+class Post extends Model {}
+
+?>
 ```
 
-APPATH/classes/model/user.php
+Now we can load existing Users, create a new Post, or delete a User or Post.
 
 ```php
-namespace Gacela\Model;
-
-class Model_User extends Model {}
-```
-
-Now, I can load and manipulate a basic model:
-
-```php
-$user = Gacela::factory('user', 1);
+/*
+ * You can also easily override the \Gacela\Gacela class by creating a shorthand class in the app/ directory
+ * that extends \Gacela\Gacela. To simplify calls, I like to create a extended class 'G'. Future examples all
+ * assume that this extended class exists.
+ */
+$user = \G::instance()->find('user', 1);
 
 // echos Bobby Mcintire to the screen
 echo $user->name;
 
-$user->phone = '9875412356'
+$user->email = 'different@gacel.com'
 
 // Saves the updated record to the database
 $user->save();
+
+/*
+ * The required argument when using new Model\Model() specifies the name of the Mapper to use from the Model.
+ */
+$post = new \Model\Post('Post');
+
+$post->setData(
+    [
+        'userId' => 1,
+        'title' => 'A new blog post',
+        'content' => 
+    ]
+);
+
+/*
+ * Will output TRUE because the id column is assigned by the database engine at insert in our case.
+ */
+echo $post->validate();
+
+$post->save(['title' => 'A better title']);
 ```
 
-Right now you're probably thinking, "Wait! This looks EXACTLY like Kohana_ORM, where's the benefit in creating two files where I only created one before?" 
+Right now you're probably thinking, "Wait! This looks almost EXACTLY like every other ORM I've ever used, where's the 
+benefit in creating two files where I only created one before?" 
 
-So far all we've looked at is the most basic scenario - one database table with a mapper that presents simple, default find() and findAll() methods with a Model that doesn't have any custom business logic.
+So far all we've looked at is the most basic scenario - one database table with a mapper that presents simple, default 
+find() and findAll() methods with a Model that doesn't have any custom business logic.
 
 We'll explore custom Mapper functions first.
 
