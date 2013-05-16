@@ -474,7 +474,7 @@ class Note extends Mapper {
 }
 ```
 
-To fetch a single record:
+### To fetch a single record:
 
 ```php
 $bobby = \Gacela\Gacela::instance()->find('User', 1);
@@ -485,7 +485,7 @@ $bobby = \Gacela\Gacela::instance()->find('User', 1);
 echo $bobby->email;
 ```
 
-## To fetch multiple records with simple criteria:
+### To fetch multiple records with simple criteria:
 
 ```php
 /*
@@ -500,34 +500,28 @@ $criteria = \Gacela\Gacela::criteria()
 \Gacela\Gacela::instance()->findAll('Post', $criteria);
 ```
 
-## Fetching data using complex criteria
+### Fetching data using complex criteria
 
 ```php
-/**
- * Gacela
-*/
-class Mapper_User extends Gacela_Mapper
+<?php
+
+namespace Mapper;
+
+class User extends Mapper
 {
-	/**
-	 * Encapsulates the above example in a simple method call.
-	*/
-	public function find_all_by_last_login($last_login)
-	{
-		return $this->find_all(Gacela::criteria()->greater_than_or_equal_to('last_login', $last_login);
-	}
 
 	/**
-	 * Fetches a Collection of all users who have never logged in or have registered in the last ten minutes.
+	 * Fetches a Collection of all users with no posts
 	*/
-	public function find_new_or_inactive()
+	public function findUserWithNoPosts()
 	{
 		/**
-		 * Gacela_Mapper::_getQuery() returns a Query instance specific to the Mapper's data source.
+		 * Mapper::_getQuery() returns a Query instance specific to the Mapper's data source.
 		 * As such, the methods available for each Query instance will vary.
 		*/
 		$query = $this->_getQuery()
 			->from('users')
-			->join(array('l' => 'logs'), "users.id = l.user_id AND l.type = 'login'", array(), 'left')
+			->join(array('p' => 'logs'), "users.id = l.user_id AND l.type = 'login'", array(), 'left')
 			->where('l.date IS NULL')
 			->where('users.registration >= :date', array(':date' => date('Y-m-d H:i:s', strtotime('-10 minutes')));
 
