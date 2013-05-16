@@ -460,43 +460,44 @@ We'll explore custom Mapper functions first.
 
 # Fetching Data using Mappers
 
-## To fetch a single record:
-
-When fetching a single record, Gacela::factory() and Gacela::find() both return an instance of the Mapper::_modelName.
-
-Mapper::_modelName defaults to Model_<name> where name is equal to Mapper_<name>.
+The name of the Model class associated to a Mapper class defaults to the same name as the Mapper class. 
+This can be overriden:
 
 ```php
-Gacela::factory($mapper_name, $id)
+<?php
+
+namespace Mapper;
+
+class Note extends Mapper {
+    
+    protected $_modelName = 'Comment'
+}
+```
+
+To fetch a single record:
+
+```php
+$bobby = \Gacela\Gacela::instance()->find('User', 1);
 
 /*
- * For Example
-*/
-
-// Fetch a record with a simple (single field) primary key
-Gacela::factory('user', 1);
-
-// Fetch a record with a complex (multiple fields) primary key
-Gacela::factory('survey_answer', array('question_id' => 500, 'user_id' => 23);
+ * Outputs Bobby Mcintire
+ */
+echo $bobby->email;
 ```
 
 ## To fetch multiple records with simple criteria:
 
 ```php
 /*
- * Kohana_ORM
-*/
-ORM::factory('User')
-	->where('last_login', '>=', '2012-12-31')
-	->find_all();
-
-/*
- * Gacela
- * The Gacela_Criteria object allows users to specify simple rules for filtering, sorting and limiting data without all of the complexity of
+ * The \Gacela\Criteria object allows users to specify simple rules for filtering, sorting and limiting data without all of the complexity of
  * a full built-in query builder.
- * Gacela::find_all() returns an instance of Gacela_Collection_Arr
+ * \Gacela\Gacela::instance()->findAll() returns an instance of \Gacela\Collection\Arr
 */
-Gacela::find_all('user', Gacela::criteria()->greater_than_or_equal_to('last_login', '2012-12-31');
+
+$criteria = \Gacela\Gacela::criteria()
+    ->equals('userId', 1);
+
+\Gacela\Gacela::instance()->findAll('Post', $criteria);
 ```
 
 ## Fetching data using complex criteria
