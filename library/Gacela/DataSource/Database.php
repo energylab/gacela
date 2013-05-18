@@ -104,11 +104,11 @@ class Database extends DataSource
 	 */
 	public function delete($name, \Gacela\DataSource\Query\Query $where)
 	{
-		list($query, $args) = $where->delete($name)->assemble();
+		$this->_setLastQuery($where->delete($name));
+		
+		$query = $this->_adapter->prepare($this->_lastQuery['query']);
 
-		$query = $this->_adapter->prepare($query);
-
-		if($query->execute($args)) {
+		if($query->execute($this->_lastQuery['args'])) {
 			if($query->rowCount() == 0) {
 				return false;
 			}
@@ -291,18 +291,21 @@ class Database extends DataSource
 	public function update($name, $data, $where = array())
 	{
 		if($data instanceof Query\Query) {
-			list($query, $binds) = $data->assemble();
+			$query = $data;
 		} elseif(is_array($data) && $where instanceof Query\Query) {
-			list($query, $binds) = $where->update($name, $data)->assemble();
+			$query = $where->update($name, $data);
+			$where = array();
 		} elseif(is_array($where)) {
 			$query = $data;
 			$binds = $where;
 		}
+		
+		$this->_setLastQuery($query, $where);
 
-		$query = $this->_adapter->prepare($query);
+		$query = $this->_adapter->prepare($this->_lastQuery['query']);
 
 		try {
-			if($query->execute($binds)) {
+			if($query->execute($this->_lastQuery['args'])) {
 				if($query->rowCount() == 0) {
 					return false;
 				}
