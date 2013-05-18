@@ -59,15 +59,21 @@ class ModelTest extends \Test\GUnit\Extensions\Database\TestCase
 		$this->assertAttributeEquals((object) $data, '_data', $this->object);
 	}
 
-	public function test__getMethodFirst()
+    public function test__gePropertyBeforeRelation()
 	{
+		$student = new App\Model\Student($this->gacela, $this->gacela->loadMapper('Student'), new \stdClass);
 
-	}
+		$house = new App\Model\House($this->gacela, $this->gacela->loadMapper('House'), new \stdClass);
 
-	public function test__getPropertyBeforeRelation()
-	{
+		$house->setData
+		(
+			array('houseId' => 10, 'houseName' => 'Unit Test')
+		);
 
-	}
+		$student->house = $house;
+
+		$this->assertSame($house->houseName, $student->house->houseName);
+    }
 
     /**
      * @covers Gacela\Model\Model::__isset
