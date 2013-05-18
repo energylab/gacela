@@ -20,11 +20,6 @@ abstract class DataSource implements iDataSource
 	 */
 	protected $_adapter;
 
-	/**
-	 * @var \Gacela
-	 */
-	protected $_gacela;
-
 	protected $_lastQuery = array();
 
 	/**
@@ -46,10 +41,8 @@ abstract class DataSource implements iDataSource
 		}
 	}
 
-	public function __construct(\Gacela $gacela, \Gacela\DataSource\Adapter\iAdapter $adapter, array $config)
+	public function __construct(\Gacela\DataSource\Adapter\iAdapter $adapter, array $config)
 	{
-		$this->_gacela = $gacela;
-
 		$this->_adapter = $adapter;
 
 		$this->_config = (object) $config;
@@ -89,7 +82,7 @@ abstract class DataSource implements iDataSource
 		$string .= ';';
 
 		if($write) {
-			$handle = fopen($this->_gacela->configPath().$name.'.php', 'w+');
+			$handle = fopen(\Gacela\Gacela::instance()->configPath().$name.'.php', 'w+');
 
 			if(!fwrite($handle, $string)) {
 				return false;
@@ -119,14 +112,14 @@ abstract class DataSource implements iDataSource
 	 */
 	public function loadResource($name, $force = false)
 	{
-		$cached = $this->_gacela->cacheMetaData('resource_'.$name);
+		$cached = \Gacela\Gacela::instance()->cacheMetaData('resource_'.$name);
 
 		if(!$cached || $force)  {
-			$class = $this->_gacela->autoload("DataSource\\Resource");
+			$class = \Gacela\Gacela::instance()->autoload("DataSource\\Resource");
 
 			$cached = new $class($this->_adapter->load($name, $force));
 
-			$this->_gacela->cacheMetaData($this->_config->name.'_resource_'.$name, $cached);
+			\Gacela\Gacela::instance()->cacheMetaData($this->_config->name.'_resource_'.$name, $cached);
 		}
 
 		return $cached;

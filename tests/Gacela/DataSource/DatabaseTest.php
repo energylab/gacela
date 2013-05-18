@@ -26,7 +26,7 @@ class DatabaseTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$this->object = \Gacela::instance()->getDataSource('test');
+		$this->object = \Gacela\Gacela::instance()->getDataSource('test');
 	}
 
 	public function providerSelectQuery()

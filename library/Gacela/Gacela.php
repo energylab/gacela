@@ -1,4 +1,7 @@
 <?php
+
+namespace Gacela;
+
 /**
  * @author Noah Goodrich
  * @date May 7, 2011
@@ -9,7 +12,7 @@
 
 class Gacela
 {
-	protected static $_instance;
+	protected static $instance;
 
 	/**
 	 * @var \Memcache
@@ -30,7 +33,7 @@ class Gacela
     {
         spl_autoload_register(array($this, 'autoload'));
 
-        $this->registerNamespace('Gacela', __DIR__.'/Gacela');
+        $this->registerNamespace('Gacela', __DIR__);
     }
 
 	/**
@@ -66,7 +69,7 @@ class Gacela
 	 * @return bool
 	 */
     protected function _findFile($file)
-    {
+    { 
         return file_exists($file) && is_readable($file);
     }
 
@@ -81,8 +84,8 @@ class Gacela
 		$class = static::instance()->autoload("DataSource\\".ucfirst($type));
 
 		$adapter = static::instance()->autoload("DataSource\\Adapter\\".ucfirst($config['type']));
-
-		return new $class(static::instance(), new $adapter(static::instance(), (object) $config), $config);
+		
+		return new $class(new $adapter((object) $config), $config);
 	}
 
 	/**
@@ -143,16 +146,16 @@ class Gacela
 	 */
 	public static function instance()
 	{
-		if(is_null(static::$_instance)) {
-			static::$_instance = new Gacela();
+		if(is_null(static::$instance)) {
+			static::$instance = new Gacela();
 		}
 
-		return static::$_instance;
+		return static::$instance;
 	}
 
 	public static function reset()
 	{
-		self::$_instance = null;
+		static::$instance = null;
 	}
 
 	/**
@@ -166,10 +169,8 @@ class Gacela
 
 		// The class name has to be parsed differently from the namespace path
 		$name = array_pop($parts);
-
-		$self = self::instance();
-
-        if(count($parts) && isset($self->_namespaces[$parts[0]])) {
+		
+        if(count($parts) && isset($this->_namespaces[$parts[0]])) { 
         	if(class_exists($class, false)) {
 				return $class;
 			} else {
@@ -177,29 +178,29 @@ class Gacela
 				unset($path[0]);
 
 				// According to PSR-0 - The underscore should be part of the directory structure for class names
-				$file = $self->_namespaces[$parts[0]].join(DIRECTORY_SEPARATOR, $path).DIRECTORY_SEPARATOR.str_replace('_', DIRECTORY_SEPARATOR, $name).'.php';
+				$file = $this->_namespaces[$parts[0]].join(DIRECTORY_SEPARATOR, $path).DIRECTORY_SEPARATOR.str_replace('_', DIRECTORY_SEPARATOR, $name).'.php';
 
-				if($self->_findFile($file)) {
+				if($this->_findFile($file)) {
 					require $file;
 					return $class;
 				}
 			}
-        } else {
-            $namespaces = array_reverse($self->_namespaces);
+        } else { 
+            $namespaces = array_reverse($this->_namespaces);
 
             foreach ($namespaces as $ns => $path) {
 
 				// According to PSR-0 - The underscore should be part of the directory structure for class names
                 $file = $path.join(DIRECTORY_SEPARATOR, $parts).DIRECTORY_SEPARATOR.str_replace('_', DIRECTORY_SEPARATOR, $name).'.php';
-
+				
 				$_class = $ns.'\\'.$class;
-
-				if(class_exists($_class, false)) {
+					
+				if(class_exists($_class, false)) { 
 					return $_class;
-				} elseif($self->_findFile($file)) {
+				} elseif($this->_findFile($file)) { 
 					require $file;
 					return $_class;
-                }
+                } 
             }
         }
 
@@ -242,21 +243,25 @@ class Gacela
 		return $this->_config;
 	}
 
+	public function collection(\Gacela\Collection\Collection $col)
+	{
+		return $this->makeCollection($col);
+	}
+
+	public function criteria()
+	{
+		$class = $this->autoload('Criteria');
+
+		return new $class;
+	}
+
 	/**
 	 * @param  Memcache|array $servers
 	 * @return Gacela
 	 */
-	public function enableCache($servers)
+	public function enableCache($server)
 	{
-		if($servers instanceof Memcache) {
-			$this->_cache = $servers;
-		} elseif(is_array($servers)) {
-			$this->_cache = new Memcache;
-
-			foreach($servers as $server) {
-				$this->_cache->addServer($server[0], $server[1]);
-			}
-		}
+		$this->_cache = $server;
 
 		return $this;
 	}
@@ -269,7 +274,7 @@ class Gacela
 	public function getDataSource($name)
 	{
 		if(!isset($this->_sources[$name])) {
-			throw new Gacela\Exception("Invalid Data Source {$name} Referenced");
+			throw new \Gacela\Exception("Invalid Data Source {$name} Referenced");
 		}
 
 		return $this->_sources[$name];
@@ -289,17 +294,32 @@ class Gacela
 
 		return $this->_fields[$type];
 	}
+	
+	/**
+	 * @param Mapper Name
+	 * @param array|int Id
+	 *
+	 */
+	public function find($mapper, $id) 
+	{
+		return $this->loadMapper($mapper)->find($id);
+	}
+
+	public  function findAll($mapper, \Gacela\Criteria $criteria = null)
+	{
+		return $this->loadMapper($mapper)->findAll($criteria);
+	}
 
 	/**
-	 * @param $key
-	 * @return Gacela
-	 */
+	* @param $key
+	* @return Gacela
+	**/
 	public function incrementDataCache($key)
 	{
 		if(is_object($this->_cache)) {
 			if(!$this->_cache->increment($key)) {
 
-			}
+			}			
 		}
 
 		return $this;
@@ -366,11 +386,11 @@ class Gacela
 	public function makeCollection($mapper, $data)
 	{
 		if($data instanceof \PDOStatement) {
-			$col = Gacela::instance()->autoload("Collection\\Statement");
+			$col = $this->autoload("Collection\\Statement");
 		} elseif (is_array($data)) {
-			$col = Gacela::instance()->autoload("Collection\\Arr");
+			$col = $this->autoload("Collection\\Arr");
 		} else {
-			throw new Gacela\Exception('Collection type is not defined!');
+			throw new \Gacela\Exception('Collection type is not defined!');
 		}
 
 		return new $col($mapper, $data);
@@ -382,7 +402,7 @@ class Gacela
 	 * @param  array $config Configuration arguments required by the DataSource
 	 * @return Gacela
 	 */
-	public function registerDataSource(Gacela\DataSource\iDataSource $source)
+	public function registerDataSource(\Gacela\DataSource\iDataSource $source)
 	{
 		$this->_sources[$source->getName()] = $source;
 
@@ -399,7 +419,7 @@ class Gacela
 		if(substr($path, -1, 1) != '/') {
 			$path .= '/';
 		}
-
+		
 		$this->_namespaces[$ns] = $path;
 
 		return $this;

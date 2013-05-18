@@ -15,7 +15,7 @@ class Mysql extends Pdo
 		if(!$this->_conn) {
 			parent::loadConnection();
 
-			$this->_columns = $this->_singleton->cacheMetaData($this->_config->schema.'_columns');
+			$this->_columns = \Gacela\Gacela::instance()->cacheMetaData($this->_config->schema.'_columns');
 
 			if(!$this->_columns) {
 				$sql = "SELECT *
@@ -24,12 +24,12 @@ class Mysql extends Pdo
 
 				$this->_columns = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
 
-				$this->_singleton->cacheMetaData($this->_config->schema.'_columns', $this->_columns);
+				\Gacela\Gacela::instance()->cacheMetaData($this->_config->schema.'_columns', $this->_columns);
 			}
 		}
 
 		// Moved out of __construct to allow for lazy loading of config data
-		$this->_relationships = $this->_singleton->cacheMetaData($this->_config->schema.'_relationships');
+		$this->_relationships = \Gacela\Gacela::instance()->cacheMetaData($this->_config->schema.'_relationships');
 
 		if(!$this->_relationships) {
 			$sql = "
@@ -47,7 +47,7 @@ class Mysql extends Pdo
 
 			$this->_relationships = $this->query($sql)->fetchAll(\PDO::FETCH_OBJ);
 
-			$this->_singleton->cacheMetaData($this->_config->schema.'_relationships', $this->_relationships);
+			\Gacela\Gacela::instance()->cacheMetaData($this->_config->schema.'_relationships', $this->_relationships);
 		}
 	}
 

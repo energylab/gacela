@@ -18,9 +18,9 @@ class GacelaTest extends Test\GUnit\TestCase
      */
     protected function setUp()
     {
-		$gacela = Gacela::instance();
+		$gacela = \Gacela\Gacela::instance();
 
-		$source = Gacela::createDataSource(
+		$source = $gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'db',
@@ -31,7 +31,7 @@ class GacelaTest extends Test\GUnit\TestCase
 			)
 		);
 
-		$test = Gacela::createDataSource(
+		$test = $gacela::createDataSource(
 			array(
 				'type' => 'mysql',
 				'name' => 'test',
@@ -52,7 +52,9 @@ class GacelaTest extends Test\GUnit\TestCase
 
 		$this->memcache = new Memcache;
 
-		$this->memcache->addServer('127.0.0.1', 11211);
+		if(!$this->memcache->addServer('127.0.0.1', 11211)) {
+			throw new \Exception($this->memcache->getServerStatus());
+		}
 
 		if(is_object($this->memcache)) {
 			$this->memcache->flush();
@@ -65,7 +67,7 @@ class GacelaTest extends Test\GUnit\TestCase
      */
     protected function tearDown()
     {
-		Gacela::reset();
+		\Gacela\Gacela::reset();
 
 		if(is_object($this->memcache)) {
 			$this->memcache->flush();
@@ -135,7 +137,7 @@ class GacelaTest extends Test\GUnit\TestCase
      */
     public function testInstance()
     {
-        $this->assertInstanceOf('Gacela', Gacela::instance());
+        $this->assertInstanceOf('\Gacela\Gacela', \Gacela\Gacela::instance());
     }
 
     /**
@@ -152,9 +154,22 @@ class GacelaTest extends Test\GUnit\TestCase
 	 */
 	public function testEnableCache()
 	{
+		$this->assertInstanceOf('\Memcache', $this->memcache, 'Memcache is empty to begin');
+
 		$this->object->enableCache($this->memcache);
 
-		$this->assertAttributeInstanceOf('\Memcache','_cache', $this->object);
+		$this->assertAttributeInstanceOf('\Memcache','_cache', $this->object, 'Memcache was not set');
+	}
+	
+	public function testIncrementCache()
+	{
+		$this->object->enableCache($this->memcache);
+
+		$this->object->cacheData('test', 1);
+
+		$this->object->incrementDataCache('test');
+
+		$this->assertSame(2, $this->object->cacheData('test'));
 	}
 
     /**
@@ -240,7 +255,7 @@ class GacelaTest extends Test\GUnit\TestCase
 	 */
 	public function testRegisterDataSource($config, $class)
 	{
-		$source = Gacela::createDataSource($config);
+		$source = \Gacela\Gacela::createDataSource($config);
 
 		$this->object->registerDataSource($source);
 
@@ -263,19 +278,9 @@ class GacelaTest extends Test\GUnit\TestCase
 	{
 		$this->assertInstanceOf("\\Gacela\\Field\\".$type, $this->object->getField($type));
 	}
-
-	public function testIncrementCache()
-	{
-		$this->object->enableCache($this->memcache);
-
-		$this->object->cacheData('test', 1);
-
-		$this->object->incrementDataCache('test');
-
-		$this->assertSame(2, $this->object->cacheData('test'));
-	}
-
-    /**
+	
+	
+	/**
      * @covers Gacela::loadConfig
      * @todo   Implement testLoadConfig().
      */
@@ -320,7 +325,7 @@ class GacelaTest extends Test\GUnit\TestCase
      */
     public function testMakeCollection($data, $expected)
     {
-		$mapper = new Test\Mapper\Peep($this->object);
+		$mapper = new Test\Mapper\Peep();
 
 		$this->assertInstanceOf($expected, $this->object->makeCollection($mapper, $data));
     }
@@ -331,7 +336,7 @@ class GacelaTest extends Test\GUnit\TestCase
 	 */
 	public function testMakeCollectionThrowsException()
 	{
-		$mapper = new Test\Mapper\Peep($this->object);
+		$mapper = new Test\Mapper\Peep();
 
 		$this->object->makeCollection($mapper, new \ArrayObject());
 	}

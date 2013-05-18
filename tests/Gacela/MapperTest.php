@@ -7,7 +7,7 @@ class MapperTest extends \Test\GUnit\Extensions\Database\TestCase
 {
 	public function testSleep()
 	{
-		$mapper = \Gacela::instance()->loadMapper('house');
+		$mapper = \Gacela\Gacela::instance()->loadMapper('house');
 
 		$str = serialize($mapper);
 

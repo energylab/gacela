@@ -15,7 +15,7 @@ class SalesforceTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$this->object = \Gacela::instance()->getDataSource('sf');
+		$this->object = \Gacela\Gacela::instance()->getDataSource('sf');
 	}
 
 	public function providerInsertOne()

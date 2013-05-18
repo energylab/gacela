@@ -25,7 +25,7 @@ class Salesforce extends Adapter
 			$this->_conn->createConnection($this->_config->wsdl_path);
 			$this->_conn->login($this->_config->username, $this->_config->password);
 
-			$this->_columns = $this->_singleton->cacheMetaData($this->_config->name.'_columns');
+			$this->_columns = \Gacela\Gacela::instance()->cacheMetaData($this->_config->name.'_columns');
 
 			if(!$this->_columns) {
 				$this->_columns = $this->describeSObjects($this->_config->objects);
@@ -35,7 +35,7 @@ class Salesforce extends Adapter
 				}
 
 
-				$this->_singleton->cacheMetaData($this->_config->name.'_columns', $this->_columns);
+				\Gacela\Gacela::instance()->cacheMetaData($this->_config->name.'_columns', $this->_columns);
 			}
 		}
 	}

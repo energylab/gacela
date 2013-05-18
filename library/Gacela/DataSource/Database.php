@@ -192,7 +192,7 @@ class Database extends DataSource
 	 */
 	public function getQuery(\Gacela\Criteria $criteria = null)
 	{
-		$class = $this->_gacela->autoload("DataSource\\Query\\Sql");
+		$class = \Gacela\Gacela::instance()->autoload("DataSource\\Query\\Sql");
 
 		return new $class($criteria);
 	}

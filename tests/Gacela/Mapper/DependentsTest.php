@@ -31,12 +31,12 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$this->object = \Gacela::instance()->loadMapper('peep');
+		$this->object = \Gacela\Gacela::instance()->loadMapper('peep');
 	}
 
 	public function testInitDependents()
 	{
-		$m = \Gacela::instance()->loadMapper('peep');
+		$m = \Gacela\Gacela::instance()->loadMapper('peep');
 
 		$this->assertObjectHasAttribute('_dependents', $m);
 
@@ -70,7 +70,7 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 	 */
 	public function testInsertWithDependent()
 	{
-		$mapper = \Gacela::instance()->loadMapper('peep');
+		$mapper = \Gacela\Gacela::instance()->loadMapper('peep');
 
 		$rs = $mapper->save($this->changed, (object) $this->new, $this->old);
 
@@ -90,7 +90,7 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		$this->new = (object) $this->new;
 
-		$mapper = \Gacela::instance()->loadMapper('peep');
+		$mapper = \Gacela\Gacela::instance()->loadMapper('peep');
 
 		$mapper->save($this->changed, (object) $this->new, $this->old);
 
@@ -102,7 +102,7 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$this->assertNull($record->code);
 
-		$test = \Gacela::instance()->getDataSource('test');
+		$test = \Gacela\Gacela::instance()->getDataSource('test');
 
 		$rs = $test->query($test->loadResource('contacts'), 'SELECT * FROM contacts');
 
@@ -145,4 +145,5 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$this->assertNull($this->object->find($args[1]->code)->code);
 	}
+
 }

@@ -37,11 +37,11 @@ class StatementTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$this->source = \Gacela::instance()->getDataSource('test');
+		$this->source = \Gacela\Gacela::instance()->getDataSource('test');
 
 		$data = $this->source->query($this->source->loadResource('tests'), "SELECT * FROM tests");
 
-		$this->collection = new Statement(\Gacela::instance()->loadMapper('test'), $data);
+		$this->collection = new Statement(\Gacela\Gacela::instance()->loadMapper('test'), $data);
 	}
 
 	/**
@@ -109,7 +109,7 @@ class StatementTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		$data = $this->source->query($this->source->loadResource('tests'), 'SELECT id FROM tests WHERE id > 2');
 
-		$arr = new Statement(\Gacela::instance()->loadMapper('test'), $data);
+		$arr = new Statement(\Gacela\Gacela::instance()->loadMapper('test'), $data);
 
 		$this->assertSame('3', $arr->current()->testName);
 	}
@@ -118,7 +118,7 @@ class StatementTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		$data = $this->source->query($this->source->loadResource('tests'), "SELECT * FROM tests WHERE testName = '6'");
 
-		$collection = new Statement(\Gacela::instance()->loadMapper('test'), $data);
+		$collection = new Statement(\Gacela\Gacela::instance()->loadMapper('test'), $data);
 
 		$current = $collection->current();
 
@@ -130,7 +130,7 @@ class StatementTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		$data = $this->source->query($this->source->loadResource('tests'), 'SELECT * FROM tests WHERE id < 1');
 
-		$collection = new Statement(\Gacela::instance()->loadMapper('test'), $data);
+		$collection = new Statement(\Gacela\Gacela::instance()->loadMapper('test'), $data);
 
 		$current = $collection->current();
 
@@ -251,12 +251,12 @@ class StatementTest extends \Test\GUnit\Extensions\Database\TestCase
 	public function testTwoActiveStatementsAtOneTime()
 	{
 		$one = new Statement(
-			\Gacela::instance()->loadMapper('test'),
+			\Gacela\Gacela::instance()->loadMapper('test'),
 			$this->source->query($this->source->loadResource('tests'), "SELECT * FROM tests")
 		);
 
 		$two = new Statement(
-			\Gacela::instance()->loadMapper('customer'),
+			\Gacela\Gacela::instance()->loadMapper('customer'),
 			$this->source->query($this->source->loadResource('customers'), 'SELECT * FROM customers INNER JOIN users ON customers.id = users.id')
 		);
 
@@ -275,7 +275,7 @@ class StatementTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		$data = $this->source->query($this->source->loadResource('tests'), "SELECT * FROM tests WHERE id < 0");
 
-		$collection = new Statement(\Gacela::instance()->loadMapper('test'), $data);
+		$collection = new Statement(\Gacela\Gacela::instance()->loadMapper('test'), $data);
 
 		foreach($collection as $row)
 		{

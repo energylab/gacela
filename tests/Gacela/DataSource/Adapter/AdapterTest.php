@@ -19,7 +19,7 @@ class AdapterTest extends \Test\GUnit\TestCase
 		$this->object = $this->getMockForAbstractClass(
 			'Gacela\DataSource\Adapter\Adapter',
 			array(
-				\Gacela::instance(),
+				\Gacela\Gacela::instance(),
 				array(
 					'type' => 'mysql',
 					'schema' => 'test',

@@ -23,9 +23,11 @@ class ModelTest extends \Test\GUnit\Extensions\Database\TestCase
     {
 		$data = (object) array();
 
-		$this->gacela = Gacela::instance();
+		$this->gacela = \Gacela\Gacela::instance();
 
-        $this->object = new Test\Model\Test($this->gacela, new Test\Mapper\Test($this->gacela), $data);
+		$m = $this->gacela->loadMapper('Test');
+
+        $this->object = new Test\Model\Test(get_class($m), $data);
     }
 
 	/**
@@ -54,16 +56,16 @@ class ModelTest extends \Test\GUnit\Extensions\Database\TestCase
 			'phone' => 1236549878
 		);
 
-		$this->object = new App\Model\Wizard($this->gacela, new App\Mapper\Wizard($this->gacela), $data);
+		$this->object = new App\Model\Wizard("App\Mapper\Wizard", $data);
 
 		$this->assertAttributeEquals((object) $data, '_data', $this->object);
 	}
 
     public function test__gePropertyBeforeRelation()
 	{
-		$student = new App\Model\Student($this->gacela, $this->gacela->loadMapper('Student'), new \stdClass);
+		$student = new App\Model\Student("App\Mapper\Student", new \stdClass);
 
-		$house = new App\Model\House($this->gacela, $this->gacela->loadMapper('House'), new \stdClass);
+		$house = new App\Model\House("App\Mapper\House", new \stdClass);
 
 		$house->setData
 		(

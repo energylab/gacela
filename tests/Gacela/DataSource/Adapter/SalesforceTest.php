@@ -20,7 +20,7 @@ class SalesforceTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$sf = \Gacela::instance()->getDatasource('sf');
+		$sf = \Gacela\Gacela::instance()->getDatasource('sf');
 
 		$adapter = new \ReflectionProperty($sf, '_adapter');
 

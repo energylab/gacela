@@ -27,7 +27,6 @@ class MysqlTest extends \Test\GUnit\TestCase
     protected function setUp()
     {
 		$this->object = new Mysql(
-			\Gacela::instance(),
 			array(
 				'schema' => 'test',
 				'host' => 'localhost',
@@ -134,7 +133,6 @@ class MysqlTest extends \Test\GUnit\TestCase
 	public function testConstructThrowsPDOExceptionOnConnection()
 	{
 		$this->object = new Mysql(
-			\Gacela::instance(),
 			array(
 				'schema' => 'invalid',
 				'host' => 'localhost',
@@ -253,7 +251,7 @@ class MysqlTest extends \Test\GUnit\TestCase
 
 	public function testColumnsCached()
 	{
-		$this->assertInternalType('array', \Gacela::instance()->cacheMetaData('test_columns'));
+		$this->assertInternalType('array', \Gacela\Gacela::instance()->cacheMetaData('test_columns'));
 	}
 
 	/**

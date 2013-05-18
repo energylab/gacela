@@ -22,7 +22,7 @@ class DataSourceTest extends \Test\GUnit\TestCase
 			'type' => 'mysql'
 		);
 
-		$adapter = $this->getMock('\Gacela\DataSource\Adapter\Mysql', array(), array(\Gacela::instance(), (object) $config));
+		$adapter = $this->getMock('\Gacela\DataSource\Adapter\Mysql', array(), array((object) $config));
 
 		$adapter->expects($this->any())
 			->method('load')
@@ -47,12 +47,12 @@ class DataSourceTest extends \Test\GUnit\TestCase
 				)
 			);
 
-        $this->object = $this->getMockForAbstractClass('\Gacela\DataSource\DataSource', array(\Gacela::instance(), $adapter, $config));
+        $this->object = $this->getMockForAbstractClass('\Gacela\DataSource\DataSource', array($adapter, $config));
     }
 
 	protected function tearDown()
 	{
-		\Gacela::reset();
+		\Gacela\Gacela::reset();
 	}
 
     /**
@@ -102,11 +102,11 @@ class DataSourceTest extends \Test\GUnit\TestCase
 
 	public function testLoadResourceCached()
 	{
-		$this->assertFalse(\Gacela::instance()->cacheMetaData('test_resource_test'));
+		$this->assertFalse(\Gacela\Gacela::instance()->cacheMetaData('test_resource_test'));
 
 		$test = $this->object->loadResource('test');
 
-		$this->assertSame($test, \Gacela::instance()->cacheMetaData('test_resource_test'));
+		$this->assertSame($test, \Gacela\Gacela::instance()->cacheMetaData('test_resource_test'));
 	}
 
 	public function testLoadResourceWithMemcache()
@@ -117,7 +117,7 @@ class DataSourceTest extends \Test\GUnit\TestCase
 
 		$memcache->flush();
 
-		\Gacela::instance()->enableCache($memcache);
+		\Gacela\Gacela::instance()->enableCache($memcache);
 
 		$this->assertFalse($memcache->get('test_resource_test'));
 

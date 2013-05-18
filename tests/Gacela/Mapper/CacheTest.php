@@ -20,7 +20,7 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		parent::setUp();
 
-		$this->object = Gacela::instance()->loadMapper('Customer');
+		$this->object = \Gacela\Gacela::instance()->loadMapper('Customer');
 
 		$this->memcache = new Memcache;
 
@@ -28,14 +28,14 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$this->memcache->flush();
 
-		Gacela::instance()->enableCache($this->memcache);
+		\Gacela\Gacela::instance()->enableCache($this->memcache);
 	}
 
 	public function tearDown()
 	{
 		parent::tearDown();
 
-		//$this->memcache->flush();
+		$this->memcache->flush();
 	}
 
 	protected function getDataSet()
@@ -80,10 +80,12 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 		$this->assertSame('Tester', $m->last);
 
 		$cached = $this->memcache->get($key);
+		
+		$this->assertInternalType('array', $cached);
 
 		$cached = current($cached);
 
-		$m2 = new \Test\Model\Customer(\Gacela::instance(), $this->object, $cached);
+		$m2 = new \Test\Model\Customer("Test\Mapper\Customer", $cached);
 
 		$this->assertEquals($m, $m2);
 	}
@@ -165,9 +167,9 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 
 	public function testFindRelationOfCachedObject()
 	{
-		$courses = Gacela::instance()->loadMapper('Course')->findAll();
+		$courses = \Gacela\Gacela::instance()->findAll('Course');
 
-		$c2 = Gacela::instance()->loadMapper('Course')->findAll();
+		$c2 = \Gacela\Gacela::instance()->findAll('Course');
 
 		foreach($c2 as $course) {
 			$this->assertInstanceOf('App\Model\Teacher', $course->teacher);
