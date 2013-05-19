@@ -32,33 +32,6 @@ abstract class Model implements iModel
 		return $this->_errors;
 	}
 
-	/**
-	 *
-	 * @param array $data
-	 */
-	protected function _initData(array $data)
-	{
-		if(!$this->_data) {
-			$this->_data = new \stdClass;
-		}
-
-		foreach($this->_fields() as $name => $meta) {
-			if(isset($data[$name])) {
-				$value = $data[$name];
-			} else {
-				$value = $meta->default;
-			}
-
-			$this->_data->$name = \Gacela\Gacela::instance()->getField($meta->type)->transform($meta, $value, false);
-		}
-
-		$extras = array_diff(array_keys($data), array_keys($this->_fields()));
-
-		foreach($extras as $key) {
-			$this->_data->$key = $data[$key];
-		}
-	}
-
 	protected function _fields()
 	{
 		if(!$this->_fields) {
@@ -89,6 +62,10 @@ abstract class Model implements iModel
 		if($field) {
 			$val = \Gacela\Gacela::instance()->getField($field->type)->transform($field, $val, false);
 
+			if(!property_exists($this->_data, $key)) {
+				$this->_data->$key = $field->default;
+			}
+			
 			if($val !== $this->_data->$key) {
 				if(isset($this->_data->$key)) {
 					$this->_originalData[$key] = $this->_data->$key;
@@ -110,11 +87,7 @@ abstract class Model implements iModel
 	{
 		$this->_mapper = $mapper;
 
-		if(is_object($data)) {
-			$data = (array) $data;
-		}
-
-		$this->_initData($data);
+		$this->_data = (object) $data;
 
 		$this->init();
 	}
@@ -130,7 +103,23 @@ abstract class Model implements iModel
 		if (method_exists($this, $method)) {
 			return $this->$method();
 		} elseif(property_exists($this->_data, $key)) {
+			if(isset($this->_fields()[$key])) {
+				$meta = $this->_fields()[$key];
+
+				if(!is_null($this->_data->$key)) {
+					$value = $this->_data->$key;
+				} else {
+					$value = $meta->default;
+				}
+				
+				return \Gacela\Gacela::instance()->getField($meta->type)->transform($meta, $value, false);
+			}
+
 			return $this->_data->$key;
+		} elseif(isset($this->_fields()[$key])) {
+			$meta = $this->_fields()[$key];
+
+			return \Gacela\Gacela::instance()->getField($meta->type)->transform($meta, $meta->default, false);
 		} elseif (array_key_exists($key, $this->_relations())) {
 			return $this->_mapper()->findRelation($key, $this->_data);
 		}
@@ -246,7 +235,7 @@ abstract class Model implements iModel
 			return false;
 		}
 
-		$this->_initData((array) $data);
+		$this->_data = $data;
 
 		unset($data);
 
@@ -282,7 +271,7 @@ abstract class Model implements iModel
 
 		foreach($this->_fields() as $key => $meta) {
 
-			$rs = \Gacela\Gacela::instance()->getField($meta->type)->validate($meta, $this->_data->$key);
+			$rs = \Gacela\Gacela::instance()->getField($meta->type)->validate($meta, $this->$key);
 
 			if($rs !== true) {
 				$this->_errors[$key] = $rs;

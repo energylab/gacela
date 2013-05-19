@@ -86,6 +86,8 @@ class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
 		$cached = current($cached);
 
 		$m2 = new \Test\Model\Customer("Test\Mapper\Customer", $cached);
+		
+		$this->assertSame('june@test.com', $m2->email);
 
 		$this->assertEquals($m, $m2);
 	}
