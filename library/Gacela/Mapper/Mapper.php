@@ -896,6 +896,15 @@ abstract class Mapper implements iMapper
 		throw new \Gacela\Exception('Invalid Relationship Type!');
 	}
 
+	public function getField($field)
+	{
+		if(isset($this->_fields[$field])) {
+			return $this->_fields[$field];
+		}
+
+		return false;
+	}	
+
 	/**
 	 *  Used by Model to get all of the fields available from mapper.
 	 * @return A merged array of all fields from $_resource, $_inherits, $_dependents
@@ -908,6 +917,15 @@ abstract class Mapper implements iMapper
 	public function getPrimaryKey()
 	{
 		return $this->_primaryKey;
+	}
+
+	public function getRelation($rel)
+	{
+		if(isset($this->_relations[$rel])) {
+			return $this->_relations[$rel];
+		}
+
+		return false;
 	}
 
 	/**
