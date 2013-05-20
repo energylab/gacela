@@ -80,7 +80,7 @@ class ModelTest extends \Test\GUnit\Extensions\Database\TestCase
 	public function test__getRelation()
 	{
 		$object = \Gacela\Gacela::instance()->find('Student', 1);
-
+		
 		$this->assertSame('Gryffindor', $object->house->houseName);
 	}
 
