@@ -2,7 +2,7 @@
 
 class ReadCollectionTest extends \Test\GUnit\Extensions\Database\TestCase {
 
-	protected function getDataSet()
+	public function getDataSet() 
 	{
 		$tests = array();
 
@@ -48,6 +48,6 @@ class ReadCollectionTest extends \Test\GUnit\Extensions\Database\TestCase {
 		
 		$time = $end-$start;
 
-		$this->assertLessThan(0.010, $time, 'Elapsed time: '.round($time, 3));
+		$this->assertLessThan(0.100, $time, 'Elapsed time: '.round($time, 3));
 	}
 }

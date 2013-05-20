@@ -53,6 +53,11 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 
 	}
 
+	public static function tearDownAfterClass()
+	{
+		\Gacela\Gacela::reset();
+	}
+	
 	public function getConnection()
 	{
 		$test = \Gacela\Gacela::instance()->getDataSource('test');

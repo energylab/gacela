@@ -37,4 +37,9 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 			->registerNamespace('Test', '/var/www/gacela/tests/Test/');
 
 	}
+
+	public static function tearDownAfterClass()
+	{
+		\Gacela\Gacela::reset();
+	}
 }
