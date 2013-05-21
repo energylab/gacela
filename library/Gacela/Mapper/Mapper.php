@@ -914,6 +914,15 @@ abstract class Mapper implements iMapper
 		return $this->_fields;
 	}
 
+	public function getMetaData()
+	{
+		return array(
+			'fields' => $this->_fields,
+			'primaryKey' => $this->_primaryKey,
+			'relations' => $this->_relations
+		);
+	}
+
 	public function getPrimaryKey()
 	{
 		return $this->_primaryKey;
