@@ -475,7 +475,7 @@ class Note extends Mapper {
 }
 ```
 
-### To fetch a single record:
+## To fetch a single record:
 
 ```php
 $bobby = \Gacela\Gacela::instance()->find('User', 1);
@@ -486,7 +486,7 @@ $bobby = \Gacela\Gacela::instance()->find('User', 1);
 echo $bobby->email;
 ```
 
-### To fetch multiple records with simple criteria:
+## To fetch multiple records with simple criteria:
 
 ```php
 /*
@@ -501,7 +501,7 @@ $criteria = \Gacela\Gacela::criteria()
 \Gacela\Gacela::instance()->findAll('Post', $criteria);
 ```
 
-### Fetching data using complex criteria
+## Fetching data using complex criteria
 
 ```php
 <?php
@@ -615,3 +615,7 @@ class User extends Mapper
 	}
 }
 ```
+
+# Controlling Business Logic with Models
+
+
