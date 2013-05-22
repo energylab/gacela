@@ -71,7 +71,7 @@ class Mysql extends Pdo
 		// Setup Column meta information
 		foreach($this->_columns as $column) {
 
-			if(strtolower($column->TABLE_NAME) == $name) {
+			if($column->TABLE_NAME == $name) {
 				if(is_null($_meta['name'])) {
 					$_meta['name'] = $column->TABLE_NAME;
 				}
