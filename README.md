@@ -16,7 +16,7 @@ Storing the data in a hierarchical format with XML is fairly straightforward. Ea
 	<user id="1" first="Bobby" last="Mcintire" email="bobby@kacela.com" />
 	<user id="2" first="Frankfurt" last="McGee" email="sweetcheeks@kacela.com">
 		<contents>
-			<content id="id" title="Beginners Guide to ORMs">
+			<content id="id" title="Beginners Guide to ORMs" published="2013-05-22 15:31:00">
                 In order to start, you need to read the rest of this user's guide.
             </content>
 		</contents>
@@ -37,9 +37,9 @@ to hold their posts.
 
 'contents'
 
-| id | userId | title                   | content                        |
-|----|--------|-------------------------|--------------------------------|
-| 1  |  2     | Beginners Guide to ORMs | Read the rest of the guide     |
+| id | userId | title                   | content                        | published           |
+|----|--------|-------------------------|--------------------------------|---------------------|
+| 1  |  2     | Beginners Guide to ORMs | Read the rest of the guide     | 2013-05-22 15:31:00 |
 
 The same data in PHP would be stored in classes like so:
 
@@ -190,6 +190,7 @@ CREATE TABLE contents (
     userId INT UNSIGNED NOT NULL,
     title VARCHAR(255) NOT NULL,
     content LONGTEXT NOT NULL,
+    published TIMESTAMP NULL,
     CONSTRAINT `fk_user_contents` FOREIGN KEY (userId) REFERENCES users(id) ON DELETE RESTRICT
 ) ENGINE=Innodb;
 ```
@@ -419,12 +420,12 @@ Now we can load existing Users, create a new Post, or delete a User or Post.
  * that extends \Gacela\Gacela. To simplify calls, I like to create a extended class 'G'. Future examples all
  * assume that this extended class exists.
  */
-$user = \G::instance()->find('user', 1);
+$user = \G::instance()->find('User', 1);
 
 // echos Bobby Mcintire to the screen
 echo $user->name;
 
-$user->email = 'different@gacel.com'
+$user->email = 'different@gacela.com'
 
 // Saves the updated record to the database
 $user->save();
@@ -469,7 +470,7 @@ This can be overriden:
 namespace Mapper;
 
 class Note extends Mapper {
-    
+
     protected $_modelName = 'Comment'
 }
 ```
@@ -521,9 +522,8 @@ class User extends Mapper
 		*/
 		$query = $this->_getQuery()
 			->from('users')
-			->join(array('p' => 'logs'), "users.id = l.user_id AND l.type = 'login'", array(), 'left')
-			->where('l.date IS NULL')
-			->where('users.registration >= :date', array(':date' => date('Y-m-d H:i:s', strtotime('-10 minutes')));
+			->join(array('p' => 'contents'), "users.id = p.userId, array(), 'left')
+			->where('p.published IS NULL');
 
 		/**
 		 * For the Database DataSource, returns an instance of PDOStatement.
@@ -532,7 +532,7 @@ class User extends Mapper
 		$data = $this->_runQuery($query)->fetchAll();
 
 		/**
-		 * Creates a Gacela_Collection instance based on the internal type of the data passed to Gacela_Mapper::_collection()
+		 * Creates a Gacela\Collection\Collection instance based on the internal type of the data passed to Mapper::_collection()
 		 * Currently, two types of Collections are supported, Arr (for arrays) and PDOStatement
 		*/
 		return $this->_collection($data);
@@ -542,22 +542,39 @@ class User extends Mapper
 
 ## Customizing the Data returned for the Model
 
-Sometimes, it is desirable to pass data to the model that is not strictly represented in the underlying table for a specific model.
+Sometimes, it is desirable to pass data to the model that is not strictly represented in the underlying table for a 
+specific model.
 
-In this instance, lets assume that we want to return a comma-delimited list of aliases as part of the main user record.
+Lets assume that we want to track all login attempts for each user. We could add the following database table:
+
+```sql
+CREATE TABLE logins (
+    `userId` INT UNSIGNED NOT NULL,
+    `timestamp` TIMESTAMP NOT NULL,
+    `succeeded` BOOL NOT NULL DEFAULT 0,
+    PRIMARY KEY(`userId`, `timestamp`),
+    CONSTRAINT `fk-user-logins` FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=Innodb;
+```
+
+However, we'd like to be able to know the number of times each user has attempted to login along with the 
+number of times they have successfully logged in. So we're going to modify the find() and findAll() queries
+for the User mapper to always include the number of login attempts and successful logins.
 
 ```php
+<?php
 
-/**
- * Gacela
-**/
-class Mapper_User extends Gacela_Mapper
+namespace Mapper;
+
+use Gacela as G;
+
+class User extends Mapper
 {
 	public function find($id)
 	{
-		$criteria = Gacela::criteria()->equals('id', $id);
+		$criteria = \G::instance()criteria()->equals('id', $id);
 
-		$rs = $this->_run_query($this->_base($criteria))->fetch();
+		$rs = $this->_runQuery($this->_base($criteria))->fetch();
 
 		if(!$rs)
 		{
@@ -567,26 +584,34 @@ class Mapper_User extends Gacela_Mapper
 		return $this->_load($rs);
 	}
 
-	public function find_all(Gacela_Criteria $criteria = null)
+	public function findAll(\G\Criteria $criteria = null)
 	{
 		/**
-		 * Returns an instance Gacela_Collection_Statement
+		 * Returns an instance Gacela\Collection\Statement
 		**/
-		return $this->_run_query($this->_base($criteria));
+		return $this->_runQuery($this->_base($criteria));
 	}
 
 	/**
 	 * Allows for a unifying method of fetching the custom data set for find() and find_all()
 	**/
-	protected function _base(Gacela_Criteria $criteria = null)
+	protected function _base(\G\Criteria $criteria = null)
 	{
-		$sub = $this->_get_query()
-			->from('aliases', array('user_id' => 'id', 'aliases' => "GROUP_CONCAT(alias)")
-			->groupBy('id');
+		$attempts = $this->_getQuery()
+            ->from('logins', 'attempts' => 'COUNT(*)')
+            ->where('logins.userId = users.id');
+        
+        $logins = $this->_getQuery()
+            ->from('logins', 'logins' => 'COUNT(*)')
+            ->where('logins.userId = users.id')
+            ->where('succeeded = 1');
 
-		return $this->_get_query($criteria)
-			->from('users')
-			->join(array('a' => $sub), 'users.id = a.user_id', array('aliases));
+        return $this->_getQuery($criteria)
+			->from('users', [
+                'users.*',
+                'attempts' => $attempts,
+                'logins' => $logins
+            ]);
 	}
 }
 ```

@@ -212,9 +212,9 @@ abstract class Model implements iModel
 		if($data === false) {
 			return false;
 		}
-
-		$this->_data = $data;
-
+		
+		$this->_data = (object) array_merge((array) $this->_data, (array) $data);
+		
 		unset($data);
 
 		$this->_changed = array();
