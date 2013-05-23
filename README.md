@@ -13,8 +13,8 @@ Storing the data in a hierarchical format with XML is fairly straightforward. Ea
 
 ```xml
 <xml version="1.0>
-	<user id="1" first="Bobby" last="Mcintire" email="bobby@kacela.com" />
-	<user id="2" first="Frankfurt" last="McGee" email="sweetcheeks@kacela.com">
+	<user id="1" first="Bobby" last="Mcintire" email="bobby@gacela.com" />
+	<user id="2" first="Frankfurt" last="McGee" email="sweetcheeks@gacela.com">
 		<contents>
 			<content id="id" title="Beginners Guide to ORMs" published="2013-05-22 15:31:00">
                 In order to start, you need to read the rest of this user's guide.
@@ -31,11 +31,10 @@ to hold their posts.
 
 | id  | name           | email                    |
 |-----|----------------|--------------------------|
-| 1  | Bobby Mcintire  | bobby@kacela.com         |
-|    |                 |                          |
-| 2  | Frankfurt McGee | sweetcheeks@kacela.com   |
+| 1  | Bobby Mcintire  | bobby@gacela.com         |
+| 2  | Frankfurt McGee | sweetcheeks@gacela.com   |
 
-'contents'
+'contents' table
 
 | id | userId | title                   | content                        | published           |
 |----|--------|-------------------------|--------------------------------|---------------------|
@@ -439,7 +438,7 @@ $post->setData(
     [
         'userId' => 1,
         'title' => 'A new blog post',
-        'content' => 
+        'content' => 'Lorem ipsum dolor fakey fake content'
     ]
 );
 
@@ -600,7 +599,7 @@ class User extends Mapper
 		$attempts = $this->_getQuery()
             ->from('logins', 'attempts' => 'COUNT(*)')
             ->where('logins.userId = users.id');
-        
+
         $logins = $this->_getQuery()
             ->from('logins', 'logins' => 'COUNT(*)')
             ->where('logins.userId = users.id')
@@ -617,5 +616,94 @@ class User extends Mapper
 ```
 
 # Controlling Business Logic with Models
+
+So far everything we've done with the Models is pretty standard:
+
+```php
+$user = new \Model\User('\Mapper\User');
+
+$user->name = 'Noah Dingermeister';
+$user->email = 'noahmeister@gacela.com';
+
+if($user->validate()) {
+    $user->save();
+} else {
+    print_r($user->errors);
+}
+```
+
+But what about all of the fancy schmanzy business logic that you need to manage?
+
+In the 'users' table we store the full name in a single field, but what if we wanted to be able to use the first name
+and last name separately? For example, so that when a user logs in, you could output 'Hello Bobby' to the user.
+
+In the User model we could do the following:
+
+```php
+<?php
+
+namespace Model;
+
+class User extends Model {
+
+    protected function _getFirstName()
+    {
+        $first = explode(' ', $this->name);
+
+        return current($first);
+    }
+
+    protected function _getLastName()
+    {
+        $last = explode(' ', $this->name);
+
+        return end($last);
+    }
+}
+
+?>
+
+$user = \G::instance()->find('User', 1);
+
+echo 'Hello '.$user->firstName;
+```
+
+Let's also assume that whenever the content for a Post model is set, that we want to translate certain words (lame,
+boring, stupid) to a different word (AMAZING):
+
+```php
+<?php
+
+namespace Model;
+
+class Post extends Model {
+
+    protected function _setContent($val)
+    {
+        $val = str_replace(['lame', 'boring', 'stupid'], 'AMAZING', $val);
+
+        /**
+         * The _set() method verifies that the new value is distinct from the current value
+         * and then moves the old value into the _originalData array, sets the new value into _data
+         * and adds the specified key to the _changed array.
+         */
+        $this->_set('content', $val);
+    }
+}
+?>
+
+$post = new \Model\Post('\Mapper\Post', [
+    'userId' => 2,
+    'title' => 'Another Great Post',
+    'content' => 'This post is all about how lame and stupid I think these docs are. In fact this is so boring I
+        am falling asleep.'
+]);
+
+/*
+ * Outputs: This post is all about how AMAZING and AMAZING I think these docs are. In fact this is so AMAZING
+ * I am falling asleep.
+ */
+echo $post->content;
+```
 
 
