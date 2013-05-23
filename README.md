@@ -706,7 +706,33 @@ $post = new \Model\Post('\Mapper\Post', [
 echo $post->content;
 ```
 
-Now, what if we only want to allow users with email addresses from the gacela.com domain?
+## Validation
+
+Right here seems like a good place to take a second and explain how validation works in Gacela.
+
+By default Gacela uses the field meta data from the Mapper to perform validation. For example, if you have a field
+declared as an integer in the underlying resource, then only integer values would validate as true for the field in
+the Model.
+
+Gacela currently supports the following data types natively:
+
+- Binary
+- Bool
+- Date
+- Decimal
+- Enum
+- Float
+- Guid
+- Int
+- Set
+- String
+- Time
+
+Validating to make sure that the input data matches the underlying data type is great and all, but what about
+validating data for complex business rules? For example, what if we only want to allow users with email addresses 
+from the gacela.com domain?
+
+The simplest solution in this case is to simply extend the validate() method in the model.
 
 ```php
 <?php
@@ -729,11 +755,3 @@ class User extends Model {
     }
 }
 ```
-
-## Validation
-
-Right here seems like a good place to take a second and explain how validation works in Gacela.
-
-
-
-
