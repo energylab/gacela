@@ -58,7 +58,7 @@ class ModelTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$this->object = new App\Model\Wizard("App\Mapper\Wizard", $data);
 
-		$this->assertAttributeEquals((object) $data, '_data', $this->object);
+		$this->assertAttributeEquals($data, '_data', $this->object);
 	}
 
     public function test__gePropertyBeforeRelation()
@@ -80,7 +80,7 @@ class ModelTest extends \Test\GUnit\Extensions\Database\TestCase
 	public function test__getRelation()
 	{
 		$object = \Gacela\Gacela::instance()->find('Student', 1);
-		
+			
 		$this->assertSame('Gryffindor', $object->house->houseName);
 	}
 

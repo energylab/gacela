@@ -63,13 +63,13 @@ class ClassInheritanceTest extends \Test\GUnit\Extensions\Database\TestCase
 			$old[$key] = null;
 		}
 
-		$rs = $this->object->save($changed, (object) $data, $old);
+		$rs = $this->object->save($changed, $data, $old);
 
-		$this->assertNotEmpty($rs->id);
+		$this->assertNotEmpty($rs['id']);
 
-		$data['id'] = $rs->id;
+		$data['id'] = $rs['id'];
 
-		$this->assertEquals((object) $data, $rs);
+		$this->assertEquals($data, $rs);
 	}
 
 	public function testUpdateParent()
@@ -86,9 +86,9 @@ class ClassInheritanceTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$old = array('email' => 'jan@test.com');
 
-		$rs = $this->object->save($changed, (object) $new, $old);
+		$rs = $this->object->save($changed, $new, $old);
 
-		$this->assertEquals((object) $new, $rs);
+		$this->assertSame($new, $rs);
 	}
 
 	public function testUpdateChild()
@@ -105,12 +105,12 @@ class ClassInheritanceTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$old = array('last' => 'Jones');
 
-		$rs = $this->object->save($changed, (object) $new, $old);
+		$rs = $this->object->save($changed, $new, $old);
 
-		$this->assertEquals((object) $new, $rs);
+		$this->assertEquals($new, $rs);
 	}
 
-	public function delete()
+	public function testDelete()
 	{
 
 	}

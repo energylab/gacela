@@ -31,8 +31,8 @@ class NoRelationsTest extends \Test\GUnit\Extensions\Database\TestCase
 	public function providerLoad()
 	{
 		return array(
-			array('course', (object) array('courseId' => 1, 'wizardId' => 4, 'subject' => 'Care of Magical Teachers')),
-			array('house', (object) array('houseId' => 1, 'houseName' => 'Gryffindor')),
+			array('course', array('courseId' => 1, 'wizardId' => 4, 'subject' => 'Care of Magical Teachers')),
+			array('house', array('houseId' => 1, 'houseName' => 'Gryffindor')),
 		);
 
 	}
@@ -125,7 +125,7 @@ class NoRelationsTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$date = date('c');
 
-		$new = (object) array(
+		$new = array(
 			'testName' => 'I am a test',
 			'started' => $date,
 			'flagged' => 0
@@ -138,8 +138,8 @@ class NoRelationsTest extends \Test\GUnit\Extensions\Database\TestCase
 		);
 
 		$rs = $mapper->save($changed, $new, $original);
-
-		$this->assertAttributeEquals(5, 'id', $rs);
+		
+		$this->assertSame('5', $rs['id']);
 	}
 
 	/**

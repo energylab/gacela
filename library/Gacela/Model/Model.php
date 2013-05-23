@@ -42,21 +42,21 @@ abstract class Model implements iModel
 		if($field) {
 			$val = \Gacela\Gacela::instance()->getField($field->type)->transform($field, $val, false);
 
-			if(!property_exists($this->_data, $key)) {
-				$this->_data->$key = $field->default;
+			if(!isset($this->_data[$key])) {
+				$this->_data[$key] = $field->default;
 			}
 			
-			if($val !== $this->_data->$key) {
-				if(isset($this->_data->$key)) {
-					$this->_originalData[$key] = $this->_data->$key;
+			if($val !== $this->_data[$key]) {
+				if(isset($this->_data[$key])) {
+					$this->_originalData[$key] = $this->_data[$key];
 				}
 
 				$this->_changed[] = $key;
 
-				$this->_data->$key = $val;
+				$this->_data[$key] = $val;
 			}
 		} else {
-			$this->_data->$key = $val;
+			$this->_data[$key] = $val;
 		}
 	}
 
@@ -71,7 +71,7 @@ abstract class Model implements iModel
 			static::$meta[$this->_mapper] = $this->_mapper()->getMetaData();
 		}
 
-		$this->_data = (object) $data;
+		$this->_data = (array) $data;
 
 		$this->init();
 	}
@@ -89,17 +89,17 @@ abstract class Model implements iModel
 		} elseif(isset(static::$meta[$this->_mapper]['fields'][$key])) {
 			$meta = static::$meta[$this->_mapper]['fields'][$key];
 
-			if(isset($this->_data->$key)) {
-				$value = $this->_data->$key;
+			if(isset($this->_data[$key])) {
+				$value = $this->_data[$key];
 			} else {
 				$value = $meta->default;
 			}
 			
 			return \Gacela\Gacela::instance()->getField($meta->type)->transform($meta, $value, false);
-		} elseif(property_exists($this->_data, $key)) {
-			return $this->_data->$key;
+		} elseif(array_key_exists($key, $this->_data)) {
+			return $this->_data[$key];
 		} elseif (isset(static::$meta[$this->_mapper]['relations'][$key])) {
-			return $this->_mapper()->findRelation($key, $this->_data);
+			return $this->_mapper()->findRelation($key, $this->toArray());
 		}
 
 		throw new \Exception("Specified key ($key) does not exist!");
@@ -131,7 +131,7 @@ abstract class Model implements iModel
 			}
 		}
 
-		return isset($this->_data->$key);
+		return isset($this->_data[$key]);
 	}
 
 	/**
@@ -152,7 +152,7 @@ abstract class Model implements iModel
 
 	public function add($association, $delete = false)
 	{
-		return $this->_mapper()->addAssociation($association, $this->_data, $delete);
+		return $this->_mapper()->addAssociation($association, $this->toArray(), $delete);
 	}
 
 	/**
@@ -161,7 +161,7 @@ abstract class Model implements iModel
 	 */
 	public function delete()
 	{
-		return $this->_mapper()->delete($this->_data);
+		return $this->_mapper()->delete($this->toArray());
 	}
 
 	/**
@@ -183,7 +183,7 @@ abstract class Model implements iModel
 			((is_array($association) || $association instanceof \Gacela\Collection\Collection) && $association->count())
 			|| $association instanceof \Gacela\Model\iModel
 		) {
-			return $this->_mapper()->removeAssociation($association, $this->_data);
+			return $this->_mapper()->removeAssociation($association, $this->toArray());
 		}
 
 		return true;
@@ -207,13 +207,13 @@ abstract class Model implements iModel
 			return false;
 		}
 
-		$data = $this->_mapper()->save($this->_changed, $this->_data, $this->_originalData);
+		$data = $this->_mapper()->save($this->_changed, $this->toArray(), $this->_originalData);
 
 		if($data === false) {
 			return false;
 		}
 		
-		$this->_data = (object) array_merge((array) $this->_data, (array) $data);
+		$this->_data = array_merge($this->_data, $data);
 		
 		unset($data);
 
@@ -238,6 +238,31 @@ abstract class Model implements iModel
 	}
 
 	/**
+	 * @return array
+	 */
+	public function toArray()
+	{
+		foreach(static::$meta[$this->_mapper]['fields'] as $field => $meta) {
+			if(!isset($this->_data[$field])) {
+				$this->_data[$field] = $meta->default;
+			}	
+		}
+
+		$data = [];
+		foreach((array) $this->_data as $key => $val) {
+			if(isset(static::$meta[$this->_mapper]['fields'][$key])) {
+				$data[$key] = \Gacela\Gacela::instance()
+					->getField($meta->type)
+					->transform(static::$meta[$this->_mapper]['fields'][$key], $val, false);
+			} else {
+				$data[$key] = $val;
+			}
+		}
+
+		return $data;
+	}
+
+	/**
 	 * @param \stdClass|null $data
 	 * @return bool
 	 */
@@ -248,7 +273,6 @@ abstract class Model implements iModel
 		}
 
 		foreach(static::$meta[$this->_mapper]['fields'] as $key => $meta) {
-
 			$rs = \Gacela\Gacela::instance()->getField($meta->type)->validate($meta, $this->$key);
 
 			if($rs !== true) {

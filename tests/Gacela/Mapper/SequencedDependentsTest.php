@@ -33,13 +33,13 @@ class SequencedDependentsTest extends \Test\GUnit\Extensions\Database\Testcase {
 		$object->setData(
 			array(
 				'name' => 'Test2',
-				'metadata' => '1234'
+				'metadata' => 'I am some metadata'
 			)
 		);
 
 		$this->assertTrue($object->save());
 
 		$this->assertSame(1, $object->metaId);
-		$this->assertSame('1234', $object->metadata);
+		$this->assertSame('I am some metadata', $object->metadata);
 	}	
 }

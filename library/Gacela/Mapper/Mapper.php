@@ -7,7 +7,7 @@
 
 namespace Gacela\Mapper;
 
-abstract class Mapper implements iMapper
+abstract class Mapper implements MapperInterface
 {
 
 	protected static $_deletedField = 'isDeleted';
@@ -120,7 +120,7 @@ abstract class Mapper implements iMapper
 	 * @param \stdClass $data
 	 * @return bool
 	 */
-	protected function _deleteRecord(\Gacela\DataSource\Resource $resource, \stdClass $data)
+	protected function _deleteRecord(\Gacela\DataSource\Resource $resource, array $data)
 	{
 		$primary = $this->_primaryKey($resource->getPrimaryKey(), $data);
 
@@ -144,7 +144,7 @@ abstract class Mapper implements iMapper
 	 * @param \stdClass $data
 	 * @return \Gacela\Collection\Collection
 	 */
-	protected function _findAssociation($name, \stdClass $data)
+	protected function _findAssociation($name, array $data)
 	{
 		$data = $this->_primaryKey($this->_primaryKey, $data);
 
@@ -461,7 +461,7 @@ abstract class Mapper implements iMapper
 	 * @param \stdClass $data
 	 * @return Model
 	 */
-	protected function _load(\stdClass $data)
+	protected function _load($data)
 	{
 		return new $this->_modelName(get_class($this), $data);
 	}
@@ -475,15 +475,19 @@ abstract class Mapper implements iMapper
 	 * @param  $data
 	 * @return null|string
 	 */
-	protected function _primaryKey($primaryKey, \stdClass $data)
+	protected function _primaryKey($primaryKey, $data)
 	{
+		if(is_object($data)) {
+			$data = (array) $data;
+		}
+
 		$primary = array();
 		foreach($primaryKey as $k) {
-			if(!isset($data->$k) || is_null($data->$k)) {
+			if(!isset($data[$k])) {
 				continue;
 			}
 
-			$primary[$k] = $data->$k;
+			$primary[$k] = $data[$k];
 		}
 
 		if(!count($primary) || count($primary) != count($primaryKey)) {
@@ -514,7 +518,7 @@ abstract class Mapper implements iMapper
 	{
 		$fields = $resource->getFields();
 
-		$data = array_intersect_key((array) $new, $fields, array_flip($changed));
+		$data = array_intersect_key($new, $fields, array_flip($changed));
 
 		foreach($data as $key => $val) {
 			$data[$key] = $this->_gacela()->getField($fields[$key]->type)->transform($fields[$key], $val);
@@ -524,7 +528,7 @@ abstract class Mapper implements iMapper
 			return true;
 		}
 
-		$test = array_merge((array) $new, $old);
+		$test = array_merge($new, $old);
 
 		$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $test);
 		$fields = $resource->getFields();
@@ -539,7 +543,7 @@ abstract class Mapper implements iMapper
 		// Insert the record
 		if($update === false) {
 			$rs = $this->_source()->insert($resource->getName(), $data);
-
+			
 			if($rs === false) {
 				return $rs;
 			}
@@ -547,12 +551,12 @@ abstract class Mapper implements iMapper
 			$fields = $resource->getFields();
 
 			if(count($resource->getPrimaryKey()) == 1 && $fields[current($resource->getPrimaryKey())]->sequenced === true) {
-				$new->{current($resource->getPrimaryKey())} = $rs;
+				$new[current($resource->getPrimaryKey())] = $rs;
 				$changed[] = current($resource->getPrimaryKey());
 			}
 		// Update the existing record
 		} else {
-			$primary = $this->_primaryKey($resource->getPrimaryKey(), (object) $test);
+			$primary = $this->_primaryKey($resource->getPrimaryKey(), $test);
 
 			if(is_null($primary)) {
 				throw new \Exception('Oops! primary key is null');
@@ -570,7 +574,7 @@ abstract class Mapper implements iMapper
 				return false;
 			}
 		}
-
+		
 		return array($changed, $new);
 	}
 
@@ -626,7 +630,7 @@ abstract class Mapper implements iMapper
 			$criteria = new $criteria;
 
 			foreach($assoc['meta']->keys as $key => $ref) {
-				$criteria->equals($ref, $data->$key);
+				$criteria->equals($ref, $data[$key]);
 			}
 
 			$this->_source()->delete($assoc['meta']->refTable, $this->_source()->getQuery($criteria));
@@ -637,7 +641,7 @@ abstract class Mapper implements iMapper
 		$me = array();
 
 		foreach($assoc['meta']->keys as $key => $ref) {
-			$me[$ref] = $data->$key;
+			$me[$ref] = $data[$key];
 		}
 
 		foreach($association as $model) {
@@ -690,7 +694,7 @@ abstract class Mapper implements iMapper
 	 * @param stdClass - The data from the Model
 	 * @return true on success, false on failure
 	 */
-	public function delete(\stdClass $data)
+	public function delete(array $data)
 	{
 		$this->_source()->beginTransaction();
 
@@ -702,10 +706,10 @@ abstract class Mapper implements iMapper
 		foreach($this->_inherits as $inherits) {
 			$tmp = array();
 			foreach($inherits['meta']->keys as $key => $ref) {
-				$tmp[$ref] = $data->$key;
+				$tmp[$ref] = $data[$key];
 			}
 
-			if(!$this->_deleteRecord($inherits['resource'], (object) $tmp)) {
+			if(!$this->_deleteRecord($inherits['resource'], $tmp)) {
 				$this->_source()->rollbackTransaction();
 				return false;
 			}
@@ -716,10 +720,10 @@ abstract class Mapper implements iMapper
 		foreach($this->_dependents as $dep) {
 			$tmp = array();
 			foreach($dep['meta']->keys as $key => $ref) {
-				$tmp[$ref] = $data->$key;
+				$tmp[$ref] = $data[$key];
 			}
 
-			if(!$this->_deleteRecord($dep['resource'], (object) $tmp)) {
+			if(!$this->_deleteRecord($dep['resource'], $tmp)) {
 				$this->_source()->rollbackTransaction();
 				return false;
 			}
@@ -865,7 +869,7 @@ abstract class Mapper implements iMapper
 	 * @param  $data - The data from the Model
 	 * @return Model | Collection
 	 */
-	public function findRelation($name, $data)
+	public function findRelation($name, array $data)
 	{
 		if(isset($this->_associations[$name])) {
 			return $this->_findAssociation($name, $data);
@@ -880,9 +884,8 @@ abstract class Mapper implements iMapper
 		$criteria = $this->_gacela()->autoload('Criteria');
 
 		$criteria = new $criteria;
-
 		foreach($relation['meta']->keys as $key => $ref) {
-			$criteria->equals($relation['meta']->refTable.'.'.$ref, $data->{$key});
+			$criteria->equals($relation['meta']->refTable.'.'.$ref, $data[$key]);
 		}
 
 		$result = $this->_gacela()->loadMapper($name)->findAll($criteria);
@@ -953,7 +956,7 @@ abstract class Mapper implements iMapper
 	 * @param \stdClass $data
 	 * @return Model
 	 */
-	public function load(\stdClass $data)
+	public function load($data)
 	{
 		return $this->_load($data);
 	}
@@ -964,7 +967,7 @@ abstract class Mapper implements iMapper
 	 * @param $data
 	 * @return bool
 	 */
-	public function removeAssociation($association, $data)
+	public function removeAssociation($association)
 	{
 		if($association instanceof \Gacela\Collection\Collection) {
 			$model = $association->current();
@@ -992,16 +995,15 @@ abstract class Mapper implements iMapper
 		 */
 		$main = new $criteria;
 
-		/**
-		 * @var \Gacela\Criteria
-		 */
-		$me = new $criteria;
-
-		foreach($assoc['meta']->keys as $key => $ref) {
-			$me->equals($ref, $data->$key);
-		}
-
 		foreach($association as $model) {
+			if(!$me) {
+				$me = new $criteria;
+
+				foreach($assoc['meta']->keys as $key => $ref) {
+					$me->equals($ref, $model->$key);
+				}
+			}
+
 			$sub = clone $me;
 
 			foreach($assoc['resource']->getRelations() as $relation) {
@@ -1023,13 +1025,13 @@ abstract class Mapper implements iMapper
 	/**
 	 *  Save is called by Model, the Mapper is responsible for knowing whether to call insert() or update() on the DataSource for $_resource, $_inherits, and $_dependents.
 	 * @param array $changed - An array of the changed fields
-	 * @param \stdClass $new - The data from the Model
+	 * @param array $new - The data from the Model
 	 * @param array $old - The original data from the Model
 	 * @return bool|\stdClass - FALSE on failure, the modified $data on success.
 	 */
-	public function save(array $changed, \stdClass $new, array $old)
+	public function save(array $changed, array $new, array $old)
 	{
-		$rs = $this->_source()->beginTransaction()."\n";
+		$rs = $this->_source()->beginTransaction();
 
 		foreach($this->_dependents as $dependent) {
 
@@ -1042,25 +1044,25 @@ abstract class Mapper implements iMapper
 					$data['old'][$ref] = $old[$key];
 				}
 
-				if(isset($new->$key) && (!isset($data['old'][$ref]) || $data['old'][$ref] != $new->$key)) {
+				if(isset($new[$key]) && (!isset($data['old'][$ref]) || $data['old'][$ref] != $new[$key])) {
 					$data['changed'][] = $ref;
-					$data['new'][$ref] = $new->$key;
+					$data['new'][$ref] = $new[$key];
 				}
 			}
 
 			foreach($dependent['resource']->getFields() as $name => $field) {
 				if(in_array($name, $changed) && !in_array($name, $data['changed'])) {
-					$data['new'][$name] = $new->$name;
+					$data['new'][$name] = $new[$name];
 					$data['changed'][] = $name;
 				}
 			}
 
-			$rs = $this->_saveRecord($dependent['resource'], $data['changed'], (object) $data['new'], $data['old']);
+			$rs = $this->_saveRecord($dependent['resource'], $data['changed'], $data['new'], $data['old']);
 
 			if (is_array($rs)) {
 				foreach($dependent['meta']->keys as $key => $ref) {
 					$changed[] = $key;
-					$new->$key = $rs[1]->$ref;
+					$new[$key] = $rs[1][$ref];
 				}
 			}
 		}
@@ -1075,7 +1077,9 @@ abstract class Mapper implements iMapper
 
 		$rs = $this->_saveRecord($this->_resource, $changed, $new, $old);
 
-		if($rs === false) {
+		if(is_array($rs)) {
+			list($changed, $new) = $rs;
+		} elseif($rs === false) {
 			$rs = $this->_source()->rollbackTransaction();
 
 			return false;
@@ -1087,7 +1091,7 @@ abstract class Mapper implements iMapper
 			$this->_incrementCache();
 		}
 
-		return (object) $new;
+		return $new;
 	}
 
 	/**

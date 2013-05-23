@@ -72,15 +72,15 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 	{
 		$mapper = \Gacela\Gacela::instance()->loadMapper('peep');
 
-		$rs = $mapper->save($this->changed, (object) $this->new, $this->old);
+		$rs = $mapper->save($this->changed, $this->new, $this->old);
 
 		$this->assertNotSame(false, $rs);
 
-		$this->assertNotEmpty($rs->code);
+		$this->assertNotEmpty($rs['code']);
 
-		$this->assertObjectHasAttribute('email', $rs);
+		$this->assertArrayHasKey('email', $rs);
 
-		$this->assertAttributeSame('test@test.com', 'email', $rs);
+		$this->assertSame('test@test.com', $rs['email']);
 	}
 
 	/**
@@ -88,17 +88,17 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 	 */
 	public function testDeleteWithDependent()
 	{
-		$this->new = (object) $this->new;
+		$this->new = $this->new;
 
 		$mapper = \Gacela\Gacela::instance()->loadMapper('peep');
 
-		$mapper->save($this->changed, (object) $this->new, $this->old);
+		$mapper->save($this->changed, $this->new, $this->old);
 
-		$this->assertNotNull($mapper->find($this->new->code)->code);
+		$this->assertNotNull($mapper->find($this->new['code'])->code);
 
 		$this->assertTrue($mapper->delete($this->new));
 
-		$record = $mapper->find($this->new->code);
+		$record = $mapper->find($this->new['code']);
 
 		$this->assertNull($record->code);
 
@@ -114,7 +114,7 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 	 */
 	public function testInsertEmptyDependent()
 	{
-		$this->new = (object) array_merge(
+		$this->new = array_merge(
 			$this->new,
 			array('email' => null, 'street' => null, 'phone' => null)
 		);
@@ -129,7 +129,7 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$this->assertSame($this->new, $rs);
 
-		$this->assertSame($this->new->code, $this->object->find($this->new->code)->code);
+		$this->assertSame($this->new['code'], $this->object->find($this->new['code'])->code);
 
 		return array($this->changed, $this->new, $this->old);
 	}
@@ -143,7 +143,7 @@ class DependentsTest extends \Test\GUnit\Extensions\Database\TestCase
 
 		$this->object->delete($args[1]);
 
-		$this->assertNull($this->object->find($args[1]->code)->code);
+		$this->assertNull($this->object->find($args[1]['code'])->code);
 	}
 
 }
