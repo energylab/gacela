@@ -100,6 +100,6 @@ abstract class Collection implements \SeekableIterator, \Countable
 			}
 		}
 
-		return \Gacela::instance()->makeCollection($this->_mapper, $data);
+		return \Gacela\Gacela::instance()->makeCollection($this->_mapper, $data);
 	}
 }
