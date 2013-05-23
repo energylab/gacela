@@ -115,7 +115,7 @@ abstract class Model implements iModel
 
 		if(method_exists($this, $method)) {
 			return $this->$method($key);
-		} elseif(isset($this->_relations[$key])) {
+		} elseif(isset(static::$meta[$this->_mapper['relations'][$key]])) {
 			$relation = $this->$key;
 
 			if($relation instanceof \Gacela\Collection\Collection) {
