@@ -706,4 +706,34 @@ $post = new \Model\Post('\Mapper\Post', [
 echo $post->content;
 ```
 
+Now, what if we only want to allow users with email addresses from the gacela.com domain?
+
+```php
+<?php
+
+namespace Model;
+
+class User extends Model {
+
+    public function validate(array $data = null)
+    {
+        if($data) {
+            $this->setData($data);
+        }
+
+        if(strpos($this->email, 'gacela.com') === false) {
+            $this->_errors['email'] = 'not_gacela_domain';
+        }
+
+        return parent::validate();
+    }
+}
+```
+
+## Validation
+
+Right here seems like a good place to take a second and explain how validation works in Gacela.
+
+
+
 
