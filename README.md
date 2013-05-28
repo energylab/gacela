@@ -692,6 +692,8 @@ class Post extends Model {
 }
 ?>
 
+<?php
+
 $post = new \Model\Post('\Mapper\Post', [
     'userId' => 2,
     'title' => 'Another Great Post',
