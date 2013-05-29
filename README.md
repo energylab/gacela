@@ -474,7 +474,7 @@ class Note extends Mapper {
 }
 ```
 
-## To fetch a single record:
+## To Fetch a Single Record:
 
 ```php
 $bobby = \Gacela\Gacela::instance()->find('User', 1);
@@ -485,7 +485,7 @@ $bobby = \Gacela\Gacela::instance()->find('User', 1);
 echo $bobby->email;
 ```
 
-## To fetch multiple records with simple criteria:
+## To Fetch Multiple Records with Simple Criteria:
 
 ```php
 /*
@@ -500,7 +500,7 @@ $criteria = \Gacela\Gacela::criteria()
 \Gacela\Gacela::instance()->findAll('Post', $criteria);
 ```
 
-## Fetching data using complex criteria
+## Fetching Records Using Complex Criteria
 
 ```php
 <?php
@@ -632,6 +632,8 @@ if($user->validate()) {
 }
 ```
 
+## Getters, Setters and other magic
+
 But what about all of the fancy schmanzy business logic that you need to manage?
 
 In the 'users' table we store the full name in a single field, but what if we wanted to be able to use the first name
@@ -707,6 +709,10 @@ $post = new \Model\Post('\Mapper\Post', [
  */
 echo $post->content;
 ```
+
+Another common case with Models is verifying whether a value is empty or not. As such, just like with __get() and __set()
+and _get<Property> and _set<Property>, the methods isset() and empty() will call the magic __isset() method on objects.
+Likewise _isset<Property> allows you to define custom behavior for a virtual property.
 
 ## Validation
 
