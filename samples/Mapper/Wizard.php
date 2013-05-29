@@ -14,7 +14,7 @@ class Wizard extends M
 {
 	protected $_dependents = array('address');
 
-	protected function _load(\stdClass $data)
+	protected function _load($data)
 	{
 		if(!empty($data->role) && $data->role == 'student' && get_class($this) != 'App\Mapper\Student') {
 

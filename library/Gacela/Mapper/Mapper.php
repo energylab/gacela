@@ -444,7 +444,7 @@ abstract class Mapper implements MapperInterface
 		if(is_null($this->_resourceName)) {
 			$class = explode('\\', get_class($this));
 			$class = end($class);
-			$class = strtolower($class);
+			$class[0] = strtolower($class[0]);
 
 			$this->_resourceName = $this->_pluralize($class);
 		}
