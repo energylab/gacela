@@ -252,7 +252,7 @@ abstract class Model implements iModel
 		foreach((array) $this->_data as $key => $val) {
 			if(isset(static::$meta[$this->_mapper]['fields'][$key])) {
 				$data[$key] = \Gacela\Gacela::instance()
-					->getField($meta->type)
+					->getField(static::$meta[$this->_mapper]['fields'][$key]->type)
 					->transform(static::$meta[$this->_mapper]['fields'][$key], $val, false);
 			} else {
 				$data[$key] = $val;
