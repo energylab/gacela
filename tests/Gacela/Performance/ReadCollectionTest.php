@@ -1,6 +1,6 @@
 <?php
 
-class ReadCollectionTest extends \Test\GUnit\Extensions\Database\TestCase {
+class ReadCollectionTest extends \Test\TestCase {
 
 	public function getDataSet() 
 	{

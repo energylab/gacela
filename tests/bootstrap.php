@@ -15,6 +15,5 @@ function pwp($data)
 	print_r($data);
 	echo '</pre>';
 }	
-	
-require_once 'Test/GUnit/TestCase.php';
-require_once 'Test/GUnit/Extensions/Database/TestCase.php';
+
+require_once 'Test/TestCase.php';

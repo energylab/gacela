@@ -1,8 +1,8 @@
 <?php
 
-namespace Test\GUnit\Extensions\Database;
+namespace Test;
 
-abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
+abstract class TestCase extends \Gacela\GUnit\Extensions\Database\TestCase
 {
 	private $conn;
 
@@ -53,11 +53,6 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 
 	}
 
-	public static function tearDownAfterClass()
-	{
-		\Gacela\Gacela::reset();
-	}
-	
 	public function getConnection()
 	{
 		$test = \Gacela\Gacela::instance()->getDataSource('test');
@@ -87,17 +82,6 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 		return $this->conn;
 	}
 
-	public function getSetUpOperation()
-	{
-		$cascadeTruncates = TRUE; //if you want cascading truncates, false otherwise
-		//if unsure choose false
-
-		return new \PHPUnit_Extensions_Database_Operation_Composite(array(
-			new Operation\MySQLTruncate($cascadeTruncates),
-			\PHPUnit_Extensions_Database_Operation_Factory::INSERT()
-		));
-	}
-
 	protected function getDataSet()
 	{
 		return $this->createArrayDataSet(
@@ -110,14 +94,4 @@ abstract class TestCase extends \PHPUnit_Extensions_Database_TestCase
 		);
 	}
 
-	/**
-	 * Creates a new Array DataSet with the given $array.
-	 *
-	 * @param string $xmlFile
-	 * @return DataSet\ArrayDataSet
-	 */
-	protected function createArrayDataSet(array $array)
-	{
-		return new DataSet\ArrayDataSet($array);
-	}
 }

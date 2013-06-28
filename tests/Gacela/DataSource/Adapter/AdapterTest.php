@@ -7,7 +7,7 @@ namespace Gacela\DataSource\Adapter;
  * @group Gacela.DataSource
  * @group Gacela.DataSource.Adapter
  */
-class AdapterTest extends \Test\GUnit\TestCase
+class AdapterTest extends \Test\TestCase
 {
 	/**
 	 * @var Adapter

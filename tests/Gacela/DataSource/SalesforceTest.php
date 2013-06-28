@@ -4,7 +4,7 @@ namespace Gacela\DataSource;
  * @user: noah
  * @date 11/10/12
  */
-class SalesforceTest extends \Test\GUnit\Extensions\Database\TestCase
+class SalesforceTest extends \Test\TestCase
 {
 	/**
 	 * @var \Gacela\DataSource\Salesforce

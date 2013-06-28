@@ -1,6 +1,6 @@
 <?php
 
-class ClassInheritanceTest extends \Test\GUnit\Extensions\Database\TestCase
+class ClassInheritanceTest extends \Test\TestCase
 {
 	/**
 	 * @var \Test\Mapper\Customer

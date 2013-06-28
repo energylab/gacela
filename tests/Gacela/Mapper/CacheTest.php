@@ -3,7 +3,7 @@
  * @user: noah
  * @date 11/10/12
  */
-class CacheTest extends \Test\GUnit\Extensions\Database\TestCase
+class CacheTest extends \Test\TestCase
 {
 
 	/**

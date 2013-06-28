@@ -1,6 +1,6 @@
 <?php
 
-namespace Test\GUnit\Extensions\Database\DataSet;
+namespace Gacela\GUnit\Extensions\Database\DataSet;
 
 class ArrayDataSet extends \PHPUnit_Extensions_Database_DataSet_AbstractDataSet
 {

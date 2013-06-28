@@ -1,6 +1,6 @@
 <?php
 
-class SequencedDependentsTest extends \Test\GUnit\Extensions\Database\Testcase {
+class SequencedDependentsTest extends \Test\Testcase {
 
 	
 	public function testInitDependentWithSequencedPrimaryKey()

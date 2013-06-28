@@ -3,7 +3,7 @@
  * @user: noah
  * @date 11/10/12
  */
-class BelongsToTest extends \Test\GUnit\Extensions\Database\TestCase
+class BelongsToTest extends \Test\TestCase
 {
 	/**
 	 * @covers Gacela\Mapper\Mapper::findRelation

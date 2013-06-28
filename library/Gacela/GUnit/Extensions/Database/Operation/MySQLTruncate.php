@@ -1,6 +1,6 @@
 <?php
 
-namespace Test\GUnit\Extensions\Database\Operation;
+namespace Gacela\GUnit\Extensions\Database\Operation;
 
 /**
  * Executes a mysql 5.5 safe truncate against all tables in a dataset.

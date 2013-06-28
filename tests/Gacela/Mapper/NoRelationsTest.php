@@ -1,6 +1,6 @@
 <?php
 
-class NoRelationsTest extends \Test\GUnit\Extensions\Database\TestCase
+class NoRelationsTest extends \Test\TestCase
 {
 	/**
 	 * @var Test\Mapper\Test

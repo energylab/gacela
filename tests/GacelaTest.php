@@ -1,6 +1,6 @@
 <?php
 
-class GacelaTest extends Test\GUnit\TestCase
+class GacelaTest extends Test\TestCase
 {
     /**
      * @var Gacela
