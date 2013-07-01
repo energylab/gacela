@@ -45,8 +45,8 @@ class BoolTest extends \PHPUnit_Framework_TestCase
 	public function providerPass()
 	{
 		return array(
-			array(true),
-			array(false)
+			array(0),
+			array(1)
 		);
 	}
 
@@ -57,8 +57,8 @@ class BoolTest extends \PHPUnit_Framework_TestCase
 			array(2),
 			array(-1),
 			array(0xF),
-			array(0),
-			array(1)
+			array(true),
+			array(false)
 		);
 	}
 

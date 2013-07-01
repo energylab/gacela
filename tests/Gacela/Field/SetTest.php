@@ -34,8 +34,8 @@ class SetTest extends \PHPUnit_Framework_TestCase
 		return array(
 			array(3),
 			array('three'),
-			array(array(1, 3)),
-			array(array('two', 4))
+			array(join(',', array(1, 3))),
+			array(join(',', array('two', 4)))
 		);
 	}
 
@@ -44,8 +44,8 @@ class SetTest extends \PHPUnit_Framework_TestCase
 		return array(
 			array('one', 'one'),
 			array(2, '2'),
-			array(array(1, 2), "1,2"),
-			array(array('one', 2), "one,2")
+			array("1,2", "1,2"),
+			array("one,2", "one,2")
 		);
 	}
 

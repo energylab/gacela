@@ -31,10 +31,10 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	public function providerPass()
 	{
 		return array(
-			array(strtotime('Jan 1, 101')),
-			array(strtotime('12/31/2999')),
-			array(time()),
-			array(strtotime('Feb 29, 2033'))
+			array('2006-05-04T06:23:00-0700'),
+			array('1985-06-04'),
+			array('1983-03-27 13:05:00-0700'),
+			array(date('c'))
 		);
 	}
 
@@ -76,7 +76,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidatePass($time)
     {
-        $this->assertTrue($this->object->validate($this->meta, $time));
+		$this->assertTrue($this->object->validate($this->meta, $time));
     }
 
 	/**
@@ -96,7 +96,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 
 	public function testValidateTypeCode()
 	{
-		$this->assertEquals(Date::TYPE_CODE, $this->object->validate($this->meta, date('c')));
+		$this->assertEquals(Date::TYPE_CODE, $this->object->validate($this->meta, time()));
 	}
 
 	/**

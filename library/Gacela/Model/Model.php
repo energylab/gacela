@@ -23,6 +23,11 @@ abstract class Model implements iModel
 	protected $_originalData = array();
 
 	/**
+	 * Is set by _primeData() to indicate that the data doesn't need be primed again.
+	 */
+	protected $_primed = false;
+
+	/**
 	 * @return array $_errors
 	 */
 	protected function _getErrors()
@@ -30,17 +35,36 @@ abstract class Model implements iModel
 		return $this->_errors;
 	}
 
+	protected function _primeData()
+	{
+		if($this->_primed) {
+			return $this;
+		}
+
+		foreach(static::$meta[$this->_mapper]['fields'] as $field => $meta) {
+			if(!isset($this->_data[$field])) {
+				$this->_data[$field] = \Gacela\Gacela::instance()
+					->getField($meta->type)
+					->transform($meta, $meta->default);
+			}	
+		}
+
+		$this->_primed = true;
+
+		return $this;
+	}
+
 	protected function _mapper()
 	{
 		return \Gacela\Gacela::instance()->loadMapper($this->_mapper);
 	}
-
+	
 	protected function _set($key, $val)
 	{
 		$field = isset(static::$meta[$this->_mapper]['fields'][$key]) ? static::$meta[$this->_mapper]['fields'][$key] : null;
 
 		if($field) {
-			$val = \Gacela\Gacela::instance()->getField($field->type)->transform($field, $val, false);
+			$val = \Gacela\Gacela::instance()->getField($field->type)->transform($field, $val, true);
 
 			if(!isset($this->_data[$key])) {
 				$this->_data[$key] = $field->default;
@@ -198,6 +222,8 @@ abstract class Model implements iModel
 		if($data) {
 			$this->setData($data);
 		}
+		
+		$this->_primeData();
 
 		if(empty($this->_changed)) {
 			return true;
@@ -207,7 +233,7 @@ abstract class Model implements iModel
 			return false;
 		}
 
-		$data = $this->_mapper()->save($this->_changed, $this->toArray(), $this->_originalData);
+		$data = $this->_mapper()->save($this->_changed, $this->_data, $this->_originalData);
 
 		if($data === false) {
 			return false;
@@ -242,10 +268,12 @@ abstract class Model implements iModel
 	 */
 	public function toArray()
 	{
-		foreach(static::$meta[$this->_mapper]['fields'] as $field => $meta) {
-			if(!isset($this->_data[$field])) {
-				$this->_data[$field] = $meta->default;
-			}	
+		$this->_primeData();
+
+		if(func_num_args() == 1) {
+			$in = func_get_arg(0);
+		} else {
+			$in = false;
 		}
 
 		$data = [];
@@ -253,7 +281,7 @@ abstract class Model implements iModel
 			if(isset(static::$meta[$this->_mapper]['fields'][$key])) {
 				$data[$key] = \Gacela\Gacela::instance()
 					->getField(static::$meta[$this->_mapper]['fields'][$key]->type)
-					->transform(static::$meta[$this->_mapper]['fields'][$key], $val, false);
+					->transform(static::$meta[$this->_mapper]['fields'][$key], $val, $in);
 			} else {
 				$data[$key] = $val;
 			}
@@ -271,9 +299,11 @@ abstract class Model implements iModel
 		if($data) {
 			$this->setData($data);
 		}
+		
+		$this->_primeData();
 
 		foreach(static::$meta[$this->_mapper]['fields'] as $key => $meta) {
-			$rs = \Gacela\Gacela::instance()->getField($meta->type)->validate($meta, $this->$key);
+			$rs = \Gacela\Gacela::instance()->getField($meta->type)->validate($meta, $this->_data[$key]);
 
 			if($rs !== true) {
 				$this->_errors[$key] = $rs;

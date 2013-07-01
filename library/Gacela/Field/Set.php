@@ -14,13 +14,16 @@ class Set extends Field
 
 	public function validate($meta, $value)
 	{
-
-		if(is_null($value) && !$meta->null) {
+		if(is_null($value) && $meta->null) {
+			return true;
+		} elseif(is_null($value) && !$meta->null) {
 			return static::NULL_CODE;
-		} elseif(!is_null($value) && !is_array($value) && !in_array($value, $meta->values)) {
-			return static::VALUE_CODE;
-		} elseif(is_array($value) && count(array_diff($value, $meta->values)) > 0) {
-			return  static::VALUE_CODE;
+		} else {
+			$value = explode(',', $value);
+			
+			if(count(array_diff($value, $meta->values)) > 0) {
+				return  static::VALUE_CODE;
+			}
 		}
 
 		return true;

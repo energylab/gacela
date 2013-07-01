@@ -16,7 +16,7 @@ class Bool extends Field
 	{
 		if(is_null($value) && !$meta->null) {
 			return static::NULL_CODE;
-		} elseif(!is_null($value) && !is_bool($value)) {
+		} elseif(!is_null($value) && !in_array($value, array(1,0), true)) {
 			return  static::TYPE_CODE;
 		}
 

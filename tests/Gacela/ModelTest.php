@@ -180,14 +180,24 @@ class ModelTest extends \Test\TestCase
         );
     }
 
+	public function testValidateWithCustomGetter()
+	{
+		$obj = new \Test\Model\Object('Test\Mapper\Object');
+
+		$obj->metadata = array('one', 2, 'three', 4);
+
+		$obj->validate();
+
+		$this->assertFalse(in_array('metadata', $obj->errors));	
+	}
+
     /**
      * @covers Gacela\Model\Model::validate
-     * @todo   Implement testValidate().
      */
     public function testValidateEmptyObjectWithDefaults()
     {
 		$this->object->testName = 'Test';
-
-		$this->assertTrue($this->object->validate(), 'Errors: '.print_r($this->object->errors, true));
+		$this->object->validate();
+		$this->assertTrue($this->object->validate(), 'Object: '.print_r($this->object, true));
     }
 }
