@@ -88,13 +88,15 @@ class ModelTest extends \Test\TestCase
      * @covers Gacela\Model\Model::__isset
      * @todo   Implement test__isset().
      */
-    public function test__isset()
+    public function test__issetPropertyWhenSet()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
+		$this->assertTrue(isset($this->object->started));
+	}
+
+	public function test__issetPropertyWhenNotSet()
+	{
+		$this->assertTrue(empty($this->object->id));
+	}
 
     /**
      * @covers Gacela\Model\Model::__set

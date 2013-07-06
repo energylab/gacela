@@ -139,7 +139,7 @@ abstract class Model implements iModel
 
 		if(method_exists($this, $method)) {
 			return $this->$method($key);
-		} elseif(isset(static::$meta[$this->_mapper['relations'][$key]])) {
+		} elseif(isset(static::$meta[$this->_mapper]['relations'][$key])) {
 			$relation = $this->$key;
 
 			if($relation instanceof \Gacela\Collection\Collection) {
@@ -154,7 +154,9 @@ abstract class Model implements iModel
 				}
 			}
 		}
-
+		
+		$this->_primeData();
+		
 		return isset($this->_data[$key]);
 	}
 
