@@ -569,7 +569,7 @@ abstract class Mapper implements MapperInterface
 			foreach($primary as $k => $v) {
 				$where->equals($k, $v);
 			}
-
+			
 			if($this->_source()->update($resource->getName(), $data, $this->_source()->getQuery($where)) === false) {
 				return false;
 			}

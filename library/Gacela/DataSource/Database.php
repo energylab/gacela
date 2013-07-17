@@ -211,6 +211,8 @@ class Database extends DataSource
 		} else {
 			$sql = $data;
 		}
+		
+		$this->_setLastQuery($sql, $binds);
 
 		$query = $this->_adapter->prepare($sql);
 

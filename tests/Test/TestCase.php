@@ -89,7 +89,8 @@ abstract class TestCase extends \Gacela\GUnit\Extensions\Database\TestCase
 				'peeps' => array(),
 				'objects' => array(),
 				'meta' => array(),
-				'tests' => array()
+				'tests' => array(),
+				'logs' => array()
 			)
 		);
 	}

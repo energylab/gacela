@@ -20,215 +20,29 @@ class SqlTest extends \Test\TestCase
         $this->object = new Sql;
     }
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::__get
-     * @todo   Implement test__get().
-     */
-    public function test__get()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::assemble
-     * @todo   Implement testAssemble().
-     */
-    public function testAssemble()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
+	public function providerDates()
+	{
+		return array(
+			array('2013-03-27', '2013-03-27'),
+			array('1983-03-27T06:05:00-07:00', '1983-03-27 06:05:00')			
+		);	
+	}
 
     /**
      * @covers Gacela\DataSource\Query\Sql::bind
-     * @todo   Implement testBind().
-     */
-    public function testBind()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+	 * @dataProvider providerDates
+	 */
+    public function testBindISO8601DateValue($date, $bound)
+	{
+		$time = time();
+
+		$this->object->where('date = :date', array(':date' => $date));
+
+		$where = $this->object->where;
+		
+		list($sql, $binds) = $this->object->assemble();
+
+		$this->assertSame($bound, $binds[':date']);
     }
 
-    /**
-     * @covers Gacela\DataSource\Query\Sql::delete
-     * @todo   Implement testDelete().
-     */
-    public function testDelete()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::from
-     * @todo   Implement testFrom().
-     */
-    public function testFrom()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::groupBy
-     * @todo   Implement testGroupBy().
-     */
-    public function testGroupBy()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::having
-     * @todo   Implement testHaving().
-     */
-    public function testHaving()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::in
-     * @todo   Implement testIn().
-     */
-    public function testIn()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::insert
-     * @todo   Implement testInsert().
-     */
-    public function testInsert()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::join
-     * @todo   Implement testJoin().
-     */
-    public function testJoin()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::leftJoin
-     * @todo   Implement testLeftJoin().
-     */
-    public function testLeftJoin()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::rightJoin
-     * @todo   Implement testRightJoin().
-     */
-    public function testRightJoin()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::limit
-     * @todo   Implement testLimit().
-     */
-    public function testLimit()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::orderBy
-     * @todo   Implement testOrderBy().
-     */
-    public function testOrderBy()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::union
-     * @todo   Implement testUnion().
-     */
-    public function testUnion()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::update
-     * @todo   Implement testUpdate().
-     */
-    public function testUpdate()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Gacela\DataSource\Query\Sql::where
-     * @todo   Implement testWhere().
-     */
-    public function testWhere()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
 }
