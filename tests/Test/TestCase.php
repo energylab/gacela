@@ -39,7 +39,7 @@ abstract class TestCase extends \Gacela\GUnit\Extensions\Database\TestCase
 				'soapclient_path' => '/var/www/sf/soapclient/',
 				'wsdl_path' => '/var/www/sf.wsdl',
 				'username' => 'me@noahgoodrich.com',
-				'password' => 'S4l3sforce!wmYPflqJLiWH7e2dxWl0W2ES4',
+				'password' => 'P4ssw0rdChange!feWiTbxPhLPDEh3F8hKIwXBC',
 				'objects' => array('Account')
 			)
 		);

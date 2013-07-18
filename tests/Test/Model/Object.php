@@ -12,7 +12,7 @@ class Object extends M {
 			return $meta;
 		}
 
-		return $this->_data->metadata;	
+		return $this->_data['metadata'];	
 	}
 
 	protected function _setMetadata($data)

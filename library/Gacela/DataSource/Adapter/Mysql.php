@@ -32,6 +32,7 @@ class Mysql extends Pdo
 		$this->_relationships = \Gacela\Gacela::instance()->cacheMetaData($this->_config->schema.'_relationships');
 
 		if(!$this->_relationships) {
+			$fk = 'fk'.static::$_separator.'%'.static::$_separator.'%';	
 			$sql = "
 				SELECT
 					TABLE_NAME AS keyTable,
@@ -41,6 +42,7 @@ class Mysql extends Pdo
 					CONSTRAINT_NAME AS constraintName
 				FROM information_schema.key_column_usage
 				WHERE TABLE_SCHEMA = DATABASE()
+				AND CONSTRAINT_NAME LIKE '$fk'
 				AND REFERENCED_TABLE_NAME IS NOT NULL
 				GROUP BY constraintName
 				";
