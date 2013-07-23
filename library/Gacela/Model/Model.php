@@ -43,10 +43,14 @@ abstract class Model implements iModel
 
 		foreach(static::$meta[$this->_mapper]['fields'] as $field => $meta) {
 			if(!isset($this->_data[$field])) {
-				$this->_data[$field] = \Gacela\Gacela::instance()
-					->getField($meta->type)
-					->transform($meta, $meta->default);
-			}	
+				$value = $meta->default;
+			} else {
+				$value = $this->_data[$field];
+			}
+			
+			$this->_data[$field] = \Gacela\Gacela::instance()
+				->getField($meta->type)
+				->transform($meta, $value);
 		}
 
 		$this->_primed = true;
