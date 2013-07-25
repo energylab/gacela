@@ -251,6 +251,7 @@ abstract class Model implements iModel
 
 		$this->_changed = array();
 		$this->_originalData = array();
+		$this->_primed = false;
 
 		return true;
 	}
