@@ -74,6 +74,8 @@ abstract class Model implements iModel
 				$this->_data[$key] = $field->default;
 			}
 			
+			$this->_primeData();
+
 			if($val !== $this->_data[$key]) {
 				if(isset($this->_data[$key])) {
 					$this->_originalData[$key] = $this->_data[$key];
