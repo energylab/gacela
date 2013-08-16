@@ -50,7 +50,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 			array(date('c', $yesterday), $yesterday),
 			array(date('c', $past), $past),
 			array(date('c', $future), $future),
-			array('Random String', 'Random String')
+			array(null, 'Random String')
 		);
 	}
 

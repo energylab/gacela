@@ -35,6 +35,14 @@ class Date extends Field
 			$value = date('c', $value);
 		} elseif($in && stripos($value, 'current') !== false || (stripos($meta->default, 'current') !== false && empty($value))) {
 			$value = date('c', time());
+		} elseif($in) {
+			$value = strtotime($value);
+
+			if(!$value) {
+				$value = null;
+			} else {
+				$value = date('c', $value);
+			}
 		} elseif(!$in && !is_numeric($value)) {
 			if(stripos($value, 'current') !== false || (stripos($meta->default, 'current') !== false && empty($value))) {
 				$value = time();
